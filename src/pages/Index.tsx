@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 
 const users = [
@@ -18,12 +19,31 @@ const users = [
 const Index = () => {
   const [search, setSearch] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
 
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(search.toLowerCase()) ||
     user.surname.toLowerCase().includes(search.toLowerCase()) ||
     user.patronymic.toLowerCase().includes(search.toLowerCase())
   );
+
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return filteredUsers.slice(startIndex, endIndex);
+  }, [filteredUsers, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: string) => {
+    setPageSize(Number(size));
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -61,8 +81,8 @@ const Index = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+              {paginatedData.length > 0 ? (
+                paginatedData.map((user) => (
                   <TableRow key={user.id} className="hover:bg-gray-50">
                     <TableCell className="font-mono text-gray-600">#{user.id}</TableCell>
                     <TableCell className="font-medium">{user.name}</TableCell>
@@ -87,6 +107,65 @@ const Index = () => {
               )}
             </TableBody>
           </Table>
+        </div>
+
+        <div className="mt-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-600">
+              Всего: {users.length} | Найдено: {filteredUsers.length}
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Строк на странице:</span>
+              <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <Icon name="ChevronLeft" size={16} />
+              </Button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={page === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(page)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                <Icon name="ChevronRight" size={16} />
+              </Button>
+            </div>
+          )}
         </div>
 
         {isAdmin && (
