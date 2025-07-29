@@ -165,17 +165,88 @@ const Index = () => {
               </Button>
               
               <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant={page === currentPage ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handlePageChange(page)}
-                    className="w-8 h-8 p-0"
-                  >
-                    {page}
-                  </Button>
-                ))}
+                {(() => {
+                  const pages = [];
+                  const showEllipsis = totalPages > 7;
+                  
+                  if (!showEllipsis) {
+                    // Показываем все страницы если их мало
+                    for (let i = 1; i <= totalPages; i++) {
+                      pages.push(
+                        <Button
+                          key={i}
+                          variant={i === currentPage ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(i)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {i}
+                        </Button>
+                      );
+                    }
+                  } else {
+                    // Умная пагинация с эллипсами
+                    // Всегда показываем первую страницу
+                    pages.push(
+                      <Button
+                        key={1}
+                        variant={1 === currentPage ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(1)}
+                        className="w-8 h-8 p-0"
+                      >
+                        1
+                      </Button>
+                    );
+                    
+                    // Левый эллипсис если нужен
+                    if (currentPage > 4) {
+                      pages.push(<span key="ellipsis-left" className="px-2 text-gray-400">...</span>);
+                    }
+                    
+                    // Страницы вокруг текущей
+                    const startPage = Math.max(2, currentPage - 1);
+                    const endPage = Math.min(totalPages - 1, currentPage + 1);
+                    
+                    for (let i = startPage; i <= endPage; i++) {
+                      if (i !== 1 && i !== totalPages) {
+                        pages.push(
+                          <Button
+                            key={i}
+                            variant={i === currentPage ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handlePageChange(i)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {i}
+                          </Button>
+                        );
+                      }
+                    }
+                    
+                    // Правый эллипсис если нужен
+                    if (currentPage < totalPages - 3) {
+                      pages.push(<span key="ellipsis-right" className="px-2 text-gray-400">...</span>);
+                    }
+                    
+                    // Всегда показываем последнюю страницу
+                    if (totalPages > 1) {
+                      pages.push(
+                        <Button
+                          key={totalPages}
+                          variant={totalPages === currentPage ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(totalPages)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {totalPages}
+                        </Button>
+                      );
+                    }
+                  }
+                  
+                  return pages;
+                })()}
               </div>
               
               <Button 
