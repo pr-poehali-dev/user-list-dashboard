@@ -5,38 +5,25 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 
-const users = [
-  { id: 1, name: 'Алексей', surname: 'Иванов', patronymic: 'Петрович' },
-  { id: 2, name: 'Мария', surname: 'Петрова', patronymic: 'Сергеевна' },
-  { id: 3, name: 'Дмитрий', surname: 'Сидоров', patronymic: 'Александрович' },
-  { id: 4, name: 'Елена', surname: 'Козлова', patronymic: 'Викторовна' },
-  { id: 5, name: 'Игорь', surname: 'Морозов', patronymic: 'Олегович' },
-  { id: 6, name: 'Анна', surname: 'Волкова', patronymic: 'Дмитриевна' },
-  { id: 7, name: 'Павел', surname: 'Соколов', patronymic: 'Андреевич' },
-  { id: 8, name: 'Ольга', surname: 'Новикова', patronymic: 'Михайловна' },
-  { id: 9, name: 'Сергей', surname: 'Белов', patronymic: 'Владимирович' },
-  { id: 10, name: 'Татьяна', surname: 'Орлова', patronymic: 'Игоревна' },
-  { id: 11, name: 'Андрей', surname: 'Лебедев', patronymic: 'Сергеевич' },
-  { id: 12, name: 'Наталья', surname: 'Медведева', patronymic: 'Алексеевна' },
-  { id: 13, name: 'Владимир', surname: 'Макаров', patronymic: 'Николаевич' },
-  { id: 14, name: 'Светлана', surname: 'Зайцева', patronymic: 'Петровна' },
-  { id: 15, name: 'Михаил', surname: 'Попов', patronymic: 'Дмитриевич' },
-  { id: 16, name: 'Юлия', surname: 'Васильева', patronymic: 'Владимировна' },
-  { id: 17, name: 'Максим', surname: 'Федоров', patronymic: 'Андреевич' },
-  { id: 18, name: 'Екатерина', surname: 'Алексеева', patronymic: 'Сергеевна' },
-  { id: 19, name: 'Роман', surname: 'Николаев', patronymic: 'Олегович' },
-  { id: 20, name: 'Ирина', surname: 'Григорьева', patronymic: 'Михайловна' },
-  { id: 21, name: 'Виктор', surname: 'Степанов', patronymic: 'Александрович' },
-  { id: 22, name: 'Любовь', surname: 'Романова', patronymic: 'Викторовна' },
-  { id: 23, name: 'Александр', surname: 'Семенов', patronymic: 'Игоревич' },
-  { id: 24, name: 'Галина', surname: 'Кузнецова', patronymic: 'Павловна' },
-  { id: 25, name: 'Олег', surname: 'Захаров', patronymic: 'Владиславович' },
-  { id: 26, name: 'Вера', surname: 'Данилова', patronymic: 'Анатольевна' },
-  { id: 27, name: 'Денис', surname: 'Жуков', patronymic: 'Максимович' },
-  { id: 28, name: 'Людмила', surname: 'Фролова', patronymic: 'Геннадьевна' },
-  { id: 29, name: 'Артем', surname: 'Костин', patronymic: 'Романович' },
-  { id: 30, name: 'Надежда', surname: 'Тихонова', patronymic: 'Евгеньевна' },
-];
+// Генерируем 1000 пользователей
+const generateUsers = () => {
+  const names = ['Алексей', 'Мария', 'Дмитрий', 'Елена', 'Игорь', 'Анна', 'Павел', 'Ольга', 'Сергей', 'Татьяна', 'Андрей', 'Наталья', 'Владимир', 'Светлана', 'Михаил', 'Юлия', 'Максим', 'Екатерина', 'Роман', 'Ирина', 'Виктор', 'Любовь', 'Александр', 'Галина', 'Олег', 'Вера', 'Денис', 'Людмила', 'Артем', 'Надежда'];
+  const surnames = ['Иванов', 'Петрова', 'Сидоров', 'Козлова', 'Морозов', 'Волкова', 'Соколов', 'Новикова', 'Белов', 'Орлова', 'Лебедев', 'Медведева', 'Макаров', 'Зайцева', 'Попов', 'Васильева', 'Федоров', 'Алексеева', 'Николаев', 'Григорьева', 'Степанов', 'Романова', 'Семенов', 'Кузнецова', 'Захаров', 'Данилова', 'Жуков', 'Фролова', 'Костин', 'Тихонова'];
+  const patronymics = ['Петрович', 'Сергеевна', 'Александрович', 'Викторовна', 'Олегович', 'Дмитриевна', 'Андреевич', 'Михайловна', 'Владимирович', 'Игоревна', 'Сергеевич', 'Алексеевна', 'Николаевич', 'Петровна', 'Дмитриевич', 'Владимировна', 'Андреевич', 'Сергеевна', 'Олегович', 'Михайловна', 'Александрович', 'Викторовна', 'Игоревич', 'Павловна', 'Владиславович', 'Анатольевна', 'Максимович', 'Геннадьевна', 'Романович', 'Евгеньевна'];
+  
+  const users = [];
+  for (let i = 1; i <= 1000; i++) {
+    users.push({
+      id: i,
+      name: names[i % names.length],
+      surname: surnames[i % surnames.length],
+      patronymic: patronymics[i % patronymics.length]
+    });
+  }
+  return users;
+};
+
+const users = generateUsers();
 
 const Index = () => {
   const [search, setSearch] = useState('');
