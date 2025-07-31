@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -30,6 +30,8 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingText, setLoadingText] = useState('Подключение к серверу...');
 
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -53,6 +55,65 @@ const Index = () => {
     setPageSize(Number(size));
     setCurrentPage(1);
   };
+
+  useEffect(() => {
+    const loadingMessages = [
+      'Подключение к серверу...',
+      'Загрузка данных пользователей...',
+      'Настройка интерфейса...',
+      'Почти готово...'
+    ];
+    
+    let messageIndex = 0;
+    const messageInterval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % loadingMessages.length;
+      setLoadingText(loadingMessages[messageIndex]);
+    }, 800);
+    
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+      clearInterval(messageInterval);
+    }, 3200);
+    
+    return () => {
+      clearTimeout(loadingTimer);
+      clearInterval(messageInterval);
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="relative mb-6">
+              {/* Основное кольцо загрузки */}
+              <div className="w-16 h-16 mx-auto border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+              
+              {/* Внутренние точки */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Система пользователей</h2>
+            <p className="text-gray-600 mb-4">{loadingText}</p>
+            
+            {/* Прогресс бар */}
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+              <div className="bg-blue-500 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+            </div>
+            
+            {/* Дополнительная информация */}
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <Icon name="Wifi" size={16} className="animate-pulse" />
+              <span>Установка соединения</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
