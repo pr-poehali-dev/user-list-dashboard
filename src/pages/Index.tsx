@@ -441,19 +441,6 @@ const Index = () => {
               
               {selectedUser && (
                 <div className="space-y-4">
-                  <div className="bg-gray-50 rounded-lg p-4 border">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Табельный номер</label>
-                        <p className="font-mono text-lg font-bold text-blue-600">#{selectedUser.id}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Дата рождения</label>
-                        <p className="text-gray-900">{selectedUser.birthDate}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
                   <div className="space-y-3">
                     <div>
                       <label className="text-sm font-medium text-gray-600">ФИО</label>
@@ -462,19 +449,29 @@ const Index = () => {
                       </p>
                     </div>
                     
-                    <div className="grid grid-cols-1 gap-3">
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Дирекция</label>
-                        <p className="text-gray-900">{selectedUser.direction}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Специальность</label>
-                        <p className="text-gray-900">{selectedUser.specialty}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Группа</label>
-                        <p className="text-gray-900">{selectedUser.group}</p>
-                      </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Дата рождения</label>
+                      <p className="text-gray-900">{selectedUser.birthDate}</p>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Дирекция</label>
+                      <p className="text-gray-900">{selectedUser.direction}</p>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Табельный номер</label>
+                      <p className="font-mono text-gray-900">#{selectedUser.id}</p>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Специальность</label>
+                      <p className="text-gray-900">{selectedUser.specialty}</p>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Группа</label>
+                      <p className="text-gray-900">{selectedUser.group}</p>
                     </div>
                   </div>
                   
