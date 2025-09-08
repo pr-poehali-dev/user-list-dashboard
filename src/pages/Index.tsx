@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -30,20 +30,43 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingText, setLoadingText] = useState('Подключение к серверу...');
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(search.toLowerCase()) ||
-    user.surname.toLowerCase().includes(search.toLowerCase()) ||
-    user.patronymic.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredAndSortedUsers = useMemo(() => {
+    let filtered = users.filter(user => 
+      user.name.toLowerCase().includes(search.toLowerCase()) ||
+      user.surname.toLowerCase().includes(search.toLowerCase()) ||
+      user.patronymic.toLowerCase().includes(search.toLowerCase())
+    );
+
+    if (sortConfig) {
+      filtered.sort((a, b) => {
+        const aValue = a[sortConfig.key as keyof typeof a];
+        const bValue = b[sortConfig.key as keyof typeof b];
+        
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          const comparison = aValue.localeCompare(bValue, 'ru');
+          return sortConfig.direction === 'asc' ? comparison : -comparison;
+        }
+        
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [search, sortConfig]);
 
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    return filteredUsers.slice(startIndex, endIndex);
-  }, [filteredUsers, currentPage, pageSize]);
+    return filteredAndSortedUsers.slice(startIndex, endIndex);
+  }, [filteredAndSortedUsers, currentPage, pageSize]);
 
-  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  const totalPages = Math.ceil(filteredAndSortedUsers.length / pageSize);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -53,6 +76,83 @@ const Index = () => {
     setPageSize(Number(size));
     setCurrentPage(1);
   };
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
+  const getSortIcon = (column: string) => {
+    if (!sortConfig || sortConfig.key !== column) {
+      return <Icon name="ArrowUpDown" size={14} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />;
+    }
+    return sortConfig.direction === 'asc' 
+      ? <Icon name="ArrowUp" size={14} className="text-blue-600" />
+      : <Icon name="ArrowDown" size={14} className="text-blue-600" />;
+  };
+
+  useEffect(() => {
+    const loadingMessages = [
+      'Подключение к серверу...',
+      'Загрузка данных пользователей...',
+      'Настройка интерфейса...',
+      'Почти готово...'
+    ];
+    
+    let messageIndex = 0;
+    const messageInterval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % loadingMessages.length;
+      setLoadingText(loadingMessages[messageIndex]);
+    }, 800);
+    
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+      clearInterval(messageInterval);
+    }, 3200);
+    
+    return () => {
+      clearTimeout(loadingTimer);
+      clearInterval(messageInterval);
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="relative mb-6">
+              {/* Основное кольцо загрузки */}
+              <div className="w-16 h-16 mx-auto border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+              
+              {/* Внутренние точки */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Система пользователей</h2>
+            <p className="text-gray-600 mb-4">{loadingText}</p>
+            
+            {/* Прогресс бар */}
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+              <div className="bg-blue-500 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+            </div>
+            
+            {/* Дополнительная информация */}
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <Icon name="Wifi" size={16} className="animate-pulse" />
+              <span>Установка соединения</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -82,10 +182,42 @@ const Index = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="w-20 font-semibold">ID</TableHead>
-                <TableHead className="font-semibold">Имя</TableHead>
-                <TableHead className="font-semibold">Фамилия</TableHead>
-                <TableHead className="font-semibold">Отчество</TableHead>
+                <TableHead 
+                  className="w-20 font-semibold cursor-pointer group hover:bg-gray-100 transition-colors select-none"
+                  onClick={() => handleSort('id')}
+                >
+                  <div className="flex items-center gap-2">
+                    ID
+                    {getSortIcon('id')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="font-semibold cursor-pointer group hover:bg-gray-100 transition-colors select-none"
+                  onClick={() => handleSort('name')}
+                >
+                  <div className="flex items-center gap-2">
+                    Имя
+                    {getSortIcon('name')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="font-semibold cursor-pointer group hover:bg-gray-100 transition-colors select-none"
+                  onClick={() => handleSort('surname')}
+                >
+                  <div className="flex items-center gap-2">
+                    Фамилия
+                    {getSortIcon('surname')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="font-semibold cursor-pointer group hover:bg-gray-100 transition-colors select-none"
+                  onClick={() => handleSort('patronymic')}
+                >
+                  <div className="flex items-center gap-2">
+                    Отчество
+                    {getSortIcon('patronymic')}
+                  </div>
+                </TableHead>
                 {isAdmin && <TableHead className="font-semibold">Действия</TableHead>}
               </TableRow>
             </TableHeader>
@@ -121,7 +253,13 @@ const Index = () => {
         <div className="mt-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-600">
-              Всего: {users.length} | Найдено: {filteredUsers.length}
+              Всего: {users.length} | Найдено: {filteredAndSortedUsers.length}
+              {sortConfig && (
+                <span className="ml-2 text-blue-600">
+                  • Сортировка: {sortConfig.key === 'id' ? 'ID' : sortConfig.key === 'name' ? 'Имя' : sortConfig.key === 'surname' ? 'Фамилия' : 'Отчество'} 
+                  ({sortConfig.direction === 'asc' ? '↑' : '↓'})
+                </span>
+              )}
             </div>
             
             <div className="flex items-center gap-2">
