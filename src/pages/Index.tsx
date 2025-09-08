@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import * as Dialog from '@radix-ui/react-dialog';
 import Icon from '@/components/ui/icon';
 
 // Генерируем 1000 пользователей
@@ -10,20 +11,42 @@ const generateUsers = () => {
   const names = ['Алексей', 'Мария', 'Дмитрий', 'Елена', 'Игорь', 'Анна', 'Павел', 'Ольга', 'Сергей', 'Татьяна', 'Андрей', 'Наталья', 'Владимир', 'Светлана', 'Михаил', 'Юлия', 'Максим', 'Екатерина', 'Роман', 'Ирина', 'Виктор', 'Любовь', 'Александр', 'Галина', 'Олег', 'Вера', 'Денис', 'Людмила', 'Артем', 'Надежда'];
   const surnames = ['Иванов', 'Петрова', 'Сидоров', 'Козлова', 'Морозов', 'Волкова', 'Соколов', 'Новикова', 'Белов', 'Орлова', 'Лебедев', 'Медведева', 'Макаров', 'Зайцева', 'Попов', 'Васильева', 'Федоров', 'Алексеева', 'Николаев', 'Григорьева', 'Степанов', 'Романова', 'Семенов', 'Кузнецова', 'Захаров', 'Данилова', 'Жуков', 'Фролова', 'Костин', 'Тихонова'];
   const patronymics = ['Петрович', 'Сергеевна', 'Александрович', 'Викторовна', 'Олегович', 'Дмитриевна', 'Андреевич', 'Михайловна', 'Владимирович', 'Игоревна', 'Сергеевич', 'Алексеевна', 'Николаевич', 'Петровна', 'Дмитриевич', 'Владимировна', 'Андреевич', 'Сергеевна', 'Олегович', 'Михайловна', 'Александрович', 'Викторовна', 'Игоревич', 'Павловна', 'Владиславович', 'Анатольевна', 'Максимович', 'Геннадьевна', 'Романович', 'Евгеньевна'];
+  const groups = ['Победители', 'Безымянная', 'Группа номер 5', 'Звездочки', 'Молния', 'Орлы', 'Тигры', 'Драконы'];
+  const directions = ['Западно-Сибирская', 'Восточно-Сибирская', 'Октябрьская', 'Свердловская', 'Камень-Устинская', 'Московская', 'Северная'];
+  const specialties = ['Машинист электровоза', 'Помощник машиниста', 'Диспетчер', 'Проводник', 'Слесарь по ремонту', 'Электромонтер', 'Инженер-путеец', 'Составитель поездов'];
   
   const users = [];
   for (let i = 1; i <= 1000; i++) {
+    const birthYear = 1970 + (i % 35); // возраст от 35 до 55 лет
+    const birthMonth = (i % 12) + 1;
+    const birthDay = (i % 28) + 1;
+    
     users.push({
-      id: i,
+      id: 10000000 + i,
       name: names[i % names.length],
       surname: surnames[i % surnames.length],
-      patronymic: patronymics[i % patronymics.length]
+      patronymic: patronymics[i % patronymics.length],
+      group: groups[i % groups.length],
+      direction: directions[i % directions.length],
+      specialty: specialties[i % specialties.length],
+      birthDate: `${birthDay.toString().padStart(2, '0')}.${birthMonth.toString().padStart(2, '0')}.${birthYear}`
     });
   }
   return users;
 };
 
 const users = generateUsers();
+
+type User = {
+  id: number;
+  name: string;
+  surname: string;
+  patronymic: string;
+  group: string;
+  direction: string;
+  specialty: string;
+  birthDate: string;
+};
 
 const Index = () => {
   const [search, setSearch] = useState('');
@@ -33,6 +56,8 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingText, setLoadingText] = useState('Подключение к серверу...');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const filteredAndSortedUsers = useMemo(() => {
     let filtered = users.filter(user => 
@@ -224,7 +249,14 @@ const Index = () => {
             <TableBody>
               {paginatedData.length > 0 ? (
                 paginatedData.map((user) => (
-                  <TableRow key={user.id} className="hover:bg-gray-50">
+                  <TableRow 
+                    key={user.id} 
+                    className="hover:bg-gray-50 cursor-pointer" 
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setIsAuthModalOpen(true);
+                    }}
+                  >
                     <TableCell className="font-mono text-gray-600">#{user.id}</TableCell>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell className="font-medium">{user.surname}</TableCell>
@@ -394,6 +426,89 @@ const Index = () => {
             </div>
           </div>
         )}
+
+        {/* Модальное окно авторизации */}
+        <Dialog.Root open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+            <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg">
+              <Dialog.Title className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Icon name="UserCheck" size={20} className="text-white" />
+                </div>
+                Подтверждение авторизации
+              </Dialog.Title>
+              
+              {selectedUser && (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-lg p-4 border">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Табельный номер</label>
+                        <p className="font-mono text-lg font-bold text-blue-600">#{selectedUser.id}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Дата рождения</label>
+                        <p className="text-gray-900">{selectedUser.birthDate}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">ФИО</label>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {selectedUser.surname} {selectedUser.name} {selectedUser.patronymic}
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-3">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Дирекция</label>
+                        <p className="text-gray-900">{selectedUser.direction}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Специальность</label>
+                        <p className="text-gray-900">{selectedUser.specialty}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Группа</label>
+                        <p className="text-gray-900">{selectedUser.group}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3 pt-4 border-t">
+                    <Button 
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                      onClick={() => {
+                        // Здесь будет логика авторизации
+                        alert(`Пользователь ${selectedUser.surname} ${selectedUser.name} авторизован`);
+                        setIsAuthModalOpen(false);
+                      }}
+                    >
+                      <Icon name="Check" size={16} className="mr-2" />
+                      Авторизироваться
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => setIsAuthModalOpen(false)}
+                    >
+                      <Icon name="X" size={16} className="mr-2" />
+                      Отменить
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              <Dialog.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                <Icon name="X" size={16} />
+                <span className="sr-only">Закрыть</span>
+              </Dialog.Close>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
       </div>
     </div>
   );
