@@ -58,6 +58,8 @@ const Index = () => {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
+  const [teacherPassword, setTeacherPassword] = useState('');
 
   const filteredAndSortedUsers = useMemo(() => {
     let filtered = users.filter(user => 
@@ -193,14 +195,25 @@ const Index = () => {
             />
           </div>
           
-          <Button 
-            onClick={() => setIsAdmin(!isAdmin)}
-            variant={isAdmin ? "default" : "outline"}
-            className="flex items-center gap-2"
-          >
-            <Icon name="Shield" size={16} />
-            {isAdmin ? 'Режим администратора' : 'Администратор'}
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => setIsTeacherModalOpen(true)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Icon name="GraduationCap" size={16} />
+              Преподаватель
+            </Button>
+            
+            <Button 
+              onClick={() => setIsAdmin(!isAdmin)}
+              variant={isAdmin ? "default" : "outline"}
+              className="flex items-center gap-2"
+            >
+              <Icon name="Shield" size={16} />
+              {isAdmin ? 'Режим администратора' : 'Администратор'}
+            </Button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border shadow-sm">
@@ -498,6 +511,75 @@ const Index = () => {
                   </div>
                 </div>
               )}
+              
+              <Dialog.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                <Icon name="X" size={16} />
+                <span className="sr-only">Закрыть</span>
+              </Dialog.Close>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+
+        {/* Модальное окно авторизации преподавателя */}
+        <Dialog.Root open={isTeacherModalOpen} onOpenChange={setIsTeacherModalOpen}>
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+            <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg">
+              <Dialog.Title className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                  <Icon name="GraduationCap" size={20} className="text-white" />
+                </div>
+                Авторизация преподавателя
+              </Dialog.Title>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-2">
+                    Пароль доступа
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="Введите пароль"
+                    value={teacherPassword}
+                    onChange={(e) => setTeacherPassword(e.target.value)}
+                    className="w-full"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        // Авторизация по Enter
+                        alert('Преподаватель авторизован');
+                        setIsTeacherModalOpen(false);
+                        setTeacherPassword('');
+                      }
+                    }}
+                  />
+                </div>
+                
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button 
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => {
+                      // Здесь будет логика авторизации преподавателя
+                      alert('Преподаватель авторизован');
+                      setIsTeacherModalOpen(false);
+                      setTeacherPassword('');
+                    }}
+                  >
+                    <Icon name="Check" size={16} className="mr-2" />
+                    Авторизоваться
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => {
+                      setIsTeacherModalOpen(false);
+                      setTeacherPassword('');
+                    }}
+                  >
+                    <Icon name="ArrowLeft" size={16} className="mr-2" />
+                    Назад
+                  </Button>
+                </div>
+              </div>
               
               <Dialog.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                 <Icon name="X" size={16} />
