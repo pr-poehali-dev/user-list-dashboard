@@ -60,6 +60,8 @@ const Index = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
   const [teacherPassword, setTeacherPassword] = useState('');
+  const [isTeacherMode, setIsTeacherMode] = useState(false);
+  const [teacherSection, setTeacherSection] = useState('users');
 
   const filteredAndSortedUsers = useMemo(() => {
     let filtered = users.filter(user => 
@@ -176,6 +178,256 @@ const Index = () => {
               <span>Установка соединения</span>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Интерфейс преподавателя
+  if (isTeacherMode) {
+    const teacherSections = [
+      { id: 'questions', name: 'Вопросы', icon: 'HelpCircle' },
+      { id: 'knowledge', name: 'Объем знаний', icon: 'BookOpen' },
+      { id: 'plans', name: 'Планы обучения', icon: 'Calendar' },
+      { id: 'groups', name: 'Группы', icon: 'Users' },
+      { id: 'positions', name: 'Должности', icon: 'Briefcase' },
+      { id: 'users', name: 'Пользователи', icon: 'User' }
+    ];
+
+    const renderTeacherContent = () => {
+      switch (teacherSection) {
+        case 'questions':
+          return (
+            <div className="bg-white rounded-lg border shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4">Вопросы для тестирования</h2>
+              <p className="text-gray-600">Здесь будут отображаться вопросы для создания тестов.</p>
+            </div>
+          );
+        case 'knowledge':
+          return (
+            <div className="bg-white rounded-lg border shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4">Объем знаний</h2>
+              <p className="text-gray-600">Здесь будет отображаться объем знаний студентов.</p>
+            </div>
+          );
+        case 'plans':
+          return (
+            <div className="bg-white rounded-lg border shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4">Планы обучения</h2>
+              <p className="text-gray-600">Здесь будут отображаться планы обучения.</p>
+            </div>
+          );
+        case 'groups':
+          return (
+            <div className="bg-white rounded-lg border shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4">Группы</h2>
+              <p className="text-gray-600">Здесь будет управление группами.</p>
+            </div>
+          );
+        case 'positions':
+          return (
+            <div className="bg-white rounded-lg border shadow-sm p-6">
+              <h2 className="text-xl font-semibold mb-4">Должности</h2>
+              <p className="text-gray-600">Здесь будет управление должностями.</p>
+            </div>
+          );
+        case 'users':
+        default:
+          return (
+            <div className="bg-white rounded-lg border shadow-sm">
+              <div className="p-6 border-b flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Пользователи</h2>
+                <Button className="flex items-center gap-2">
+                  <Icon name="Plus" size={16} />
+                  Добавить пользователя
+                </Button>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('id')}
+                    >
+                      <div className="flex items-center justify-between">
+                        Табельный номер
+                        {sortConfig?.key === 'id' && (
+                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('surname')}
+                    >
+                      <div className="flex items-center justify-between">
+                        ФИО
+                        {sortConfig?.key === 'surname' && (
+                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('group')}
+                    >
+                      <div className="flex items-center justify-between">
+                        Группа
+                        {sortConfig?.key === 'group' && (
+                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('direction')}
+                    >
+                      <div className="flex items-center justify-between">
+                        Направление
+                        {sortConfig?.key === 'direction' && (
+                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('specialty')}
+                    >
+                      <div className="flex items-center justify-between">
+                        Специальность
+                        {sortConfig?.key === 'specialty' && (
+                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
+                        )}
+                      </div>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentPageUsers.map((user) => (
+                    <TableRow 
+                      key={user.id} 
+                      className="cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => setSelectedUser(user)}
+                    >
+                      <TableCell className="font-medium">{user.id}</TableCell>
+                      <TableCell>{user.surname} {user.name} {user.patronymic}</TableCell>
+                      <TableCell>{user.group}</TableCell>
+                      <TableCell>{user.direction}</TableCell>
+                      <TableCell>{user.specialty}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="flex items-center justify-between p-4 border-t">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-gray-600">
+                    Показано {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, filteredAndSortedUsers.length)} из {filteredAndSortedUsers.length}
+                  </span>
+                  <Select 
+                    value={pageSize.toString()} 
+                    onValueChange={(value) => {
+                      setPageSize(Number(value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <Icon name="ChevronLeft" size={16} />
+                  </Button>
+                  <span className="text-sm px-3 py-1">
+                    {currentPage} из {totalPages}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <Icon name="ChevronRight" size={16} />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Навигация преподавателя */}
+        <div className="bg-white border-b">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Icon name="GraduationCap" size={24} className="text-green-600" />
+                  <span className="font-semibold text-lg">Панель преподавателя</span>
+                </div>
+              </div>
+              <Button 
+                onClick={() => {
+                  setIsTeacherMode(false);
+                  setTeacherSection('users');
+                }}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Icon name="LogOut" size={16} />
+                Выйти
+              </Button>
+            </div>
+            <div className="flex border-t">
+              {teacherSections.map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => setTeacherSection(section.id)}
+                  className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${
+                    teacherSection === section.id 
+                      ? 'border-green-600 text-green-600 bg-green-50' 
+                      : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon name={section.icon} size={16} />
+                  {section.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Контент преподавателя */}
+        <div className="max-w-6xl mx-auto p-8">
+          {teacherSection === 'users' && (
+            <div className="mb-6">
+              <div className="relative max-w-md">
+                <Icon name="Search" size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Input 
+                  placeholder="Поиск пользователей..." 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+          )}
+          {renderTeacherContent()}
         </div>
       </div>
     );
@@ -545,8 +797,7 @@ const Index = () => {
                     className="w-full"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        // Авторизация по Enter
-                        alert('Преподаватель авторизован');
+                        setIsTeacherMode(true);
                         setIsTeacherModalOpen(false);
                         setTeacherPassword('');
                       }
@@ -558,8 +809,7 @@ const Index = () => {
                   <Button 
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                     onClick={() => {
-                      // Здесь будет логика авторизации преподавателя
-                      alert('Преподаватель авторизован');
+                      setIsTeacherMode(true);
                       setIsTeacherModalOpen(false);
                       setTeacherPassword('');
                     }}
