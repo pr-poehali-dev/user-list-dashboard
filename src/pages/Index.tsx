@@ -303,7 +303,7 @@ const Index = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {currentPageUsers.map((user) => (
+                  {paginatedData.map((user) => (
                     <TableRow 
                       key={user.id} 
                       className="cursor-pointer hover:bg-gray-50 transition-colors"
