@@ -37,6 +37,128 @@ const generateUsers = () => {
 
 const users = generateUsers();
 
+// Дерево вопросов
+const questionTree = [
+  {
+    id: 'safety',
+    name: 'Безопасность движения',
+    type: 'folder',
+    children: [
+      {
+        id: 'safety-signals',
+        name: 'Сигналы и знаки',
+        type: 'folder',
+        children: [
+          { id: 'q1', name: 'Что означает красный сигнал светофора?', type: 'question' },
+          { id: 'q2', name: 'Порядок подачи звуковых сигналов', type: 'question' }
+        ]
+      },
+      { id: 'q3', name: 'Правила работы в зоне повышенной опасности', type: 'question' }
+    ]
+  },
+  {
+    id: 'technical',
+    name: 'Техническое обслуживание',
+    type: 'folder',
+    children: [
+      {
+        id: 'technical-maintenance',
+        name: 'Плановое обслуживание',
+        type: 'folder',
+        children: [
+          { id: 'q4', name: 'Периодичность технического осмотра', type: 'question' },
+          { id: 'q5', name: 'Проверка тормозной системы', type: 'question' }
+        ]
+      },
+      { id: 'q6', name: 'Аварийный ремонт на линии', type: 'question' }
+    ]
+  },
+  {
+    id: 'operations',
+    name: 'Эксплуатационная работа',
+    type: 'folder',
+    children: [
+      { id: 'q7', name: 'Порядок приема смены', type: 'question' },
+      { id: 'q8', name: 'Ведение поездной документации', type: 'question' }
+    ]
+  },
+  {
+    id: 'regulations',
+    name: 'Правила и инструкции',
+    type: 'folder',
+    children: [
+      { id: 'q9', name: 'ПТЭ железных дорог', type: 'question' },
+      { id: 'q10', name: 'Инструкция по сигнализации', type: 'question' }
+    ]
+  },
+  {
+    id: 'emergency',
+    name: 'Нестандартные ситуации',
+    type: 'folder',
+    children: [
+      { id: 'q11', name: 'Действия при обнаружении неисправности', type: 'question' },
+      { id: 'q12', name: 'Порядок остановки в случае опасности', type: 'question' }
+    ]
+  },
+  {
+    id: 'equipment',
+    name: 'Локомотивное хозяйство',
+    type: 'folder',
+    children: [
+      { id: 'q13', name: 'Устройство электровоза', type: 'question' },
+      { id: 'q14', name: 'Системы управления', type: 'question' }
+    ]
+  },
+  {
+    id: 'documentation',
+    name: 'Документооборот',
+    type: 'folder',
+    children: [
+      { id: 'q15', name: 'Оформление путевых документов', type: 'question' },
+      { id: 'q16', name: 'Журналы учета', type: 'question' }
+    ]
+  },
+  {
+    id: 'environment',
+    name: 'Охрана окружающей среды',
+    type: 'folder',
+    children: [
+      { id: 'q17', name: 'Экологические требования', type: 'question' },
+      { id: 'q18', name: 'Утилизация отходов', type: 'question' }
+    ]
+  },
+  {
+    id: 'training',
+    name: 'Обучение и развитие',
+    type: 'folder',
+    children: [
+      { id: 'q19', name: 'Повышение квалификации', type: 'question' },
+      { id: 'q20', name: 'Стажировка новых сотрудников', type: 'question' }
+    ]
+  },
+  {
+    id: 'health',
+    name: 'Охрана труда',
+    type: 'folder',
+    children: [
+      { id: 'q21', name: 'Медицинские требования', type: 'question' },
+      { id: 'q22', name: 'Средства индивидуальной защиты', type: 'question' }
+    ]
+  }
+];
+
+// Данные для групп и должностей
+const groups = [
+  'Победители', 'Безымянная', 'Группа номер 5', 'Звездочки', 
+  'Молния', 'Орлы', 'Тигры', 'Драконы', 'Стрелы', 'Вершина'
+];
+
+const positions = [
+  'Машинист электровоза', 'Помощник машиниста', 'Диспетчер', 'Проводник',
+  'Слесарь по ремонту', 'Электромонтер', 'Инженер-путеец', 'Составитель поездов',
+  'Начальник станции', 'Дежурный по станции', 'Осмотрщик вагонов', 'Кондуктор'
+];
+
 type User = {
   id: number;
   name: string;
@@ -62,6 +184,60 @@ const Index = () => {
   const [teacherPassword, setTeacherPassword] = useState('');
   const [isTeacherMode, setIsTeacherMode] = useState(false);
   const [teacherSection, setTeacherSection] = useState('users');
+  const [isTeacherCollapsed, setIsTeacherCollapsed] = useState(false);
+  const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
+
+  const toggleFolder = (folderId: string) => {
+    setExpandedFolders(prev => 
+      prev.includes(folderId) 
+        ? prev.filter(id => id !== folderId)
+        : [...prev, folderId]
+    );
+  };
+
+  const renderTreeItem = (item: any, depth = 0) => {
+    const isExpanded = expandedFolders.includes(item.id);
+    
+    return (
+      <div key={item.id} style={{ marginLeft: `${depth * 20}px` }}>
+        <div 
+          className={`flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer ${
+            item.type === 'question' ? 'text-gray-600' : 'font-medium'
+          }`}
+          onClick={() => item.type === 'folder' && toggleFolder(item.id)}
+        >
+          {item.type === 'folder' ? (
+            <>
+              <Icon 
+                name={isExpanded ? "ChevronDown" : "ChevronRight"} 
+                size={16}
+                className="text-gray-400"
+              />
+              <Icon name="Folder" size={16} className="text-yellow-500" />
+              <span>{item.name}</span>
+              {item.children && (
+                <span className="text-xs text-gray-400 ml-auto">
+                  ({item.children.length})
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="w-4" /> {/* Spacer for alignment */}
+              <Icon name="FileText" size={16} className="text-blue-500" />
+              <span>{item.name}</span>
+            </>
+          )}
+        </div>
+        
+        {item.type === 'folder' && isExpanded && item.children && (
+          <div>
+            {item.children.map((child: any) => renderTreeItem(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const filteredAndSortedUsers = useMemo(() => {
     let filtered = users.filter(user => 
@@ -199,8 +375,48 @@ const Index = () => {
         case 'questions':
           return (
             <div className="bg-white rounded-lg border shadow-sm p-6">
-              <h2 className="text-xl font-semibold mb-4">Вопросы для тестирования</h2>
-              <p className="text-gray-600">Здесь будут отображаться вопросы для создания тестов.</p>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Банк вопросов</h2>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    onClick={() => setExpandedFolders(questionTree.map(item => item.id))}
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <Icon name="FolderOpen" size={16} />
+                    Развернуть все
+                  </Button>
+                  <Button 
+                    onClick={() => setExpandedFolders([])}
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <Icon name="Folder" size={16} />
+                    Свернуть все
+                  </Button>
+                  <Button size="sm">
+                    <Icon name="Plus" size={16} />
+                    Добавить
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+                {questionTree.map(item => renderTreeItem(item))}
+              </div>
+              
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1">
+                    <Icon name="Folder" size={16} className="text-yellow-500" />
+                    <span>Папки: {questionTree.length}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Icon name="FileText" size={16} className="text-blue-500" />
+                    <span>Вопросов: {questionTree.reduce((acc, folder) => acc + (folder.children?.length || 0), 0)}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           );
         case 'knowledge':
@@ -220,15 +436,67 @@ const Index = () => {
         case 'groups':
           return (
             <div className="bg-white rounded-lg border shadow-sm p-6">
-              <h2 className="text-xl font-semibold mb-4">Группы</h2>
-              <p className="text-gray-600">Здесь будет управление группами.</p>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Группы</h2>
+                <Button size="sm">
+                  <Icon name="Plus" size={16} />
+                  Добавить группу
+                </Button>
+              </div>
+              
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Название</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groups.map((group, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{group}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <div className="mt-4 text-sm text-gray-600">
+                Всего групп: {groups.length}
+              </div>
             </div>
           );
         case 'positions':
           return (
             <div className="bg-white rounded-lg border shadow-sm p-6">
-              <h2 className="text-xl font-semibold mb-4">Должности</h2>
-              <p className="text-gray-600">Здесь будет управление должностями.</p>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Должности</h2>
+                <Button size="sm">
+                  <Icon name="Plus" size={16} />
+                  Добавить должность
+                </Button>
+              </div>
+              
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Название</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {positions.map((position, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{position}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <div className="mt-4 text-sm text-gray-600">
+                Всего должностей: {positions.length}
+              </div>
             </div>
           );
         case 'users':
@@ -380,6 +648,15 @@ const Index = () => {
                   <Icon name="GraduationCap" size={24} className="text-green-600" />
                   <span className="font-semibold text-lg">Панель преподавателя</span>
                 </div>
+                {/* Кнопка сворачивания - показывается на мобильных */}
+                <Button
+                  onClick={() => setIsTeacherCollapsed(!isTeacherCollapsed)}
+                  variant="outline"
+                  size="sm"
+                  className="md:hidden"
+                >
+                  <Icon name={isTeacherCollapsed ? "ChevronDown" : "ChevronUp"} size={16} />
+                </Button>
               </div>
               <Button 
                 onClick={() => {
@@ -390,24 +667,31 @@ const Index = () => {
                 className="flex items-center gap-2"
               >
                 <Icon name="LogOut" size={16} />
-                Выйти
+                <span className="hidden sm:inline">Выйти</span>
               </Button>
             </div>
-            <div className="flex border-t">
-              {teacherSections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => setTeacherSection(section.id)}
-                  className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors ${
-                    teacherSection === section.id 
-                      ? 'border-green-600 text-green-600 bg-green-50' 
-                      : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon name={section.icon} size={16} />
-                  {section.name}
-                </button>
-              ))}
+            
+            {/* Навигационные разделы - адаптивные */}
+            <div className={`${isTeacherCollapsed ? 'hidden' : 'block'} md:block`}>
+              <div className="flex flex-col md:flex-row border-t">
+                {teacherSections.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => {
+                      setTeacherSection(section.id);
+                      setIsTeacherCollapsed(true); // Сворачиваем после выбора на мобильных
+                    }}
+                    className={`flex items-center gap-2 px-6 py-3 border-b-2 md:border-b-2 md:border-r transition-colors ${
+                      teacherSection === section.id 
+                        ? 'border-green-600 text-green-600 bg-green-50' 
+                        : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon name={section.icon} size={16} />
+                    {section.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
