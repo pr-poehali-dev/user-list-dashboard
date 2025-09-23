@@ -186,6 +186,7 @@ const Index = () => {
   const [teacherSection, setTeacherSection] = useState('users');
   const [isTeacherCollapsed, setIsTeacherCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -434,6 +435,74 @@ const Index = () => {
             </div>
           );
         case 'groups':
+          if (selectedGroup) {
+            // Интерфейс просмотра выбранной группы
+            const groupUsers = users.filter(user => user.group === selectedGroup);
+            
+            return (
+              <div className="bg-white rounded-lg border shadow-sm p-6">
+                {/* Хлебные крошки и управление группой */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setSelectedGroup(null)}
+                      className="text-gray-600 hover:text-gray-900"
+                    >
+                      <Icon name="ArrowLeft" size={16} />
+                      Назад к группам
+                    </Button>
+                    <Icon name="ChevronRight" size={16} className="text-gray-400" />
+                    <h2 className="text-xl font-semibold">{selectedGroup}</h2>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm">
+                      <Icon name="Edit" size={16} />
+                      Редактировать
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                      <Icon name="Trash2" size={16} />
+                      Удалить
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Таблица пользователей группы */}
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ФИО</TableHead>
+                        <TableHead>Специальность</TableHead>
+                        <TableHead>Дата рождения</TableHead>
+                        <TableHead>Дирекция</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {groupUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">
+                            {user.surname} {user.name} {user.patronymic}
+                          </TableCell>
+                          <TableCell>{user.specialty}</TableCell>
+                          <TableCell>{user.birthDate}</TableCell>
+                          <TableCell>{user.direction}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                
+                <div className="mt-4 text-sm text-gray-600">
+                  Пользователей в группе: {groupUsers.length}
+                </div>
+              </div>
+            );
+          }
+          
+          // Список всех групп
           return (
             <div className="bg-white rounded-lg border shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
@@ -449,14 +518,35 @@ const Index = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Название</TableHead>
+                      <TableHead>Пользователей</TableHead>
+                      <TableHead className="w-24">Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {groups.map((group, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{group}</TableCell>
-                      </TableRow>
-                    ))}
+                    {groups.map((group, index) => {
+                      const userCount = users.filter(user => user.group === group).length;
+                      return (
+                        <TableRow key={index} className="hover:bg-gray-50">
+                          <TableCell 
+                            className="font-medium cursor-pointer hover:text-blue-600"
+                            onClick={() => setSelectedGroup(group)}
+                          >
+                            {group}
+                          </TableCell>
+                          <TableCell className="text-gray-600">{userCount}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedGroup(group)}
+                              className="text-blue-600 hover:text-blue-700"
+                            >
+                              <Icon name="Eye" size={14} />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
