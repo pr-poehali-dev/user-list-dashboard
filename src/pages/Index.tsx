@@ -187,6 +187,9 @@ const Index = () => {
   const [isTeacherCollapsed, setIsTeacherCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
+  const [isDeleteGroupModalOpen, setIsDeleteGroupModalOpen] = useState(false);
+  const [editGroupName, setEditGroupName] = useState('');
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -458,11 +461,23 @@ const Index = () => {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setEditGroupName(selectedGroup || '');
+                        setIsEditGroupModalOpen(true);
+                      }}
+                    >
                       <Icon name="Edit" size={16} />
                       Редактировать
                     </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => setIsDeleteGroupModalOpen(true)}
+                    >
                       <Icon name="Trash2" size={16} />
                       Удалить
                     </Button>
@@ -1201,6 +1216,141 @@ const Index = () => {
                   >
                     <Icon name="ArrowLeft" size={16} className="mr-2" />
                     Назад
+                  </Button>
+                </div>
+              </div>
+              
+              <Dialog.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                <Icon name="X" size={16} />
+                <span className="sr-only">Закрыть</span>
+              </Dialog.Close>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+
+        {/* Модальное окно редактирования группы */}
+        <Dialog.Root open={isEditGroupModalOpen} onOpenChange={setIsEditGroupModalOpen}>
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+            <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg">
+              <Dialog.Title className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Icon name="Edit" size={20} className="text-white" />
+                </div>
+                Редактировать группу
+              </Dialog.Title>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-2">
+                    Название группы
+                  </label>
+                  <Input
+                    placeholder="Введите название группы"
+                    value={editGroupName}
+                    onChange={(e) => setEditGroupName(e.target.value)}
+                    className="w-full"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && editGroupName.trim()) {
+                        // Здесь будет логика сохранения
+                        alert(`Группа переименована на "${editGroupName}"`);
+                        setSelectedGroup(editGroupName);
+                        setIsEditGroupModalOpen(false);
+                      }
+                    }}
+                  />
+                </div>
+                
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                    disabled={!editGroupName.trim()}
+                    onClick={() => {
+                      // Здесь будет логика сохранения
+                      alert(`Группа переименована на "${editGroupName}"`);
+                      setSelectedGroup(editGroupName);
+                      setIsEditGroupModalOpen(false);
+                    }}
+                  >
+                    <Icon name="Check" size={16} className="mr-2" />
+                    Сохранить
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => setIsEditGroupModalOpen(false)}
+                  >
+                    <Icon name="X" size={16} className="mr-2" />
+                    Отменить
+                  </Button>
+                </div>
+              </div>
+              
+              <Dialog.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                <Icon name="X" size={16} />
+                <span className="sr-only">Закрыть</span>
+              </Dialog.Close>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+
+        {/* Модальное окно удаления группы */}
+        <Dialog.Root open={isDeleteGroupModalOpen} onOpenChange={setIsDeleteGroupModalOpen}>
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+            <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg">
+              <Dialog.Title className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+                  <Icon name="Trash2" size={20} className="text-white" />
+                </div>
+                Удаление группы
+              </Dialog.Title>
+              
+              <div className="space-y-4">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <Icon name="AlertTriangle" size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-red-800 mb-1">
+                        Вы действительно хотите удалить группу?
+                      </h4>
+                      <p className="text-sm text-red-700">
+                        Все пользователи будут перемещены в "Без группы"
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {selectedGroup && (
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Удаляемая группа:</p>
+                    <p className="font-semibold text-gray-900">{selectedGroup}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Пользователей: {users.filter(user => user.group === selectedGroup).length}
+                    </p>
+                  </div>
+                )}
+                
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button 
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => {
+                      // Здесь будет логика удаления
+                      alert(`Группа "${selectedGroup}" удалена. Пользователи перемещены в "Без группы"`);
+                      setSelectedGroup(null);
+                      setIsDeleteGroupModalOpen(false);
+                    }}
+                  >
+                    <Icon name="Trash2" size={16} className="mr-2" />
+                    Удалить группу
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => setIsDeleteGroupModalOpen(false)}
+                  >
+                    <Icon name="X" size={16} className="mr-2" />
+                    Отменить
                   </Button>
                 </div>
               </div>
