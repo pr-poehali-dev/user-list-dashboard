@@ -190,6 +190,15 @@ const Index = () => {
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
   const [isDeleteGroupModalOpen, setIsDeleteGroupModalOpen] = useState(false);
   const [editGroupName, setEditGroupName] = useState('');
+  const [filters, setFilters] = useState<{
+    group: string;
+    direction: string;
+    specialty: string;
+  }>({
+    group: '',
+    direction: '',
+    specialty: ''
+  });
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -250,6 +259,16 @@ const Index = () => {
       user.patronymic.toLowerCase().includes(search.toLowerCase())
     );
 
+    if (filters.group) {
+      filtered = filtered.filter(user => user.group === filters.group);
+    }
+    if (filters.direction) {
+      filtered = filtered.filter(user => user.direction === filters.direction);
+    }
+    if (filters.specialty) {
+      filtered = filtered.filter(user => user.specialty === filters.specialty);
+    }
+
     if (sortConfig) {
       filtered.sort((a, b) => {
         const aValue = a[sortConfig.key as keyof typeof a];
@@ -267,7 +286,7 @@ const Index = () => {
     }
 
     return filtered;
-  }, [search, sortConfig]);
+  }, [search, sortConfig, filters]);
 
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -825,7 +844,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
           <div className="relative max-w-md">
             <Icon name="Search" size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input 
@@ -855,6 +874,127 @@ const Index = () => {
               {isAdmin ? 'Режим администратора' : 'Администратор'}
             </Button>
           </div>
+        </div>
+
+        {/* Панель фильтров */}
+        <div className="bg-white rounded-lg border shadow-sm p-4 mb-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Icon name="Filter" size={18} className="text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">Фильтры:</span>
+            </div>
+            
+            <div className="flex-1 flex items-center gap-3 flex-wrap">
+              <Select 
+                value={filters.group} 
+                onValueChange={(value) => {
+                  setFilters(prev => ({ ...prev, group: value }));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Все группы" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Все группы</SelectItem>
+                  {groups.map((group) => (
+                    <SelectItem key={group} value={group}>{group}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select 
+                value={filters.direction} 
+                onValueChange={(value) => {
+                  setFilters(prev => ({ ...prev, direction: value }));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-56">
+                  <SelectValue placeholder="Все дирекции" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Все дирекции</SelectItem>
+                  {Array.from(new Set(users.map(u => u.direction))).sort().map((dir) => (
+                    <SelectItem key={dir} value={dir}>{dir}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select 
+                value={filters.specialty} 
+                onValueChange={(value) => {
+                  setFilters(prev => ({ ...prev, specialty: value }));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-56">
+                  <SelectValue placeholder="Все специальности" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Все специальности</SelectItem>
+                  {Array.from(new Set(users.map(u => u.specialty))).sort().map((spec) => (
+                    <SelectItem key={spec} value={spec}>{spec}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(filters.group || filters.direction || filters.specialty) && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setFilters({ group: '', direction: '', specialty: '' });
+                  setCurrentPage(1);
+                }}
+                className="flex items-center gap-2"
+              >
+                <Icon name="X" size={14} />
+                Сбросить
+              </Button>
+            )}
+          </div>
+          
+          {(filters.group || filters.direction || filters.specialty) && (
+            <div className="mt-3 pt-3 border-t flex items-center gap-2 text-sm text-gray-600">
+              <Icon name="Info" size={14} />
+              <span>Активные фильтры:</span>
+              {filters.group && (
+                <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  Группа: {filters.group}
+                  <Icon 
+                    name="X" 
+                    size={12} 
+                    className="cursor-pointer hover:text-blue-900"
+                    onClick={() => setFilters(prev => ({ ...prev, group: '' }))}
+                  />
+                </span>
+              )}
+              {filters.direction && (
+                <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded">
+                  Дирекция: {filters.direction}
+                  <Icon 
+                    name="X" 
+                    size={12} 
+                    className="cursor-pointer hover:text-green-900"
+                    onClick={() => setFilters(prev => ({ ...prev, direction: '' }))}
+                  />
+                </span>
+              )}
+              {filters.specialty && (
+                <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                  Специальность: {filters.specialty}
+                  <Icon 
+                    name="X" 
+                    size={12} 
+                    className="cursor-pointer hover:text-purple-900"
+                    onClick={() => setFilters(prev => ({ ...prev, specialty: '' }))}
+                  />
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg border shadow-sm">
