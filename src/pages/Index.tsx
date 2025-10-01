@@ -177,7 +177,7 @@ const Index = () => {
   const [pageSize, setPageSize] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingText, setLoadingText] = useState('Подключение к серверу...');
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  const [sortConfigs, setSortConfigs] = useState<Array<{ key: string; direction: 'asc' | 'desc' }>>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
@@ -269,24 +269,32 @@ const Index = () => {
       filtered = filtered.filter(user => user.specialty === filters.specialty);
     }
 
-    if (sortConfig) {
+    if (sortConfigs.length > 0) {
       filtered.sort((a, b) => {
-        const aValue = a[sortConfig.key as keyof typeof a];
-        const bValue = b[sortConfig.key as keyof typeof b];
-        
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          const comparison = aValue.localeCompare(bValue, 'ru');
-          return sortConfig.direction === 'asc' ? comparison : -comparison;
+        for (const config of sortConfigs) {
+          const aValue = a[config.key as keyof typeof a];
+          const bValue = b[config.key as keyof typeof b];
+          
+          let comparison = 0;
+          
+          if (typeof aValue === 'string' && typeof bValue === 'string') {
+            comparison = aValue.localeCompare(bValue, 'ru');
+          } else if (aValue < bValue) {
+            comparison = -1;
+          } else if (aValue > bValue) {
+            comparison = 1;
+          }
+          
+          if (comparison !== 0) {
+            return config.direction === 'asc' ? comparison : -comparison;
+          }
         }
-        
-        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
 
     return filtered;
-  }, [search, sortConfig, filters]);
+  }, [search, sortConfigs, filters]);
 
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -305,22 +313,52 @@ const Index = () => {
     setCurrentPage(1);
   };
 
-  const handleSort = (key: string) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
+  const handleSort = (key: string, shiftKey: boolean = false) => {
+    setSortConfigs(prev => {
+      if (!shiftKey) {
+        const existing = prev.find(s => s.key === key);
+        if (existing) {
+          if (existing.direction === 'asc') {
+            return [{ key, direction: 'desc' }];
+          } else {
+            return [];
+          }
+        }
+        return [{ key, direction: 'asc' }];
+      } else {
+        const existing = prev.find(s => s.key === key);
+        if (existing) {
+          if (existing.direction === 'asc') {
+            return prev.map(s => s.key === key ? { ...s, direction: 'desc' as const } : s);
+          } else {
+            return prev.filter(s => s.key !== key);
+          }
+        }
+        return [...prev, { key, direction: 'asc' as const }];
+      }
+    });
     setCurrentPage(1);
   };
 
   const getSortIcon = (column: string) => {
-    if (!sortConfig || sortConfig.key !== column) {
+    const sortIndex = sortConfigs.findIndex(s => s.key === column);
+    if (sortIndex === -1) {
       return <Icon name="ArrowUpDown" size={14} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />;
     }
-    return sortConfig.direction === 'asc' 
-      ? <Icon name="ArrowUp" size={14} className="text-blue-600" />
-      : <Icon name="ArrowDown" size={14} className="text-blue-600" />;
+    const config = sortConfigs[sortIndex];
+    const priority = sortConfigs.length > 1 ? sortIndex + 1 : null;
+    return (
+      <div className="flex items-center gap-1">
+        {config.direction === 'asc' 
+          ? <Icon name="ArrowUp" size={14} className="text-blue-600" />
+          : <Icon name="ArrowDown" size={14} className="text-blue-600" />}
+        {priority && (
+          <span className="text-xs font-semibold text-blue-600 bg-blue-100 rounded-full w-4 h-4 flex items-center justify-center">
+            {priority}
+          </span>
+        )}
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -639,57 +677,47 @@ const Index = () => {
                   <TableRow>
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50 select-none"
-                      onClick={() => handleSort('id')}
+                      onClick={(e) => handleSort('id', e.shiftKey)}
                     >
                       <div className="flex items-center justify-between">
                         Табельный номер
-                        {sortConfig?.key === 'id' && (
-                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
-                        )}
+                        {getSortIcon('id')}
                       </div>
                     </TableHead>
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50 select-none"
-                      onClick={() => handleSort('surname')}
+                      onClick={(e) => handleSort('surname', e.shiftKey)}
                     >
                       <div className="flex items-center justify-between">
                         ФИО
-                        {sortConfig?.key === 'surname' && (
-                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
-                        )}
+                        {getSortIcon('surname')}
                       </div>
                     </TableHead>
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50 select-none"
-                      onClick={() => handleSort('group')}
+                      onClick={(e) => handleSort('group', e.shiftKey)}
                     >
                       <div className="flex items-center justify-between">
                         Группа
-                        {sortConfig?.key === 'group' && (
-                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
-                        )}
+                        {getSortIcon('group')}
                       </div>
                     </TableHead>
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50 select-none"
-                      onClick={() => handleSort('direction')}
+                      onClick={(e) => handleSort('direction', e.shiftKey)}
                     >
                       <div className="flex items-center justify-between">
                         Направление
-                        {sortConfig?.key === 'direction' && (
-                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
-                        )}
+                        {getSortIcon('direction')}
                       </div>
                     </TableHead>
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50 select-none"
-                      onClick={() => handleSort('specialty')}
+                      onClick={(e) => handleSort('specialty', e.shiftKey)}
                     >
                       <div className="flex items-center justify-between">
                         Специальность
-                        {sortConfig?.key === 'specialty' && (
-                          <Icon name={sortConfig.direction === 'asc' ? 'ChevronUp' : 'ChevronDown'} size={16} />
-                        )}
+                        {getSortIcon('specialty')}
                       </div>
                     </TableHead>
                   </TableRow>
@@ -876,6 +904,16 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Подсказка о множественной сортировке */}
+        {sortConfigs.length === 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 flex items-center gap-2 text-sm text-blue-800">
+            <Icon name="Info" size={16} />
+            <span>
+              <strong>Совет:</strong> Кликните по заголовку для сортировки. Удерживайте <kbd className="px-1.5 py-0.5 bg-white border rounded text-xs font-mono">Shift</kbd> для сортировки по нескольким столбцам.
+            </span>
+          </div>
+        )}
+
         {/* Панель фильтров */}
         <div className="bg-white rounded-lg border shadow-sm p-4 mb-4">
           <div className="flex items-center gap-4 flex-wrap">
@@ -1003,7 +1041,7 @@ const Index = () => {
               <TableRow className="bg-gray-50">
                 <TableHead 
                   className="w-20 font-semibold cursor-pointer group hover:bg-gray-100 transition-colors select-none"
-                  onClick={() => handleSort('id')}
+                  onClick={(e) => handleSort('id', e.shiftKey)}
                 >
                   <div className="flex items-center gap-2">
                     ID
@@ -1012,7 +1050,7 @@ const Index = () => {
                 </TableHead>
                 <TableHead 
                   className="font-semibold cursor-pointer group hover:bg-gray-100 transition-colors select-none"
-                  onClick={() => handleSort('name')}
+                  onClick={(e) => handleSort('name', e.shiftKey)}
                 >
                   <div className="flex items-center gap-2">
                     Имя
@@ -1021,7 +1059,7 @@ const Index = () => {
                 </TableHead>
                 <TableHead 
                   className="font-semibold cursor-pointer group hover:bg-gray-100 transition-colors select-none"
-                  onClick={() => handleSort('surname')}
+                  onClick={(e) => handleSort('surname', e.shiftKey)}
                 >
                   <div className="flex items-center gap-2">
                     Фамилия
@@ -1030,7 +1068,7 @@ const Index = () => {
                 </TableHead>
                 <TableHead 
                   className="font-semibold cursor-pointer group hover:bg-gray-100 transition-colors select-none"
-                  onClick={() => handleSort('patronymic')}
+                  onClick={(e) => handleSort('patronymic', e.shiftKey)}
                 >
                   <div className="flex items-center gap-2">
                     Отчество
@@ -1080,10 +1118,12 @@ const Index = () => {
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-600">
               Всего: {users.length} | Найдено: {filteredAndSortedUsers.length}
-              {sortConfig && (
+              {sortConfigs.length > 0 && (
                 <span className="ml-2 text-blue-600">
-                  • Сортировка: {sortConfig.key === 'id' ? 'ID' : sortConfig.key === 'name' ? 'Имя' : sortConfig.key === 'surname' ? 'Фамилия' : 'Отчество'} 
-                  ({sortConfig.direction === 'asc' ? '↑' : '↓'})
+                  • Сортировка: {sortConfigs.map((s, i) => {
+                    const label = s.key === 'id' ? 'ID' : s.key === 'name' ? 'Имя' : s.key === 'surname' ? 'Фамилия' : s.key;
+                    return `${i > 0 ? ', ' : ''}${label} ${s.direction === 'asc' ? '↑' : '↓'}`;
+                  }).join('')}
                 </span>
               )}
             </div>
