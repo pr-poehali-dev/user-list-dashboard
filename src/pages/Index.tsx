@@ -886,9 +886,9 @@ const Index = () => {
             
             <div className="flex-1 flex items-center gap-3 flex-wrap">
               <Select 
-                value={filters.group} 
+                value={filters.group || 'all'} 
                 onValueChange={(value) => {
-                  setFilters(prev => ({ ...prev, group: value }));
+                  setFilters(prev => ({ ...prev, group: value === 'all' ? '' : value }));
                   setCurrentPage(1);
                 }}
               >
@@ -896,7 +896,7 @@ const Index = () => {
                   <SelectValue placeholder="Все группы" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все группы</SelectItem>
+                  <SelectItem value="all">Все группы</SelectItem>
                   {groups.map((group) => (
                     <SelectItem key={group} value={group}>{group}</SelectItem>
                   ))}
@@ -904,9 +904,9 @@ const Index = () => {
               </Select>
 
               <Select 
-                value={filters.direction} 
+                value={filters.direction || 'all'} 
                 onValueChange={(value) => {
-                  setFilters(prev => ({ ...prev, direction: value }));
+                  setFilters(prev => ({ ...prev, direction: value === 'all' ? '' : value }));
                   setCurrentPage(1);
                 }}
               >
@@ -914,7 +914,7 @@ const Index = () => {
                   <SelectValue placeholder="Все дирекции" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все дирекции</SelectItem>
+                  <SelectItem value="all">Все дирекции</SelectItem>
                   {Array.from(new Set(users.map(u => u.direction))).sort().map((dir) => (
                     <SelectItem key={dir} value={dir}>{dir}</SelectItem>
                   ))}
@@ -922,9 +922,9 @@ const Index = () => {
               </Select>
 
               <Select 
-                value={filters.specialty} 
+                value={filters.specialty || 'all'} 
                 onValueChange={(value) => {
-                  setFilters(prev => ({ ...prev, specialty: value }));
+                  setFilters(prev => ({ ...prev, specialty: value === 'all' ? '' : value }));
                   setCurrentPage(1);
                 }}
               >
@@ -932,7 +932,7 @@ const Index = () => {
                   <SelectValue placeholder="Все специальности" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все специальности</SelectItem>
+                  <SelectItem value="all">Все специальности</SelectItem>
                   {Array.from(new Set(users.map(u => u.specialty))).sort().map((spec) => (
                     <SelectItem key={spec} value={spec}>{spec}</SelectItem>
                   ))}
