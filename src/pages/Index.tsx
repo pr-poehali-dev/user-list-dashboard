@@ -199,6 +199,10 @@ const Index = () => {
     direction: '',
     specialty: ''
   });
+  const [hideSortHint, setHideSortHint] = useState(() => {
+    const saved = localStorage.getItem('hideSortHint');
+    return saved === 'true';
+  });
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -905,12 +909,25 @@ const Index = () => {
         </div>
 
         {/* Подсказка о множественной сортировке */}
-        {sortConfigs.length === 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 flex items-center gap-2 text-sm text-blue-800">
-            <Icon name="Info" size={16} />
-            <span>
-              <strong>Совет:</strong> Кликните по заголовку для сортировки. Удерживайте <kbd className="px-1.5 py-0.5 bg-white border rounded text-xs font-mono">Shift</kbd> для сортировки по нескольким столбцам.
-            </span>
+        {sortConfigs.length === 0 && !hideSortHint && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 flex items-center justify-between gap-3 text-sm text-blue-800">
+            <div className="flex items-center gap-2">
+              <Icon name="Info" size={16} />
+              <span>
+                <strong>Совет:</strong> Кликните по заголовку для сортировки. Удерживайте <kbd className="px-1.5 py-0.5 bg-white border rounded text-xs font-mono">Shift</kbd> для сортировки по нескольким столбцам.
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setHideSortHint(true);
+                localStorage.setItem('hideSortHint', 'true');
+              }}
+              className="text-blue-700 hover:text-blue-900 hover:bg-blue-100 whitespace-nowrap"
+            >
+              Больше не показывать
+            </Button>
           </div>
         )}
 
