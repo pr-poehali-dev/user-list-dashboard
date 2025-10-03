@@ -199,10 +199,7 @@ const Index = () => {
     direction: '',
     specialty: ''
   });
-  const [hideSortHint, setHideSortHint] = useState(() => {
-    const saved = localStorage.getItem('hideSortHint');
-    return saved === 'true';
-  });
+  const [hideSortHint, setHideSortHint] = useState(false);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -920,10 +917,7 @@ const Index = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                setHideSortHint(true);
-                localStorage.setItem('hideSortHint', 'true');
-              }}
+              onClick={() => setHideSortHint(true)}
               className="text-blue-700 hover:text-blue-900 hover:bg-blue-100 whitespace-nowrap"
             >
               Больше не показывать
