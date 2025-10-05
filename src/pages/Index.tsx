@@ -183,6 +183,7 @@ const Index = () => {
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
   const [teacherPassword, setTeacherPassword] = useState('');
   const [isTeacherMode, setIsTeacherMode] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
   const [teacherSection, setTeacherSection] = useState('users');
   const [isTeacherCollapsed, setIsTeacherCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
@@ -1373,25 +1374,44 @@ const Index = () => {
                     type="password"
                     placeholder="Введите пароль"
                     value={teacherPassword}
-                    onChange={(e) => setTeacherPassword(e.target.value)}
+                    onChange={(e) => {
+                      setTeacherPassword(e.target.value);
+                      setPasswordError('');
+                    }}
                     className="w-full"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        setIsTeacherMode(true);
-                        setIsTeacherModalOpen(false);
-                        setTeacherPassword('');
+                        if (teacherPassword === 'password') {
+                          setIsTeacherMode(true);
+                          setIsTeacherModalOpen(false);
+                          setTeacherPassword('');
+                          setPasswordError('');
+                        } else {
+                          setPasswordError('Неверный пароль');
+                        }
                       }
                     }}
                   />
+                  {passwordError && (
+                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                      <Icon name="AlertCircle" size={14} />
+                      {passwordError}
+                    </p>
+                  )}
                 </div>
                 
                 <div className="flex gap-3 pt-4 border-t">
                   <Button 
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                     onClick={() => {
-                      setIsTeacherMode(true);
-                      setIsTeacherModalOpen(false);
-                      setTeacherPassword('');
+                      if (teacherPassword === 'password') {
+                        setIsTeacherMode(true);
+                        setIsTeacherModalOpen(false);
+                        setTeacherPassword('');
+                        setPasswordError('');
+                      } else {
+                        setPasswordError('Неверный пароль');
+                      }
                     }}
                   >
                     <Icon name="Check" size={16} className="mr-2" />
@@ -1403,6 +1423,7 @@ const Index = () => {
                     onClick={() => {
                       setIsTeacherModalOpen(false);
                       setTeacherPassword('');
+                      setPasswordError('');
                     }}
                   >
                     <Icon name="ArrowLeft" size={16} className="mr-2" />
