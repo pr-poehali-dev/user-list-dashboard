@@ -184,6 +184,7 @@ const Index = () => {
   const [teacherPassword, setTeacherPassword] = useState('');
   const [isTeacherMode, setIsTeacherMode] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [teacherSection, setTeacherSection] = useState('users');
   const [isTeacherCollapsed, setIsTeacherCollapsed] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
@@ -1370,28 +1371,38 @@ const Index = () => {
                   <label className="text-sm font-medium text-gray-600 block mb-2">
                     Пароль доступа
                   </label>
-                  <Input
-                    type="password"
-                    placeholder="Введите пароль"
-                    value={teacherPassword}
-                    onChange={(e) => {
-                      setTeacherPassword(e.target.value);
-                      setPasswordError('');
-                    }}
-                    className="w-full"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        if (teacherPassword === 'password') {
-                          setIsTeacherMode(true);
-                          setIsTeacherModalOpen(false);
-                          setTeacherPassword('');
-                          setPasswordError('');
-                        } else {
-                          setPasswordError('Неверный пароль');
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Введите пароль"
+                      value={teacherPassword}
+                      onChange={(e) => {
+                        setTeacherPassword(e.target.value);
+                        setPasswordError('');
+                      }}
+                      className="w-full pr-10"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          if (teacherPassword === 'password') {
+                            setIsTeacherMode(true);
+                            setIsTeacherModalOpen(false);
+                            setTeacherPassword('');
+                            setPasswordError('');
+                            setShowPassword(false);
+                          } else {
+                            setPasswordError('Неверный пароль');
+                          }
                         }
-                      }
-                    }}
-                  />
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors p-1"
+                    >
+                      <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} />
+                    </button>
+                  </div>
                   {passwordError && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
                       <Icon name="AlertCircle" size={14} />
@@ -1409,6 +1420,7 @@ const Index = () => {
                         setIsTeacherModalOpen(false);
                         setTeacherPassword('');
                         setPasswordError('');
+                        setShowPassword(false);
                       } else {
                         setPasswordError('Неверный пароль');
                       }
@@ -1424,6 +1436,7 @@ const Index = () => {
                       setIsTeacherModalOpen(false);
                       setTeacherPassword('');
                       setPasswordError('');
+                      setShowPassword(false);
                     }}
                   >
                     <Icon name="ArrowLeft" size={16} className="mr-2" />
