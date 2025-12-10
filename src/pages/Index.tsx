@@ -693,15 +693,29 @@ const Index = () => {
     }
   }, [questionSearch]);
 
+  const highlightText = (text: string, search: string) => {
+    if (!search.trim()) return text;
+    
+    const parts = text.split(new RegExp(`(${search})`, 'gi'));
+    return parts.map((part, index) => 
+      part.toLowerCase() === search.toLowerCase() ? (
+        <mark key={index} className="bg-yellow-200 font-semibold">{part}</mark>
+      ) : (
+        part
+      )
+    );
+  };
+
   const renderTreeItem = (item: any, depth = 0) => {
     const isExpanded = expandedFolders.includes(item.id);
+    const hasMatch = questionSearch.trim() && item.name.toLowerCase().includes(questionSearch.toLowerCase());
     
     return (
       <div key={item.id} style={{ marginLeft: `${depth * 20}px` }}>
         <div 
           className={`flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer ${
             item.type === 'question' ? 'text-gray-600' : 'font-medium'
-          }`}
+          } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}`}
           onClick={() => item.type === 'folder' && toggleFolder(item.id)}
         >
           {item.type === 'folder' ? (
@@ -712,7 +726,7 @@ const Index = () => {
                 className="text-gray-400"
               />
               <Icon name="Folder" size={16} className="text-yellow-500" />
-              <span>{item.name}</span>
+              <span>{highlightText(item.name, questionSearch)}</span>
               {item.children && (
                 <span className="text-xs text-gray-400 ml-auto">
                   ({item.children.length})
@@ -723,7 +737,7 @@ const Index = () => {
             <>
               <div className="w-4" /> {/* Spacer for alignment */}
               <Icon name="FileText" size={16} className="text-blue-500" />
-              <span>{item.name}</span>
+              <span>{highlightText(item.name, questionSearch)}</span>
             </>
           )}
         </div>
