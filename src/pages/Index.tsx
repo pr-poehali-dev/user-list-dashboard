@@ -713,8 +713,6 @@ const Index = () => {
   };
 
   const handleContextMenu = (e: React.MouseEvent, item: any) => {
-    if (item.type !== 'folder') return;
-    
     e.preventDefault();
     e.stopPropagation();
     
@@ -735,12 +733,17 @@ const Index = () => {
     closeContextMenu();
   };
 
-  const handleRenameFolder = () => {
+  const handleOpenQuestion = () => {
+    console.log('Открыть вопрос:', contextMenu.item);
+    closeContextMenu();
+  };
+
+  const handleRenameItem = () => {
     console.log('Переименовать:', contextMenu.item);
     closeContextMenu();
   };
 
-  const handleDeleteFolder = () => {
+  const handleDeleteItem = () => {
     console.log('Удалить:', contextMenu.item);
     closeContextMenu();
   };
@@ -1035,27 +1038,55 @@ const Index = () => {
                     }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <button
-                      className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
-                      onClick={handleAddFolder}
-                    >
-                      <Icon name="FolderPlus" size={16} className="text-blue-500" />
-                      Добавить каталог
-                    </button>
-                    <button
-                      className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
-                      onClick={handleRenameFolder}
-                    >
-                      <Icon name="Edit" size={16} className="text-orange-500" />
-                      Переименовать
-                    </button>
-                    <button
-                      className="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-sm text-red-600"
-                      onClick={handleDeleteFolder}
-                    >
-                      <Icon name="Trash2" size={16} />
-                      Удалить
-                    </button>
+                    {contextMenu.item?.type === 'folder' ? (
+                      <>
+                        <button
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                          onClick={handleAddFolder}
+                        >
+                          <Icon name="FolderPlus" size={16} className="text-blue-500" />
+                          Добавить каталог
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                          onClick={handleRenameItem}
+                        >
+                          <Icon name="Edit" size={16} className="text-orange-500" />
+                          Переименовать
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-sm text-red-600"
+                          onClick={handleDeleteItem}
+                        >
+                          <Icon name="Trash2" size={16} />
+                          Удалить
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                          onClick={handleOpenQuestion}
+                        >
+                          <Icon name="Eye" size={16} className="text-blue-500" />
+                          Открыть
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                          onClick={handleRenameItem}
+                        >
+                          <Icon name="Edit" size={16} className="text-orange-500" />
+                          Переименовать
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-sm text-red-600"
+                          onClick={handleDeleteItem}
+                        >
+                          <Icon name="Trash2" size={16} />
+                          Удалить
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
