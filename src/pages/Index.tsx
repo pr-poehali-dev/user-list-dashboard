@@ -616,6 +616,12 @@ const Index = () => {
     specialty: ''
   });
   const [hideSortHint, setHideSortHint] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    show: boolean;
+    x: number;
+    y: number;
+    item: any;
+  }>({ show: false, x: 0, y: 0, item: null });
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -706,6 +712,45 @@ const Index = () => {
     );
   };
 
+  const handleContextMenu = (e: React.MouseEvent, item: any) => {
+    if (item.type !== 'folder') return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setContextMenu({
+      show: true,
+      x: e.clientX,
+      y: e.clientY,
+      item
+    });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu({ show: false, x: 0, y: 0, item: null });
+  };
+
+  const handleAddFolder = () => {
+    console.log('Добавить каталог в:', contextMenu.item);
+    closeContextMenu();
+  };
+
+  const handleRenameFolder = () => {
+    console.log('Переименовать:', contextMenu.item);
+    closeContextMenu();
+  };
+
+  const handleDeleteFolder = () => {
+    console.log('Удалить:', contextMenu.item);
+    closeContextMenu();
+  };
+
+  useEffect(() => {
+    const handleClick = () => closeContextMenu();
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
   const renderTreeItem = (item: any, depth = 0) => {
     const isExpanded = expandedFolders.includes(item.id);
     const hasMatch = questionSearch.trim() && item.name.toLowerCase().includes(questionSearch.toLowerCase());
@@ -717,6 +762,7 @@ const Index = () => {
             item.type === 'question' ? 'text-gray-600' : 'font-medium'
           } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}`}
           onClick={() => item.type === 'folder' && toggleFolder(item.id)}
+          onContextMenu={(e) => handleContextMenu(e, item)}
         >
           {item.type === 'folder' ? (
             <>
@@ -971,12 +1017,45 @@ const Index = () => {
                 />
               </div>
               
-              <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+              <div className="border rounded-lg p-4 max-h-96 overflow-y-auto relative">
                 {filteredQuestionTree.length > 0 ? (
                   filteredQuestionTree.map(item => renderTreeItem(item))
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     Ничего не найдено
+                  </div>
+                )}
+                
+                {contextMenu.show && (
+                  <div 
+                    className="fixed bg-white border shadow-lg rounded-lg py-1 z-50 min-w-[180px]"
+                    style={{ 
+                      left: `${contextMenu.x}px`, 
+                      top: `${contextMenu.y}px` 
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                      onClick={handleAddFolder}
+                    >
+                      <Icon name="FolderPlus" size={16} className="text-blue-500" />
+                      Добавить каталог
+                    </button>
+                    <button
+                      className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-sm"
+                      onClick={handleRenameFolder}
+                    >
+                      <Icon name="Edit" size={16} className="text-orange-500" />
+                      Переименовать
+                    </button>
+                    <button
+                      className="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-sm text-red-600"
+                      onClick={handleDeleteFolder}
+                    >
+                      <Icon name="Trash2" size={16} />
+                      Удалить
+                    </button>
                   </div>
                 )}
               </div>
