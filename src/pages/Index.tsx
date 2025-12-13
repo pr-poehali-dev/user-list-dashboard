@@ -622,6 +622,9 @@ const Index = () => {
     y: number;
     item: any;
   }>({ show: false, x: 0, y: 0, item: null });
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [treeData, setTreeData] = useState(questionTree);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -689,15 +692,15 @@ const Index = () => {
   };
 
   const filteredQuestionTree = useMemo(() => {
-    return filterTreeBySearch(questionTree, questionSearch);
-  }, [questionSearch]);
+    return filterTreeBySearch(treeData, questionSearch);
+  }, [questionSearch, treeData]);
 
   useEffect(() => {
     if (questionSearch.trim()) {
-      const { matchedIds } = searchInTree(questionTree, questionSearch);
+      const { matchedIds } = searchInTree(treeData, questionSearch);
       setExpandedFolders(matchedIds);
     }
-  }, [questionSearch]);
+  }, [questionSearch, treeData]);
 
   const highlightText = (text: string, search: string) => {
     if (!search.trim()) return text;
@@ -729,7 +732,36 @@ const Index = () => {
   };
 
   const handleAddFolder = () => {
-    console.log('Добавить каталог в:', contextMenu.item);
+    const parentItem = contextMenu.item;
+    const newFolder = {
+      id: `folder-${Date.now()}`,
+      name: 'Новый каталог',
+      type: 'folder',
+      children: []
+    };
+
+    const addFolderToTree = (items: any[]): any[] => {
+      return items.map(item => {
+        if (item.id === parentItem.id) {
+          return {
+            ...item,
+            children: [...(item.children || []), newFolder]
+          };
+        }
+        if (item.children) {
+          return {
+            ...item,
+            children: addFolderToTree(item.children)
+          };
+        }
+        return item;
+      });
+    };
+
+    setTreeData(addFolderToTree(treeData));
+    setExpandedFolders(prev => [...prev, parentItem.id]);
+    setEditingItem(newFolder.id);
+    setEditingName('Новый каталог');
     closeContextMenu();
   };
 
@@ -739,8 +771,40 @@ const Index = () => {
   };
 
   const handleRenameItem = () => {
-    console.log('Переименовать:', contextMenu.item);
+    setEditingItem(contextMenu.item.id);
+    setEditingName(contextMenu.item.name);
     closeContextMenu();
+  };
+
+  const saveRename = () => {
+    if (!editingName.trim()) {
+      setEditingItem(null);
+      return;
+    }
+
+    const renameInTree = (items: any[]): any[] => {
+      return items.map(item => {
+        if (item.id === editingItem) {
+          return { ...item, name: editingName.trim() };
+        }
+        if (item.children) {
+          return {
+            ...item,
+            children: renameInTree(item.children)
+          };
+        }
+        return item;
+      });
+    };
+
+    setTreeData(renameInTree(treeData));
+    setEditingItem(null);
+    setEditingName('');
+  };
+
+  const cancelRename = () => {
+    setEditingItem(null);
+    setEditingName('');
   };
 
   const handleDeleteItem = () => {
@@ -757,6 +821,7 @@ const Index = () => {
   const renderTreeItem = (item: any, depth = 0) => {
     const isExpanded = expandedFolders.includes(item.id);
     const hasMatch = questionSearch.trim() && item.name.toLowerCase().includes(questionSearch.toLowerCase());
+    const isEditing = editingItem === item.id;
     
     return (
       <div key={item.id} style={{ marginLeft: `${depth * 20}px` }}>
@@ -764,7 +829,7 @@ const Index = () => {
           className={`flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer ${
             item.type === 'question' ? 'text-gray-600' : 'font-medium'
           } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}`}
-          onClick={() => item.type === 'folder' && toggleFolder(item.id)}
+          onClick={() => !isEditing && item.type === 'folder' && toggleFolder(item.id)}
           onContextMenu={(e) => handleContextMenu(e, item)}
         >
           {item.type === 'folder' ? (
@@ -775,8 +840,23 @@ const Index = () => {
                 className="text-gray-400"
               />
               <Icon name="Folder" size={16} className="text-yellow-500" />
-              <span>{highlightText(item.name, questionSearch)}</span>
-              {item.children && (
+              {isEditing ? (
+                <Input
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveRename();
+                    if (e.key === 'Escape') cancelRename();
+                  }}
+                  onBlur={saveRename}
+                  autoFocus
+                  className="h-6 py-0 px-2 text-sm flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span>{highlightText(item.name, questionSearch)}</span>
+              )}
+              {!isEditing && item.children && (
                 <span className="text-xs text-gray-400 ml-auto">
                   ({item.children.length})
                 </span>
@@ -786,7 +866,22 @@ const Index = () => {
             <>
               <div className="w-4" /> {/* Spacer for alignment */}
               <Icon name="FileText" size={16} className="text-blue-500" />
-              <span>{highlightText(item.name, questionSearch)}</span>
+              {isEditing ? (
+                <Input
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveRename();
+                    if (e.key === 'Escape') cancelRename();
+                  }}
+                  onBlur={saveRename}
+                  autoFocus
+                  className="h-6 py-0 px-2 text-sm flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span>{highlightText(item.name, questionSearch)}</span>
+              )}
             </>
           )}
         </div>
@@ -988,7 +1083,7 @@ const Index = () => {
                 <h2 className="text-xl font-semibold">Банк вопросов</h2>
                 <div className="flex items-center gap-2">
                   <Button 
-                    onClick={() => setExpandedFolders(questionTree.map(item => item.id))}
+                    onClick={() => setExpandedFolders(treeData.map(item => item.id))}
                     variant="outline" 
                     size="sm"
                   >
@@ -1095,11 +1190,11 @@ const Index = () => {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     <Icon name="Folder" size={16} className="text-yellow-500" />
-                    <span>Папки: {questionTree.length}</span>
+                    <span>Папки: {treeData.length}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Icon name="FileText" size={16} className="text-blue-500" />
-                    <span>Вопросов: {questionTree.reduce((acc, folder) => acc + (folder.children?.length || 0), 0)}</span>
+                    <span>Вопросов: {treeData.reduce((acc, folder) => acc + (folder.children?.length || 0), 0)}</span>
                   </div>
                 </div>
               </div>
