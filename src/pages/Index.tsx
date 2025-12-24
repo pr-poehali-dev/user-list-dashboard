@@ -625,6 +625,13 @@ const Index = () => {
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [treeData, setTreeData] = useState(questionTree);
+  const [draggedItem, setDraggedItem] = useState<any>(null);
+  const [dragOverItem, setDragOverItem] = useState<string | null>(null);
+  const [confirmMove, setConfirmMove] = useState<{
+    show: boolean;
+    item: any;
+    targetFolder: any;
+  } | null>(null);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -818,17 +825,120 @@ const Index = () => {
     return () => window.removeEventListener('click', handleClick);
   }, []);
 
+  const handleDragStart = (e: React.DragEvent, item: any) => {
+    e.stopPropagation();
+    setDraggedItem(item);
+  };
+
+  const handleDragOver = (e: React.DragEvent, item: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (item.type === 'folder' && draggedItem && item.id !== draggedItem.id) {
+      setDragOverItem(item.id);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setDragOverItem(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetFolder: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverItem(null);
+    
+    if (!draggedItem || targetFolder.type !== 'folder' || draggedItem.id === targetFolder.id) {
+      return;
+    }
+
+    // Проверка на перемещение папки в саму себя или в свою дочернюю папку
+    const isDescendant = (parent: any, childId: string): boolean => {
+      if (parent.id === childId) return true;
+      if (parent.children) {
+        return parent.children.some((child: any) => isDescendant(child, childId));
+      }
+      return false;
+    };
+
+    if (draggedItem.type === 'folder' && isDescendant(draggedItem, targetFolder.id)) {
+      return;
+    }
+
+    setConfirmMove({
+      show: true,
+      item: draggedItem,
+      targetFolder: targetFolder
+    });
+  };
+
+  const confirmMoveAction = () => {
+    if (!confirmMove) return;
+
+    const { item, targetFolder } = confirmMove;
+
+    const removeFromTree = (items: any[]): any[] => {
+      return items
+        .filter(i => i.id !== item.id)
+        .map(i => ({
+          ...i,
+          children: i.children ? removeFromTree(i.children) : undefined
+        }));
+    };
+
+    const addToFolder = (items: any[]): any[] => {
+      return items.map(i => {
+        if (i.id === targetFolder.id) {
+          return {
+            ...i,
+            children: [...(i.children || []), item]
+          };
+        }
+        if (i.children) {
+          return {
+            ...i,
+            children: addToFolder(i.children)
+          };
+        }
+        return i;
+      });
+    };
+
+    let newTree = removeFromTree(treeData);
+    newTree = addToFolder(newTree);
+    setTreeData(newTree);
+    
+    if (!expandedFolders.includes(targetFolder.id)) {
+      setExpandedFolders([...expandedFolders, targetFolder.id]);
+    }
+
+    setConfirmMove(null);
+    setDraggedItem(null);
+  };
+
+  const cancelMoveAction = () => {
+    setConfirmMove(null);
+    setDraggedItem(null);
+  };
+
   const renderTreeItem = (item: any, depth = 0) => {
     const isExpanded = expandedFolders.includes(item.id);
     const hasMatch = questionSearch.trim() && item.name.toLowerCase().includes(questionSearch.toLowerCase());
     const isEditing = editingItem === item.id;
+    const isDragOver = dragOverItem === item.id;
     
     return (
       <div key={item.id} style={{ marginLeft: `${depth * 20}px` }}>
         <div 
           className={`flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer ${
             item.type === 'question' ? 'text-gray-600' : 'font-medium'
-          } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}`}
+          } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}
+          ${isDragOver ? 'bg-blue-100 border-2 border-blue-400' : ''}`}
+          draggable={!isEditing}
+          onDragStart={(e) => handleDragStart(e, item)}
+          onDragOver={(e) => handleDragOver(e, item)}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, item)}
           onClick={() => !isEditing && item.type === 'folder' && toggleFolder(item.id)}
           onContextMenu={(e) => handleContextMenu(e, item)}
         >
@@ -1198,6 +1308,30 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Модальное окно подтверждения перемещения */}
+              <Dialog.Root open={confirmMove?.show || false} onOpenChange={(open) => !open && cancelMoveAction()}>
+                <Dialog.Portal>
+                  <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
+                  <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-md z-50">
+                    <Dialog.Title className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <Icon name="Move" size={20} className="text-blue-500" />
+                      Подтверждение перемещения
+                    </Dialog.Title>
+                    <Dialog.Description className="text-gray-600 mb-6">
+                      Вы действительно хотите переместить <span className="font-semibold">"{confirmMove?.item?.name}"</span> в папку <span className="font-semibold">"{confirmMove?.targetFolder?.name}"</span>?
+                    </Dialog.Description>
+                    <div className="flex items-center gap-3 justify-end">
+                      <Button variant="outline" onClick={cancelMoveAction}>
+                        Отмена
+                      </Button>
+                      <Button onClick={confirmMoveAction}>
+                        Переместить
+                      </Button>
+                    </div>
+                  </Dialog.Content>
+                </Dialog.Portal>
+              </Dialog.Root>
             </div>
           );
         case 'knowledge':
