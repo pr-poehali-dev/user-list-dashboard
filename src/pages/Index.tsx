@@ -830,10 +830,40 @@ const Index = () => {
     setDraggedItem(item);
   };
 
+  const isDescendant = (parent: any, childId: string): boolean => {
+    if (parent.id === childId) return true;
+    if (parent.children) {
+      return parent.children.some((child: any) => isDescendant(child, childId));
+    }
+    return false;
+  };
+
+  const findParent = (items: any[], childId: string, parent: any = null): any => {
+    for (const item of items) {
+      if (item.id === childId) {
+        return parent;
+      }
+      if (item.children) {
+        const found = findParent(item.children, childId, item);
+        if (found !== null) return found;
+      }
+    }
+    return null;
+  };
+
+  const canDropInto = (target: any): boolean => {
+    if (!draggedItem || target.type !== 'folder') return false;
+    if (draggedItem.id === target.id) return false;
+    if (draggedItem.type === 'folder' && isDescendant(draggedItem, target.id)) return false;
+    const parent = findParent(treeData, draggedItem.id);
+    if (parent && parent.id === target.id) return false;
+    return true;
+  };
+
   const handleDragOver = (e: React.DragEvent, item: any) => {
     e.preventDefault();
     e.stopPropagation();
-    if (item.type === 'folder' && draggedItem && item.id !== draggedItem.id) {
+    if (canDropInto(item)) {
       setDragOverItem(item.id);
     }
   };
@@ -848,20 +878,7 @@ const Index = () => {
     e.stopPropagation();
     setDragOverItem(null);
     
-    if (!draggedItem || targetFolder.type !== 'folder' || draggedItem.id === targetFolder.id) {
-      return;
-    }
-
-    // Проверка на перемещение папки в саму себя или в свою дочернюю папку
-    const isDescendant = (parent: any, childId: string): boolean => {
-      if (parent.id === childId) return true;
-      if (parent.children) {
-        return parent.children.some((child: any) => isDescendant(child, childId));
-      }
-      return false;
-    };
-
-    if (draggedItem.type === 'folder' && isDescendant(draggedItem, targetFolder.id)) {
+    if (!canDropInto(targetFolder)) {
       return;
     }
 
@@ -926,14 +943,32 @@ const Index = () => {
     const hasMatch = questionSearch.trim() && item.name.toLowerCase().includes(questionSearch.toLowerCase());
     const isEditing = editingItem === item.id;
     const isDragOver = dragOverItem === item.id;
+    const isBeingDragged = draggedItem?.id === item.id;
+    const canDrop = draggedItem ? canDropInto(item) : false;
+    const isDragActive = !!draggedItem && !isBeingDragged;
+    const isDropForbidden = isDragActive && item.type === 'folder' && !canDrop;
+    
+    const getDropForbiddenReason = () => {
+      if (!isDropForbidden || !draggedItem) return '';
+      if (draggedItem.id === item.id) return 'Нельзя переместить в саму себя';
+      const parent = findParent(treeData, draggedItem.id);
+      if (parent && parent.id === item.id) return 'Элемент уже находится в этой папке';
+      if (draggedItem.type === 'folder' && isDescendant(draggedItem, item.id)) {
+        return 'Нельзя переместить в свою дочернюю папку';
+      }
+      return '';
+    };
     
     return (
       <div key={item.id} style={{ marginLeft: `${depth * 20}px` }}>
         <div 
-          className={`flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer ${
+          className={`flex items-center gap-2 p-2 rounded transition-all ${
             item.type === 'question' ? 'text-gray-600' : 'font-medium'
           } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}
-          ${isDragOver ? 'bg-blue-100 border-2 border-blue-400' : ''}`}
+          ${isDragOver ? 'bg-blue-100 border-2 border-blue-400' : ''}
+          ${isBeingDragged ? 'opacity-50 bg-gray-100' : ''}
+          ${isDropForbidden ? 'opacity-40 bg-red-50 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}
+          ${isDragActive && canDrop && item.type === 'folder' ? 'ring-2 ring-blue-200' : ''}`}
           draggable={!isEditing}
           onDragStart={(e) => handleDragStart(e, item)}
           onDragOver={(e) => handleDragOver(e, item)}
@@ -941,6 +976,7 @@ const Index = () => {
           onDrop={(e) => handleDrop(e, item)}
           onClick={() => !isEditing && item.type === 'folder' && toggleFolder(item.id)}
           onContextMenu={(e) => handleContextMenu(e, item)}
+          title={getDropForbiddenReason()}
         >
           {item.type === 'folder' ? (
             <>
@@ -949,7 +985,7 @@ const Index = () => {
                 size={16}
                 className="text-gray-400"
               />
-              <Icon name="Folder" size={16} className="text-yellow-500" />
+              <Icon name="Folder" size={16} className={isDropForbidden ? "text-red-400" : "text-yellow-500"} />
               {isEditing ? (
                 <Input
                   value={editingName}
@@ -971,11 +1007,14 @@ const Index = () => {
                   ({item.children.length})
                 </span>
               )}
+              {isDropForbidden && (
+                <Icon name="Ban" size={16} className="text-red-500 ml-auto" />
+              )}
             </>
           ) : (
             <>
-              <div className="w-4" /> {/* Spacer for alignment */}
-              <Icon name="FileText" size={16} className="text-blue-500" />
+              <div className="w-4" />
+              <Icon name="FileText" size={16} className={isDragActive ? "text-gray-300" : "text-blue-500"} />
               {isEditing ? (
                 <Input
                   value={editingName}
