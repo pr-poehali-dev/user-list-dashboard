@@ -632,6 +632,7 @@ const Index = () => {
     item: any;
     targetFolder: any;
   } | null>(null);
+  const [dragCursorPos, setDragCursorPos] = useState<{x: number, y: number} | null>(null);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -828,6 +829,19 @@ const Index = () => {
   const handleDragStart = (e: React.DragEvent, item: any) => {
     e.stopPropagation();
     setDraggedItem(item);
+    setDragCursorPos({x: e.clientX, y: e.clientY});
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    if (e.clientX !== 0 && e.clientY !== 0) {
+      setDragCursorPos({x: e.clientX, y: e.clientY});
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+    setDragCursorPos(null);
+    setDragOverItem(null);
   };
 
   const isDescendant = (parent: any, childId: string): boolean => {
@@ -946,27 +960,26 @@ const Index = () => {
     const isBeingDragged = draggedItem?.id === item.id;
     const canDrop = draggedItem ? canDropInto(item) : false;
     const isDragActive = !!draggedItem && !isBeingDragged;
-    const isDropForbidden = isDragActive && item.type === 'folder' && !canDrop;
-    const isHoverForbidden = isDropForbidden && dragOverItem === item.id;
+    const isHovered = dragOverItem === item.id;
     
     return (
       <div key={item.id} style={{ marginLeft: `${depth * 20}px` }}>
         <div 
-          className={`flex items-center gap-2 p-2 rounded transition-all relative ${
+          className={`flex items-center gap-2 p-2 rounded transition-all ${
             item.type === 'question' ? 'text-gray-600' : 'font-medium'
           } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}
-          ${isDragOver && canDrop ? 'bg-green-100 border-2 border-dashed border-green-500 shadow-lg' : ''}
-          ${isHoverForbidden ? 'bg-red-50 border-2 border-dashed border-red-300' : ''}
-          ${isBeingDragged ? 'opacity-30 scale-95' : ''}
-          ${isDropForbidden && !isHoverForbidden ? 'opacity-30' : ''}
-          ${isDragActive && canDrop && item.type === 'folder' && !isDragOver ? 'border-2 border-dashed border-green-400 bg-green-50' : ''}
+          ${isBeingDragged ? 'opacity-30' : ''}
           ${!isDragActive ? 'hover:bg-gray-50 cursor-pointer' : ''}`}
           draggable={!isEditing}
           onDragStart={(e) => handleDragStart(e, item)}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
           onDragOver={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setDragOverItem(item.id);
+            if (item.type === 'folder') {
+              setDragOverItem(item.id);
+            }
           }}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, item)}
@@ -980,15 +993,7 @@ const Index = () => {
                 size={16}
                 className="text-gray-400"
               />
-              <Icon 
-                name="Folder" 
-                size={16} 
-                className={
-                  isHoverForbidden ? "text-red-400" :
-                  isDragActive && canDrop ? "text-green-600" : 
-                  "text-yellow-500"
-                } 
-              />
+              <Icon name="Folder" size={16} className="text-yellow-500" />
               {isEditing ? (
                 <Input
                   value={editingName}
@@ -1009,12 +1014,6 @@ const Index = () => {
                 <span className="text-xs text-gray-400 ml-auto">
                   ({item.children.length})
                 </span>
-              )}
-              {isDragActive && canDrop && isDragOver && (
-                <Icon name="MoveDown" size={16} className="text-green-600 ml-auto animate-pulse" />
-              )}
-              {isHoverForbidden && (
-                <Icon name="X" size={16} className="text-red-400 ml-auto" />
               )}
             </>
           ) : (
@@ -1353,6 +1352,54 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Индикатор перетаскивания рядом с курсором */}
+              {draggedItem && dragCursorPos && dragOverItem && (
+                <div 
+                  className="fixed pointer-events-none z-50"
+                  style={{ 
+                    left: `${dragCursorPos.x + 20}px`, 
+                    top: `${dragCursorPos.y - 10}px` 
+                  }}
+                >
+                  {(() => {
+                    const hoveredItem = (() => {
+                      const findItem = (items: any[]): any => {
+                        for (const item of items) {
+                          if (item.id === dragOverItem) return item;
+                          if (item.children) {
+                            const found = findItem(item.children);
+                            if (found) return found;
+                          }
+                        }
+                        return null;
+                      };
+                      return findItem(treeData);
+                    })();
+                    
+                    const canDrop = hoveredItem ? canDropInto(hoveredItem) : false;
+                    
+                    return (
+                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg shadow-lg border-2 ${
+                        canDrop 
+                          ? 'bg-green-50 border-green-500' 
+                          : 'bg-red-50 border-red-500'
+                      }`}>
+                        <Icon 
+                          name={canDrop ? "Check" : "X"} 
+                          size={20} 
+                          className={canDrop ? "text-green-600" : "text-red-600"}
+                        />
+                        <span className={`text-sm font-medium ${
+                          canDrop ? "text-green-700" : "text-red-700"
+                        }`}>
+                          {canDrop ? "Можно переместить" : "Нельзя переместить"}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
 
               {/* Модальное окно подтверждения перемещения */}
               <Dialog.Root open={confirmMove?.show || false} onOpenChange={(open) => !open && cancelMoveAction()}>
