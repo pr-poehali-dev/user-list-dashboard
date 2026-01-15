@@ -948,27 +948,17 @@ const Index = () => {
     const isDragActive = !!draggedItem && !isBeingDragged;
     const isDropForbidden = isDragActive && item.type === 'folder' && !canDrop;
     
-    const getDropForbiddenReason = () => {
-      if (!isDropForbidden || !draggedItem) return '';
-      if (draggedItem.id === item.id) return 'Нельзя переместить в саму себя';
-      const parent = findParent(treeData, draggedItem.id);
-      if (parent && parent.id === item.id) return 'Элемент уже находится в этой папке';
-      if (draggedItem.type === 'folder' && isDescendant(draggedItem, item.id)) {
-        return 'Нельзя переместить в свою дочернюю папку';
-      }
-      return '';
-    };
-    
     return (
       <div key={item.id} style={{ marginLeft: `${depth * 20}px` }}>
         <div 
-          className={`flex items-center gap-2 p-2 rounded transition-all ${
+          className={`flex items-center gap-2 p-2 rounded transition-all relative ${
             item.type === 'question' ? 'text-gray-600' : 'font-medium'
           } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}
-          ${isDragOver ? 'bg-blue-100 border-2 border-blue-400' : ''}
-          ${isBeingDragged ? 'opacity-50 bg-gray-100' : ''}
-          ${isDropForbidden ? 'opacity-40 bg-red-50 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}
-          ${isDragActive && canDrop && item.type === 'folder' ? 'ring-2 ring-blue-200' : ''}`}
+          ${isDragOver ? 'bg-green-100 border-2 border-dashed border-green-500 shadow-lg' : ''}
+          ${isBeingDragged ? 'opacity-30 scale-95' : ''}
+          ${isDropForbidden ? 'opacity-20 pointer-events-none blur-[1px]' : ''}
+          ${isDragActive && canDrop && item.type === 'folder' ? 'border-2 border-dashed border-green-400 bg-green-50' : ''}
+          ${!isDragActive ? 'hover:bg-gray-50 cursor-pointer' : ''}`}
           draggable={!isEditing}
           onDragStart={(e) => handleDragStart(e, item)}
           onDragOver={(e) => handleDragOver(e, item)}
@@ -976,7 +966,6 @@ const Index = () => {
           onDrop={(e) => handleDrop(e, item)}
           onClick={() => !isEditing && item.type === 'folder' && toggleFolder(item.id)}
           onContextMenu={(e) => handleContextMenu(e, item)}
-          title={getDropForbiddenReason()}
         >
           {item.type === 'folder' ? (
             <>
@@ -985,7 +974,7 @@ const Index = () => {
                 size={16}
                 className="text-gray-400"
               />
-              <Icon name="Folder" size={16} className={isDropForbidden ? "text-red-400" : "text-yellow-500"} />
+              <Icon name="Folder" size={16} className={isDragActive && canDrop ? "text-green-600" : "text-yellow-500"} />
               {isEditing ? (
                 <Input
                   value={editingName}
@@ -1007,14 +996,14 @@ const Index = () => {
                   ({item.children.length})
                 </span>
               )}
-              {isDropForbidden && (
-                <Icon name="Ban" size={16} className="text-red-500 ml-auto" />
+              {isDragActive && canDrop && (
+                <Icon name="MoveDown" size={16} className="text-green-600 ml-auto animate-pulse" />
               )}
             </>
           ) : (
             <>
               <div className="w-4" />
-              <Icon name="FileText" size={16} className={isDragActive ? "text-gray-300" : "text-blue-500"} />
+              <Icon name="FileText" size={16} className="text-blue-500" />
               {isEditing ? (
                 <Input
                   value={editingName}
