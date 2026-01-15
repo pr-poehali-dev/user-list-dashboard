@@ -947,6 +947,7 @@ const Index = () => {
     const canDrop = draggedItem ? canDropInto(item) : false;
     const isDragActive = !!draggedItem && !isBeingDragged;
     const isDropForbidden = isDragActive && item.type === 'folder' && !canDrop;
+    const isHoverForbidden = isDropForbidden && dragOverItem === item.id;
     
     return (
       <div key={item.id} style={{ marginLeft: `${depth * 20}px` }}>
@@ -954,14 +955,19 @@ const Index = () => {
           className={`flex items-center gap-2 p-2 rounded transition-all relative ${
             item.type === 'question' ? 'text-gray-600' : 'font-medium'
           } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}
-          ${isDragOver ? 'bg-green-100 border-2 border-dashed border-green-500 shadow-lg' : ''}
+          ${isDragOver && canDrop ? 'bg-green-100 border-2 border-dashed border-green-500 shadow-lg' : ''}
+          ${isHoverForbidden ? 'bg-red-50 border-2 border-dashed border-red-300' : ''}
           ${isBeingDragged ? 'opacity-30 scale-95' : ''}
-          ${isDropForbidden ? 'opacity-20 pointer-events-none blur-[1px]' : ''}
-          ${isDragActive && canDrop && item.type === 'folder' ? 'border-2 border-dashed border-green-400 bg-green-50' : ''}
+          ${isDropForbidden && !isHoverForbidden ? 'opacity-30' : ''}
+          ${isDragActive && canDrop && item.type === 'folder' && !isDragOver ? 'border-2 border-dashed border-green-400 bg-green-50' : ''}
           ${!isDragActive ? 'hover:bg-gray-50 cursor-pointer' : ''}`}
           draggable={!isEditing}
           onDragStart={(e) => handleDragStart(e, item)}
-          onDragOver={(e) => handleDragOver(e, item)}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setDragOverItem(item.id);
+          }}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, item)}
           onClick={() => !isEditing && item.type === 'folder' && toggleFolder(item.id)}
@@ -974,7 +980,15 @@ const Index = () => {
                 size={16}
                 className="text-gray-400"
               />
-              <Icon name="Folder" size={16} className={isDragActive && canDrop ? "text-green-600" : "text-yellow-500"} />
+              <Icon 
+                name="Folder" 
+                size={16} 
+                className={
+                  isHoverForbidden ? "text-red-400" :
+                  isDragActive && canDrop ? "text-green-600" : 
+                  "text-yellow-500"
+                } 
+              />
               {isEditing ? (
                 <Input
                   value={editingName}
@@ -996,8 +1010,11 @@ const Index = () => {
                   ({item.children.length})
                 </span>
               )}
-              {isDragActive && canDrop && (
+              {isDragActive && canDrop && isDragOver && (
                 <Icon name="MoveDown" size={16} className="text-green-600 ml-auto animate-pulse" />
+              )}
+              {isHoverForbidden && (
+                <Icon name="X" size={16} className="text-red-400 ml-auto" />
               )}
             </>
           ) : (
