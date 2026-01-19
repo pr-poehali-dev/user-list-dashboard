@@ -633,6 +633,11 @@ const Index = () => {
     targetFolder: any;
   } | null>(null);
   const [dragCursorPos, setDragCursorPos] = useState<{x: number, y: number} | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    show: boolean;
+    item: any;
+  } | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -816,8 +821,35 @@ const Index = () => {
   };
 
   const handleDeleteItem = () => {
-    console.log('Удалить:', contextMenu.item);
+    setConfirmDelete({
+      show: true,
+      item: contextMenu.item
+    });
     closeContextMenu();
+  };
+
+  const confirmDeleteAction = () => {
+    if (!confirmDelete || deleteConfirmText !== confirmDelete.item.name) {
+      return;
+    }
+
+    const deleteFromTree = (items: any[]): any[] => {
+      return items
+        .filter(i => i.id !== confirmDelete.item.id)
+        .map(i => ({
+          ...i,
+          children: i.children ? deleteFromTree(i.children) : undefined
+        }));
+    };
+
+    setTreeData(deleteFromTree(treeData));
+    setConfirmDelete(null);
+    setDeleteConfirmText('');
+  };
+
+  const cancelDeleteAction = () => {
+    setConfirmDelete(null);
+    setDeleteConfirmText('');
   };
 
   useEffect(() => {
@@ -1419,6 +1451,67 @@ const Index = () => {
                       </Button>
                       <Button onClick={confirmMoveAction}>
                         Переместить
+                      </Button>
+                    </div>
+                  </Dialog.Content>
+                </Dialog.Portal>
+              </Dialog.Root>
+
+              {/* Модальное окно подтверждения удаления */}
+              <Dialog.Root open={confirmDelete?.show || false} onOpenChange={(open) => !open && cancelDeleteAction()}>
+                <Dialog.Portal>
+                  <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
+                  <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6 w-full max-w-md z-50">
+                    <Dialog.Title className="text-lg font-semibold mb-4 flex items-center gap-2 text-red-600">
+                      <Icon name="AlertTriangle" size={20} />
+                      Опасное действие
+                    </Dialog.Title>
+                    <Dialog.Description className="text-gray-700 mb-6 space-y-3">
+                      <p>
+                        Вы собираетесь удалить {confirmDelete?.item?.type === 'folder' ? 'каталог' : 'вопрос'} <span className="font-semibold text-red-600">"{confirmDelete?.item?.name}"</span>
+                        {confirmDelete?.item?.type === 'folder' && confirmDelete?.item?.children?.length > 0 && (
+                          <> и все его содержимое ({confirmDelete.item.children.length} {confirmDelete.item.children.length === 1 ? 'элемент' : confirmDelete.item.children.length < 5 ? 'элемента' : 'элементов'})</>
+                        )}
+                      </p>
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                        <strong>Это действие необратимо!</strong> Все данные будут потеряны безвозвратно.
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Для подтверждения введите точное название {confirmDelete?.item?.type === 'folder' ? 'каталога' : 'вопроса'}:
+                        </label>
+                        <Input
+                          value={deleteConfirmText}
+                          onChange={(e) => setDeleteConfirmText(e.target.value)}
+                          placeholder={confirmDelete?.item?.name}
+                          className="font-mono"
+                          autoFocus
+                        />
+                        {deleteConfirmText && deleteConfirmText !== confirmDelete?.item?.name && (
+                          <p className="text-xs text-red-600 flex items-center gap-1">
+                            <Icon name="X" size={12} />
+                            Название не совпадает
+                          </p>
+                        )}
+                        {deleteConfirmText === confirmDelete?.item?.name && (
+                          <p className="text-xs text-green-600 flex items-center gap-1">
+                            <Icon name="Check" size={12} />
+                            Название совпадает
+                          </p>
+                        )}
+                      </div>
+                    </Dialog.Description>
+                    <div className="flex items-center gap-3 justify-end">
+                      <Button variant="outline" onClick={cancelDeleteAction}>
+                        Отмена
+                      </Button>
+                      <Button 
+                        variant="destructive"
+                        onClick={confirmDeleteAction}
+                        disabled={deleteConfirmText !== confirmDelete?.item?.name}
+                      >
+                        <Icon name="Trash2" size={16} className="mr-2" />
+                        Удалить навсегда
                       </Button>
                     </div>
                   </Dialog.Content>
