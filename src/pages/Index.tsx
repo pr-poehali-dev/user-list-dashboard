@@ -1476,29 +1476,91 @@ const Index = () => {
                       <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
                         <strong>Это действие необратимо!</strong> Все данные будут потеряны безвозвратно.
                       </div>
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Для подтверждения введите точное название {confirmDelete?.item?.type === 'folder' ? 'каталога' : 'вопроса'}:
-                        </label>
-                        <Input
-                          value={deleteConfirmText}
-                          onChange={(e) => setDeleteConfirmText(e.target.value)}
-                          placeholder={confirmDelete?.item?.name}
-                          className="font-mono"
-                          autoFocus
-                        />
-                        {deleteConfirmText && deleteConfirmText !== confirmDelete?.item?.name && (
-                          <p className="text-xs text-red-600 flex items-center gap-1">
-                            <Icon name="X" size={12} />
-                            Название не совпадает
-                          </p>
-                        )}
-                        {deleteConfirmText === confirmDelete?.item?.name && (
-                          <p className="text-xs text-green-600 flex items-center gap-1">
-                            <Icon name="Check" size={12} />
-                            Название совпадает
-                          </p>
-                        )}
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Название для подтверждения:
+                          </label>
+                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 font-mono text-sm break-words">
+                            {confirmDelete?.item?.name.split('').map((char: string, index: number) => {
+                              const userChar = deleteConfirmText[index];
+                              let bgColor = 'bg-transparent';
+                              let textColor = 'text-gray-900';
+                              
+                              if (userChar !== undefined) {
+                                if (userChar === char) {
+                                  bgColor = 'bg-green-100';
+                                  textColor = 'text-green-700';
+                                } else {
+                                  bgColor = 'bg-red-100';
+                                  textColor = 'text-red-700';
+                                }
+                              }
+                              
+                              return (
+                                <span key={index} className={`${bgColor} ${textColor} transition-colors`}>
+                                  {char}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Введите название:
+                          </label>
+                          <Input
+                            value={deleteConfirmText}
+                            onChange={(e) => setDeleteConfirmText(e.target.value)}
+                            placeholder="Начните вводить..."
+                            className="font-mono"
+                            autoFocus
+                          />
+                          {(() => {
+                            if (!deleteConfirmText) return null;
+                            
+                            const originalName = confirmDelete?.item?.name || '';
+                            let isMatching = true;
+                            let mismatchIndex = -1;
+                            
+                            for (let i = 0; i < deleteConfirmText.length; i++) {
+                              if (deleteConfirmText[i] !== originalName[i]) {
+                                isMatching = false;
+                                mismatchIndex = i;
+                                break;
+                              }
+                            }
+                            
+                            if (!isMatching) {
+                              return (
+                                <div className="text-xs text-red-600 flex items-start gap-1 bg-red-50 border border-red-200 rounded p-2">
+                                  <Icon name="AlertCircle" size={14} className="mt-0.5 flex-shrink-0" />
+                                  <span>
+                                    Ошибка в позиции {mismatchIndex + 1}: ожидается "<strong>{originalName[mismatchIndex]}</strong>", введено "<strong>{deleteConfirmText[mismatchIndex]}</strong>"
+                                  </span>
+                                </div>
+                              );
+                            }
+                            
+                            if (deleteConfirmText === originalName) {
+                              return (
+                                <p className="text-xs text-green-600 flex items-center gap-1 bg-green-50 border border-green-200 rounded p-2">
+                                  <Icon name="Check" size={14} />
+                                  <span className="font-medium">Название полностью совпадает</span>
+                                </p>
+                              );
+                            }
+                            
+                            const remaining = originalName.length - deleteConfirmText.length;
+                            return (
+                              <p className="text-xs text-blue-600 flex items-center gap-1 bg-blue-50 border border-blue-200 rounded p-2">
+                                <Icon name="Info" size={14} />
+                                <span>Осталось ввести {remaining} {remaining === 1 ? 'символ' : remaining < 5 ? 'символа' : 'символов'}</span>
+                              </p>
+                            );
+                          })()}
+                        </div>
                       </div>
                     </Dialog.Description>
                     <div className="flex items-center gap-3 justify-end">
