@@ -1,0 +1,871 @@
+import { useState, useMemo, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import * as Dialog from '@radix-ui/react-dialog';
+import Icon from '@/components/ui/icon';
+import { QuestionAnswer, QuestionData } from '@/data/mockData';
+
+// Данные для всех вопросов
+const questionsData: Record<string, QuestionData> = {
+  'q1': {
+    id: 'q1',
+    question: 'Что означает красный сигнал светофора?',
+    answers: [
+      { id: 'a1', text: 'Стой! Запрещается проезд светофора', isCorrect: true },
+      { id: 'a2', text: 'Движение разрешено с особой осторожностью', isCorrect: false },
+      { id: 'a3', text: 'Приготовиться к остановке', isCorrect: false },
+      { id: 'a4', text: 'Уменьшить скорость', isCorrect: false }
+    ],
+    hint: 'Красный цвет всегда означает запрет',
+    explanation: 'Красный сигнал светофора — запрещающий сигнал. При красном сигнале машинист обязан остановить состав перед светофором.',
+    answerType: 'set'
+  }
+};
+
+interface QuestionBankSectionProps {
+  treeData: any[];
+  setTreeData: (data: any[]) => void;
+  expandedFolders: string[];
+  setExpandedFolders: (folders: string[] | ((prev: string[]) => string[])) => void;
+  questionSearch: string;
+  setQuestionSearch: (search: string) => void;
+}
+
+const QuestionBankSection = ({
+  treeData,
+  setTreeData,
+  expandedFolders,
+  setExpandedFolders,
+  questionSearch,
+  setQuestionSearch
+}: QuestionBankSectionProps) => {
+  const [contextMenu, setContextMenu] = useState<{
+    show: boolean;
+    x: number;
+    y: number;
+    item: any;
+  }>({ show: false, x: 0, y: 0, item: null });
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [draggedItem, setDraggedItem] = useState<any>(null);
+  const [dragOverItem, setDragOverItem] = useState<string | null>(null);
+  const [confirmMove, setConfirmMove] = useState<{
+    show: boolean;
+    item: any;
+    targetFolder: any;
+  } | null>(null);
+  const [dragCursorPos, setDragCursorPos] = useState<{x: number, y: number} | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    show: boolean;
+    item: any;
+  } | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [editingQuestion, setEditingQuestion] = useState<QuestionData | null>(null);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+
+  const toggleFolder = (folderId: string) => {
+    setExpandedFolders(prev => 
+      prev.includes(folderId) 
+        ? prev.filter(id => id !== folderId)
+        : [...prev, folderId]
+    );
+  };
+
+  const searchInTree = (items: any[], searchTerm: string): { matchedIds: string[], hasMatch: boolean } => {
+    const matchedIds: string[] = [];
+    let hasMatch = false;
+
+    const search = (item: any): boolean => {
+      const itemMatches = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+      let childrenMatch = false;
+
+      if (item.children) {
+        for (const child of item.children) {
+          if (search(child)) {
+            childrenMatch = true;
+          }
+        }
+      }
+
+      if (itemMatches || childrenMatch) {
+        if (item.type === 'folder') {
+          matchedIds.push(item.id);
+        }
+        hasMatch = true;
+        return true;
+      }
+
+      return false;
+    };
+
+    items.forEach(item => search(item));
+    return { matchedIds, hasMatch };
+  };
+
+  const filterTreeBySearch = (items: any[], searchTerm: string): any[] => {
+    if (!searchTerm.trim()) return items;
+
+    const filter = (item: any): any | null => {
+      const itemMatches = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+      let filteredChildren: any[] = [];
+
+      if (item.children) {
+        filteredChildren = item.children
+          .map((child: any) => filter(child))
+          .filter((child: any) => child !== null);
+      }
+
+      if (itemMatches || filteredChildren.length > 0) {
+        return {
+          ...item,
+          children: filteredChildren.length > 0 ? filteredChildren : item.children
+        };
+      }
+
+      return null;
+    };
+
+    return items.map(item => filter(item)).filter(item => item !== null);
+  };
+
+  const filteredQuestionTree = useMemo(() => {
+    return filterTreeBySearch(treeData, questionSearch);
+  }, [questionSearch, treeData]);
+
+  useEffect(() => {
+    if (questionSearch.trim()) {
+      const { matchedIds } = searchInTree(treeData, questionSearch);
+      setExpandedFolders(matchedIds);
+    }
+  }, [questionSearch, treeData]);
+
+  const highlightText = (text: string, search: string) => {
+    if (!search.trim()) return text;
+    
+    const parts = text.split(new RegExp(`(${search})`, 'gi'));
+    return parts.map((part, index) => 
+      part.toLowerCase() === search.toLowerCase() ? (
+        <mark key={index} className="bg-yellow-200 font-semibold">{part}</mark>
+      ) : (
+        part
+      )
+    );
+  };
+
+  const handleContextMenu = (e: React.MouseEvent, item: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setContextMenu({
+      show: true,
+      x: e.clientX,
+      y: e.clientY,
+      item
+    });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu({ show: false, x: 0, y: 0, item: null });
+  };
+
+  const handleAddFolder = () => {
+    const parentItem = contextMenu.item;
+    const newFolder = {
+      id: `folder-${Date.now()}`,
+      name: 'Новый каталог',
+      type: 'folder',
+      children: []
+    };
+
+    const addFolderToTree = (items: any[]): any[] => {
+      return items.map(item => {
+        if (item.id === parentItem.id) {
+          return {
+            ...item,
+            children: [...(item.children || []), newFolder]
+          };
+        }
+        if (item.children) {
+          return {
+            ...item,
+            children: addFolderToTree(item.children)
+          };
+        }
+        return item;
+      });
+    };
+
+    setTreeData(addFolderToTree(treeData));
+    setExpandedFolders(prev => [...prev, parentItem.id]);
+    setEditingItem(newFolder.id);
+    setEditingName('Новый каталог');
+    closeContextMenu();
+  };
+
+  const handleOpenQuestion = () => {
+    console.log('Открыть вопрос:', contextMenu.item);
+    closeContextMenu();
+  };
+
+  const handleRenameItem = () => {
+    setEditingItem(contextMenu.item.id);
+    setEditingName(contextMenu.item.name);
+    closeContextMenu();
+  };
+
+  const saveRename = () => {
+    if (!editingName.trim()) {
+      setEditingItem(null);
+      return;
+    }
+
+    const renameInTree = (items: any[]): any[] => {
+      return items.map(item => {
+        if (item.id === editingItem) {
+          return { ...item, name: editingName.trim() };
+        }
+        if (item.children) {
+          return {
+            ...item,
+            children: renameInTree(item.children)
+          };
+        }
+        return item;
+      });
+    };
+
+    setTreeData(renameInTree(treeData));
+    setEditingItem(null);
+    setEditingName('');
+  };
+
+  const cancelRename = () => {
+    setEditingItem(null);
+    setEditingName('');
+  };
+
+  const handleDeleteItem = () => {
+    setConfirmDelete({
+      show: true,
+      item: contextMenu.item
+    });
+    closeContextMenu();
+  };
+
+  const confirmDeleteAction = () => {
+    if (!confirmDelete || deleteConfirmText !== confirmDelete.item.name) {
+      return;
+    }
+
+    const deleteFromTree = (items: any[]): any[] => {
+      return items
+        .filter(i => i.id !== confirmDelete.item.id)
+        .map(i => ({
+          ...i,
+          children: i.children ? deleteFromTree(i.children) : undefined
+        }));
+    };
+
+    setTreeData(deleteFromTree(treeData));
+    setConfirmDelete(null);
+    setDeleteConfirmText('');
+  };
+
+  const cancelDeleteAction = () => {
+    setConfirmDelete(null);
+    setDeleteConfirmText('');
+  };
+
+  useEffect(() => {
+    const handleClick = () => closeContextMenu();
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  const handleDragStart = (e: React.DragEvent, item: any) => {
+    e.stopPropagation();
+    setDraggedItem(item);
+    setDragCursorPos({x: e.clientX, y: e.clientY});
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    if (e.clientX !== 0 && e.clientY !== 0) {
+      setDragCursorPos({x: e.clientX, y: e.clientY});
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+    setDragCursorPos(null);
+    setDragOverItem(null);
+  };
+
+  const isDescendant = (parent: any, childId: string): boolean => {
+    if (parent.id === childId) return true;
+    if (parent.children) {
+      return parent.children.some((child: any) => isDescendant(child, childId));
+    }
+    return false;
+  };
+
+  const findParent = (items: any[], childId: string, parent: any = null): any => {
+    for (const item of items) {
+      if (item.id === childId) {
+        return parent;
+      }
+      if (item.children) {
+        const found = findParent(item.children, childId, item);
+        if (found !== null) return found;
+      }
+    }
+    return null;
+  };
+
+  const canDropInto = (target: any): boolean => {
+    if (!draggedItem || target.type !== 'folder') return false;
+    if (draggedItem.id === target.id) return false;
+    if (draggedItem.type === 'folder' && isDescendant(draggedItem, target.id)) return false;
+    const parent = findParent(treeData, draggedItem.id);
+    if (parent && parent.id === target.id) return false;
+    return true;
+  };
+
+  const handleDragOver = (e: React.DragEvent, item: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (canDropInto(item)) {
+      setDragOverItem(item.id);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setDragOverItem(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetFolder: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverItem(null);
+    
+    if (!canDropInto(targetFolder)) {
+      return;
+    }
+
+    setConfirmMove({
+      show: true,
+      item: draggedItem,
+      targetFolder: targetFolder
+    });
+  };
+
+  const confirmMoveAction = () => {
+    if (!confirmMove) return;
+
+    const { item, targetFolder } = confirmMove;
+
+    const removeFromTree = (items: any[]): any[] => {
+      return items
+        .filter(i => i.id !== item.id)
+        .map(i => ({
+          ...i,
+          children: i.children ? removeFromTree(i.children) : undefined
+        }));
+    };
+
+    const addToFolder = (items: any[]): any[] => {
+      return items.map(i => {
+        if (i.id === targetFolder.id) {
+          return {
+            ...i,
+            children: [...(i.children || []), item]
+          };
+        }
+        if (i.children) {
+          return {
+            ...i,
+            children: addToFolder(i.children)
+          };
+        }
+        return i;
+      });
+    };
+
+    let newTree = removeFromTree(treeData);
+    newTree = addToFolder(newTree);
+    setTreeData(newTree);
+    
+    if (!expandedFolders.includes(targetFolder.id)) {
+      setExpandedFolders([...expandedFolders, targetFolder.id]);
+    }
+
+    setConfirmMove(null);
+    setDraggedItem(null);
+  };
+
+  const cancelMoveAction = () => {
+    setConfirmMove(null);
+    setDraggedItem(null);
+  };
+
+  const findQuestionFolder = (items: any[], questionId: string): any | null => {
+    for (const item of items) {
+      if (item.type === 'folder' && item.children) {
+        const hasQuestion = item.children.some((child: any) => child.id === questionId);
+        if (hasQuestion) {
+          return item;
+        }
+        const foundInChild = findQuestionFolder(item.children, questionId);
+        if (foundInChild) return foundInChild;
+      }
+    }
+    return null;
+  };
+
+  const getQuestionsInFolder = (folderId: string): any[] => {
+    const findFolder = (items: any[]): any | null => {
+      for (const item of items) {
+        if (item.id === folderId) return item;
+        if (item.children) {
+          const found = findFolder(item.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const folder = findFolder(treeData);
+    if (folder && folder.children) {
+      return folder.children.filter((child: any) => child.type === 'question');
+    }
+    return [];
+  };
+
+  const handleSaveQuestion = () => {
+    if (editingQuestion) {
+      questionsData[editingQuestion.id] = editingQuestion;
+      setIsQuestionModalOpen(false);
+      setEditingQuestion(null);
+    }
+  };
+
+  const handleAddAnswer = () => {
+    if (editingQuestion) {
+      const newAnswer: QuestionAnswer = {
+        id: `a${editingQuestion.answers.length + 1}`,
+        text: '',
+        isCorrect: false
+      };
+      setEditingQuestion({
+        ...editingQuestion,
+        answers: [...editingQuestion.answers, newAnswer]
+      });
+    }
+  };
+
+  const handleRemoveAnswer = (answerId: string) => {
+    if (editingQuestion && editingQuestion.answers.length > 2) {
+      setEditingQuestion({
+        ...editingQuestion,
+        answers: editingQuestion.answers.filter(a => a.id !== answerId)
+      });
+    }
+  };
+
+  const handleUpdateAnswer = (answerId: string, field: 'text' | 'isCorrect', value: string | boolean) => {
+    if (editingQuestion) {
+      setEditingQuestion({
+        ...editingQuestion,
+        answers: editingQuestion.answers.map(a => 
+          a.id === answerId ? { ...a, [field]: value } : a
+        )
+      });
+    }
+  };
+
+  const renderTreeItem = (item: any, depth = 0) => {
+    const isExpanded = expandedFolders.includes(item.id);
+    const hasMatch = questionSearch.trim() && item.name.toLowerCase().includes(questionSearch.toLowerCase());
+    const isEditing = editingItem === item.id;
+    const isDragOver = dragOverItem === item.id;
+    const isBeingDragged = draggedItem?.id === item.id;
+    const canDrop = draggedItem ? canDropInto(item) : false;
+    const isDragActive = !!draggedItem && !isBeingDragged;
+    const isHovered = dragOverItem === item.id;
+    
+    return (
+      <div key={item.id} style={{ marginLeft: `${depth * 20}px` }}>
+        <div 
+          className={`flex items-center gap-2 p-2 rounded transition-all ${
+            item.type === 'question' ? 'text-gray-600' : 'font-medium'
+          } ${hasMatch ? 'bg-yellow-50 border border-yellow-200' : ''}
+          ${isBeingDragged ? 'opacity-30' : ''}
+          ${!isDragActive ? 'hover:bg-gray-50 cursor-pointer' : ''}`}
+          draggable={!isEditing}
+          onDragStart={(e) => handleDragStart(e, item)}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (item.type === 'folder') {
+              setDragOverItem(item.id);
+            }
+          }}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, item)}
+          onClick={() => {
+            if (isEditing) return;
+            if (item.type === 'folder') {
+              toggleFolder(item.id);
+            } else if (item.type === 'question') {
+              const questionData = questionsData[item.id] || {
+                id: item.id,
+                question: item.name,
+                answers: [
+                  { id: 'a1', text: '', isCorrect: false },
+                  { id: 'a2', text: '', isCorrect: false }
+                ],
+                hint: '',
+                explanation: '',
+                answerType: 'set' as const
+              };
+              setEditingQuestion(questionData);
+              setIsQuestionModalOpen(true);
+            }
+          }}
+          onContextMenu={(e) => handleContextMenu(e, item)}
+        >
+          {item.type === 'folder' ? (
+            <>
+              <Icon 
+                name={isExpanded ? "ChevronDown" : "ChevronRight"} 
+                size={16}
+                className="text-gray-400"
+              />
+              <Icon name="Folder" size={16} className="text-yellow-500" />
+              {isEditing ? (
+                <Input
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveRename();
+                    if (e.key === 'Escape') cancelRename();
+                  }}
+                  onBlur={saveRename}
+                  autoFocus
+                  className="h-6 py-0 px-2 text-sm flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span>{highlightText(item.name, questionSearch)}</span>
+              )}
+              {!isEditing && item.children && (
+                <span className="text-xs text-gray-400 ml-auto">
+                  ({item.children.length})
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="w-4" />
+              <Icon name="FileText" size={16} className="text-blue-500" />
+              {isEditing ? (
+                <Input
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveRename();
+                    if (e.key === 'Escape') cancelRename();
+                  }}
+                  onBlur={saveRename}
+                  autoFocus
+                  className="h-6 py-0 px-2 text-sm flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span>{highlightText(item.name, questionSearch)}</span>
+              )}
+            </>
+          )}
+        </div>
+        
+        {item.type === 'folder' && isExpanded && item.children && (
+          <div>
+            {item.children.map((child: any) => renderTreeItem(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      {/* Question search */}
+      <div className="mb-4">
+        <Input
+          type="text"
+          placeholder="Поиск по вопросам..."
+          value={questionSearch}
+          onChange={(e) => setQuestionSearch(e.target.value)}
+          className="w-full"
+        />
+      </div>
+
+      {/* Question tree */}
+      <div className="space-y-1 max-h-[600px] overflow-y-auto">
+        {filteredQuestionTree.map(item => renderTreeItem(item))}
+      </div>
+
+      {/* Context menu */}
+      {contextMenu.show && (
+        <div
+          className="fixed bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 min-w-[200px]"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+        >
+          {contextMenu.item.type === 'folder' && (
+            <button
+              className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+              onClick={handleAddFolder}
+            >
+              <Icon name="FolderPlus" size={16} />
+              Создать подкаталог
+            </button>
+          )}
+          {contextMenu.item.type === 'question' && (
+            <button
+              className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+              onClick={handleOpenQuestion}
+            >
+              <Icon name="FileText" size={16} />
+              Открыть вопрос
+            </button>
+          )}
+          <button
+            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+            onClick={handleRenameItem}
+          >
+            <Icon name="Edit" size={16} />
+            Переименовать
+          </button>
+          <button
+            className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-red-600"
+            onClick={handleDeleteItem}
+          >
+            <Icon name="Trash2" size={16} />
+            Удалить
+          </button>
+        </div>
+      )}
+
+      {/* Drag cursor preview */}
+      {draggedItem && dragCursorPos && (
+        <div
+          className="fixed pointer-events-none z-50 bg-white border-2 border-blue-500 rounded px-2 py-1 shadow-lg"
+          style={{
+            left: dragCursorPos.x + 10,
+            top: dragCursorPos.y + 10
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Icon 
+              name={draggedItem.type === 'folder' ? 'Folder' : 'FileText'} 
+              size={16} 
+              className={draggedItem.type === 'folder' ? 'text-yellow-500' : 'text-blue-500'}
+            />
+            <span className="text-sm font-medium">{draggedItem.name}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm move dialog */}
+      <Dialog.Root open={confirmMove !== null} onOpenChange={(open) => !open && cancelMoveAction()}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+            <Dialog.Title className="text-xl font-semibold mb-4">
+              Подтверждение перемещения
+            </Dialog.Title>
+            {confirmMove && (
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Вы уверены, что хотите переместить "{confirmMove.item.name}" в "{confirmMove.targetFolder.name}"?
+                </p>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={cancelMoveAction}>
+                    Отмена
+                  </Button>
+                  <Button onClick={confirmMoveAction}>
+                    Переместить
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Confirm delete dialog */}
+      <Dialog.Root open={confirmDelete !== null} onOpenChange={(open) => !open && cancelDeleteAction()}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+            <Dialog.Title className="text-xl font-semibold mb-4 text-red-600">
+              Подтверждение удаления
+            </Dialog.Title>
+            {confirmDelete && (
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Вы уверены, что хотите удалить "{confirmDelete.item.name}"?
+                  {confirmDelete.item.type === 'folder' && confirmDelete.item.children && confirmDelete.item.children.length > 0 && (
+                    <span className="block mt-2 text-red-500 font-semibold">
+                      Внимание: будут удалены все вложенные элементы ({confirmDelete.item.children.length})!
+                    </span>
+                  )}
+                </p>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Введите название для подтверждения:
+                  </label>
+                  <Input
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder={confirmDelete.item.name}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={cancelDeleteAction}>
+                    Отмена
+                  </Button>
+                  <Button 
+                    onClick={confirmDeleteAction}
+                    disabled={deleteConfirmText !== confirmDelete.item.name}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Удалить
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Question editing modal */}
+      <Dialog.Root open={isQuestionModalOpen} onOpenChange={setIsQuestionModalOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-3xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <Dialog.Title className="text-xl font-semibold mb-4">
+              Редактирование вопроса
+            </Dialog.Title>
+            {editingQuestion && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Вопрос</label>
+                  <Input
+                    value={editingQuestion.question}
+                    onChange={(e) => setEditingQuestion({
+                      ...editingQuestion,
+                      question: e.target.value
+                    })}
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Тип ответа</label>
+                  <select
+                    value={editingQuestion.answerType}
+                    onChange={(e) => setEditingQuestion({
+                      ...editingQuestion,
+                      answerType: e.target.value as 'set' | 'sequence'
+                    })}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                  >
+                    <option value="set">Множественный выбор</option>
+                    <option value="sequence">Последовательность</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium">Варианты ответов</label>
+                    <Button size="sm" onClick={handleAddAnswer}>
+                      <Icon name="Plus" size={16} className="mr-1" />
+                      Добавить вариант
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {editingQuestion.answers.map((answer, index) => (
+                      <div key={answer.id} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={answer.isCorrect}
+                          onChange={(e) => handleUpdateAnswer(answer.id, 'isCorrect', e.target.checked)}
+                          className="w-5 h-5"
+                        />
+                        <Input
+                          value={answer.text}
+                          onChange={(e) => handleUpdateAnswer(answer.id, 'text', e.target.value)}
+                          placeholder={`Вариант ${index + 1}`}
+                          className="flex-1"
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRemoveAnswer(answer.id)}
+                          disabled={editingQuestion.answers.length <= 2}
+                        >
+                          <Icon name="Trash2" size={16} />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Подсказка</label>
+                  <Input
+                    value={editingQuestion.hint}
+                    onChange={(e) => setEditingQuestion({
+                      ...editingQuestion,
+                      hint: e.target.value
+                    })}
+                    placeholder="Необязательная подсказка для ученика"
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Объяснение</label>
+                  <textarea
+                    value={editingQuestion.explanation}
+                    onChange={(e) => setEditingQuestion({
+                      ...editingQuestion,
+                      explanation: e.target.value
+                    })}
+                    placeholder="Подробное объяснение правильного ответа"
+                    className="w-full border border-gray-300 rounded px-3 py-2 min-h-[100px]"
+                  />
+                </div>
+
+                <div className="flex gap-2 justify-end pt-4">
+                  <Button variant="outline" onClick={() => setIsQuestionModalOpen(false)}>
+                    Отмена
+                  </Button>
+                  <Button onClick={handleSaveQuestion}>
+                    Сохранить
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
+  );
+};
+
+export default QuestionBankSection;
