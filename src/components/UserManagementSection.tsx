@@ -341,15 +341,15 @@ const UserManagementSection = ({
           <div className="flex gap-4 items-end">
             <div className="flex-1">
               <label className="block text-sm font-medium mb-2">Группа</label>
-              <Select value={filters.group} onValueChange={(value) => {
-                setFilters(prev => ({ ...prev, group: value }));
+              <Select value={filters.group || 'all'} onValueChange={(value) => {
+                setFilters(prev => ({ ...prev, group: value === 'all' ? '' : value }));
                 setCurrentPage(1);
               }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Все группы" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все группы</SelectItem>
+                  <SelectItem value="all">Все группы</SelectItem>
                   {groups.map(group => (
                     <SelectItem key={group} value={group}>{group}</SelectItem>
                   ))}
@@ -358,15 +358,15 @@ const UserManagementSection = ({
             </div>
             <div className="flex-1">
               <label className="block text-sm font-medium mb-2">Дирекция</label>
-              <Select value={filters.direction} onValueChange={(value) => {
-                setFilters(prev => ({ ...prev, direction: value }));
+              <Select value={filters.direction || 'all'} onValueChange={(value) => {
+                setFilters(prev => ({ ...prev, direction: value === 'all' ? '' : value }));
                 setCurrentPage(1);
               }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Все дирекции" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все дирекции</SelectItem>
+                  <SelectItem value="all">Все дирекции</SelectItem>
                   {directions.map(dir => (
                     <SelectItem key={dir} value={dir}>{dir}</SelectItem>
                   ))}
@@ -375,15 +375,15 @@ const UserManagementSection = ({
             </div>
             <div className="flex-1">
               <label className="block text-sm font-medium mb-2">Специальность</label>
-              <Select value={filters.specialty} onValueChange={(value) => {
-                setFilters(prev => ({ ...prev, specialty: value }));
+              <Select value={filters.specialty || 'all'} onValueChange={(value) => {
+                setFilters(prev => ({ ...prev, specialty: value === 'all' ? '' : value }));
                 setCurrentPage(1);
               }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Все специальности" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все специальности</SelectItem>
+                  <SelectItem value="all">Все специальности</SelectItem>
                   {specialties.map(spec => (
                     <SelectItem key={spec} value={spec}>{spec}</SelectItem>
                   ))}
