@@ -583,6 +583,37 @@ type User = {
   birthDate: string;
 };
 
+type QuestionAnswer = {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+};
+
+type QuestionData = {
+  id: string;
+  question: string;
+  answers: QuestionAnswer[];
+  hint: string;
+  explanation: string;
+  answerType: 'set' | 'sequence';
+};
+
+const questionsData: Record<string, QuestionData> = {
+  'q1': {
+    id: 'q1',
+    question: 'Что означает красный сигнал светофора?',
+    answers: [
+      { id: 'a1', text: 'Стой! Запрещается проезд светофора', isCorrect: true },
+      { id: 'a2', text: 'Движение разрешено с особой осторожностью', isCorrect: false },
+      { id: 'a3', text: 'Приготовиться к остановке', isCorrect: false },
+      { id: 'a4', text: 'Уменьшить скорость', isCorrect: false }
+    ],
+    hint: 'Красный цвет всегда означает запрет',
+    explanation: 'Красный сигнал светофора — запрещающий сигнал. При красном сигнале машинист обязан остановить состав перед светофором.',
+    answerType: 'set'
+  }
+};
+
 const Index = () => {
   const [search, setSearch] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
@@ -638,6 +669,8 @@ const Index = () => {
     item: any;
   } | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [editingQuestion, setEditingQuestion] = useState<QuestionData | null>(null);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -984,6 +1017,81 @@ const Index = () => {
     setDraggedItem(null);
   };
 
+  const findQuestionFolder = (items: any[], questionId: string): any | null => {
+    for (const item of items) {
+      if (item.type === 'folder' && item.children) {
+        const hasQuestion = item.children.some((child: any) => child.id === questionId);
+        if (hasQuestion) {
+          return item;
+        }
+        const foundInChild = findQuestionFolder(item.children, questionId);
+        if (foundInChild) return foundInChild;
+      }
+    }
+    return null;
+  };
+
+  const getQuestionsInFolder = (folderId: string): any[] => {
+    const findFolder = (items: any[]): any | null => {
+      for (const item of items) {
+        if (item.id === folderId) return item;
+        if (item.children) {
+          const found = findFolder(item.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const folder = findFolder(treeData);
+    if (folder && folder.children) {
+      return folder.children.filter((child: any) => child.type === 'question');
+    }
+    return [];
+  };
+
+  const handleSaveQuestion = () => {
+    if (editingQuestion) {
+      questionsData[editingQuestion.id] = editingQuestion;
+      setIsQuestionModalOpen(false);
+      setEditingQuestion(null);
+    }
+  };
+
+  const handleAddAnswer = () => {
+    if (editingQuestion) {
+      const newAnswer: QuestionAnswer = {
+        id: `a${editingQuestion.answers.length + 1}`,
+        text: '',
+        isCorrect: false
+      };
+      setEditingQuestion({
+        ...editingQuestion,
+        answers: [...editingQuestion.answers, newAnswer]
+      });
+    }
+  };
+
+  const handleRemoveAnswer = (answerId: string) => {
+    if (editingQuestion && editingQuestion.answers.length > 2) {
+      setEditingQuestion({
+        ...editingQuestion,
+        answers: editingQuestion.answers.filter(a => a.id !== answerId)
+      });
+    }
+  };
+
+  const handleUpdateAnswer = (answerId: string, field: 'text' | 'isCorrect', value: string | boolean) => {
+    if (editingQuestion) {
+      setEditingQuestion({
+        ...editingQuestion,
+        answers: editingQuestion.answers.map(a => 
+          a.id === answerId ? { ...a, [field]: value } : a
+        )
+      });
+    }
+  };
+
   const renderTreeItem = (item: any, depth = 0) => {
     const isExpanded = expandedFolders.includes(item.id);
     const hasMatch = questionSearch.trim() && item.name.toLowerCase().includes(questionSearch.toLowerCase());
@@ -1015,7 +1123,26 @@ const Index = () => {
           }}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, item)}
-          onClick={() => !isEditing && item.type === 'folder' && toggleFolder(item.id)}
+          onClick={() => {
+            if (isEditing) return;
+            if (item.type === 'folder') {
+              toggleFolder(item.id);
+            } else if (item.type === 'question') {
+              const questionData = questionsData[item.id] || {
+                id: item.id,
+                question: item.name,
+                answers: [
+                  { id: 'a1', text: '', isCorrect: false },
+                  { id: 'a2', text: '', isCorrect: false }
+                ],
+                hint: '',
+                explanation: '',
+                answerType: 'set' as const
+              };
+              setEditingQuestion(questionData);
+              setIsQuestionModalOpen(true);
+            }
+          }}
           onContextMenu={(e) => handleContextMenu(e, item)}
         >
           {item.type === 'folder' ? (
@@ -2682,6 +2809,232 @@ const Index = () => {
                 <Icon name="X" size={16} />
                 <span className="sr-only">Закрыть</span>
               </Dialog.Close>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
+
+        {/* Модальное окно редактирования вопроса */}
+        <Dialog.Root open={isQuestionModalOpen} onOpenChange={setIsQuestionModalOpen}>
+          <Dialog.Portal>
+            <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+            <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-4xl max-h-[90vh] overflow-y-auto translate-x-[-50%] translate-y-[-50%] bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg">
+              {editingQuestion && (() => {
+                const folder = findQuestionFolder(treeData, editingQuestion.id);
+                const questionsInFolder = folder ? getQuestionsInFolder(folder.id) : [];
+                const currentIndex = questionsInFolder.findIndex(q => q.id === editingQuestion.id);
+                
+                return (
+                  <>
+                    <Dialog.Title className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <Icon name="FileText" size={20} className="text-white" />
+                      </div>
+                      Редактирование вопроса
+                    </Dialog.Title>
+                    
+                    <div className="space-y-6">
+                      {/* Информация о каталоге и навигация */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Icon name="Folder" size={16} className="text-yellow-500" />
+                          <span className="font-medium">Каталог:</span>
+                          <span>{folder?.name || 'Не найден'}</span>
+                        </div>
+                        
+                        {questionsInFolder.length > 1 && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Перейти к вопросу:
+                            </label>
+                            <Select
+                              value={editingQuestion.id}
+                              onValueChange={(questionId) => {
+                                const questionData = questionsData[questionId] || {
+                                  id: questionId,
+                                  question: questionsInFolder.find(q => q.id === questionId)?.name || '',
+                                  answers: [
+                                    { id: 'a1', text: '', isCorrect: false },
+                                    { id: 'a2', text: '', isCorrect: false }
+                                  ],
+                                  hint: '',
+                                  explanation: '',
+                                  answerType: 'set' as const
+                                };
+                                setEditingQuestion(questionData);
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {questionsInFolder.map((q, idx) => (
+                                  <SelectItem key={q.id} value={q.id}>
+                                    {idx + 1}. {q.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="mt-2 text-xs text-gray-500 flex items-center gap-1">
+                              <Icon name="Info" size={12} />
+                              Вопрос {currentIndex + 1} из {questionsInFolder.length}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Текст вопроса */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Вопрос:
+                        </label>
+                        <textarea
+                          value={editingQuestion.question}
+                          onChange={(e) => setEditingQuestion({ ...editingQuestion, question: e.target.value })}
+                          className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Введите текст вопроса..."
+                        />
+                      </div>
+
+                      {/* Варианты ответов */}
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Варианты ответов:
+                          </label>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAddAnswer}
+                            className="flex items-center gap-1"
+                          >
+                            <Icon name="Plus" size={14} />
+                            Добавить вариант
+                          </Button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          {editingQuestion.answers.map((answer, idx) => (
+                            <div key={answer.id} className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+                              <div className="flex items-center gap-2 pt-2">
+                                <span className="text-sm font-medium text-gray-500 min-w-[20px]">
+                                  {idx + 1}.
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  checked={answer.isCorrect}
+                                  onChange={(e) => handleUpdateAnswer(answer.id, 'isCorrect', e.target.checked)}
+                                  className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+                                  title="Правильный ответ"
+                                />
+                              </div>
+                              <Input
+                                value={answer.text}
+                                onChange={(e) => handleUpdateAnswer(answer.id, 'text', e.target.value)}
+                                placeholder="Текст варианта ответа"
+                                className="flex-1"
+                              />
+                              {editingQuestion.answers.length > 2 && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRemoveAnswer(answer.id)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 mt-1"
+                                >
+                                  <Icon name="Trash2" size={16} />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <p className="mt-2 text-xs text-gray-500 flex items-center gap-1">
+                          <Icon name="Info" size={12} />
+                          Отметьте галочкой правильные варианты ответов
+                        </p>
+                      </div>
+
+                      {/* Тип ответа */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Тип правильных ответов:
+                        </label>
+                        <div className="flex gap-4">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              checked={editingQuestion.answerType === 'set'}
+                              onChange={() => setEditingQuestion({ ...editingQuestion, answerType: 'set' })}
+                              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                            />
+                            <span className="text-sm">Множество (порядок не важен)</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              checked={editingQuestion.answerType === 'sequence'}
+                              onChange={() => setEditingQuestion({ ...editingQuestion, answerType: 'sequence' })}
+                              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                            />
+                            <span className="text-sm">Последовательность (порядок важен)</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Подсказка */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Подсказка:
+                        </label>
+                        <textarea
+                          value={editingQuestion.hint}
+                          onChange={(e) => setEditingQuestion({ ...editingQuestion, hint: e.target.value })}
+                          className="w-full min-h-[60px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Подсказка для студента (необязательно)"
+                        />
+                      </div>
+
+                      {/* Пояснение к правильному ответу */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Пояснение к правильному ответу:
+                        </label>
+                        <textarea
+                          value={editingQuestion.explanation}
+                          onChange={(e) => setEditingQuestion({ ...editingQuestion, explanation: e.target.value })}
+                          className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Объяснение, почему это правильный ответ..."
+                        />
+                      </div>
+
+                      {/* Кнопки действий */}
+                      <div className="flex items-center gap-3 justify-end pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setIsQuestionModalOpen(false);
+                            setEditingQuestion(null);
+                          }}
+                        >
+                          <Icon name="X" size={16} className="mr-2" />
+                          Отменить
+                        </Button>
+                        <Button
+                          onClick={handleSaveQuestion}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Icon name="Check" size={16} className="mr-2" />
+                          Сохранить изменения
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <Dialog.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                      <Icon name="X" size={16} />
+                      <span className="sr-only">Закрыть</span>
+                    </Dialog.Close>
+                  </>
+                );
+              })()}
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
