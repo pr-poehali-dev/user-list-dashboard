@@ -63,6 +63,8 @@ const QuestionBankSection = ({
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [editingQuestion, setEditingQuestion] = useState<QuestionData | null>(null);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [hasHint, setHasHint] = useState(false);
+  const [hasExplanation, setHasExplanation] = useState(false);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -532,6 +534,8 @@ const QuestionBankSection = ({
                 answerType: 'set' as const
               };
               setEditingQuestion(questionData);
+              setHasHint(!!questionData.hint);
+              setHasExplanation(!!questionData.explanation);
               setIsQuestionModalOpen(true);
             }
           }}
@@ -764,13 +768,22 @@ const QuestionBankSection = ({
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Вопрос</label>
-                  <Input
+                  <textarea
                     value={editingQuestion.question}
-                    onChange={(e) => setEditingQuestion({
-                      ...editingQuestion,
-                      question: e.target.value
-                    })}
-                    className="w-full"
+                    onChange={(e) => {
+                      setEditingQuestion({
+                        ...editingQuestion,
+                        question: e.target.value
+                      });
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.height = 'auto';
+                      e.target.style.height = e.target.scrollHeight + 'px';
+                    }}
+                    className="w-full border border-gray-300 rounded px-3 py-2 resize-none overflow-hidden"
+                    rows={1}
                   />
                 </div>
 
@@ -799,24 +812,56 @@ const QuestionBankSection = ({
                   </div>
                   <div className="space-y-2">
                     {editingQuestion.answers.map((answer, index) => (
-                      <div key={answer.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={answer.isCorrect}
-                          onChange={(e) => handleUpdateAnswer(answer.id, 'isCorrect', e.target.checked)}
-                          className="w-5 h-5"
-                        />
-                        <Input
+                      <div key={answer.id} className="flex items-start gap-2">
+                        {editingQuestion.answerType === 'set' ? (
+                          <input
+                            type="checkbox"
+                            checked={answer.isCorrect}
+                            onChange={(e) => handleUpdateAnswer(answer.id, 'isCorrect', e.target.checked)}
+                            className="w-5 h-5 mt-2"
+                          />
+                        ) : (
+                          <select
+                            value={answer.isCorrect ? (index + 1).toString() : ''}
+                            onChange={(e) => {
+                              const selectedOrder = parseInt(e.target.value);
+                              setEditingQuestion({
+                                ...editingQuestion,
+                                answers: editingQuestion.answers.map((a, i) => ({
+                                  ...a,
+                                  isCorrect: i === index ? selectedOrder > 0 : a.isCorrect
+                                }))
+                              });
+                            }}
+                            className="w-16 border border-gray-300 rounded px-2 py-2 text-sm"
+                          >
+                            <option value="">—</option>
+                            {editingQuestion.answers.map((_, i) => (
+                              <option key={i + 1} value={i + 1}>{i + 1}</option>
+                            ))}
+                          </select>
+                        )}
+                        <textarea
                           value={answer.text}
-                          onChange={(e) => handleUpdateAnswer(answer.id, 'text', e.target.value)}
+                          onChange={(e) => {
+                            handleUpdateAnswer(answer.id, 'text', e.target.value);
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                          }}
                           placeholder={`Вариант ${index + 1}`}
-                          className="flex-1"
+                          className="flex-1 border border-gray-300 rounded px-3 py-2 resize-none overflow-hidden"
+                          rows={1}
                         />
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleRemoveAnswer(answer.id)}
                           disabled={editingQuestion.answers.length <= 2}
+                          className="mt-1"
                         >
                           <Icon name="Trash2" size={16} />
                         </Button>
@@ -826,29 +871,89 @@ const QuestionBankSection = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Подсказка</label>
-                  <Input
-                    value={editingQuestion.hint}
-                    onChange={(e) => setEditingQuestion({
-                      ...editingQuestion,
-                      hint: e.target.value
-                    })}
-                    placeholder="Необязательная подсказка для ученика"
-                    className="w-full"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium">Подсказка</label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={hasHint}
+                        onChange={(e) => {
+                          setHasHint(e.target.checked);
+                          if (!e.target.checked) {
+                            setEditingQuestion({
+                              ...editingQuestion,
+                              hint: ''
+                            });
+                          }
+                        }}
+                        className="w-4 h-4"
+                      />
+                      Добавить подсказку
+                    </label>
+                  </div>
+                  {hasHint && (
+                    <textarea
+                      value={editingQuestion.hint}
+                      onChange={(e) => {
+                        setEditingQuestion({
+                          ...editingQuestion,
+                          hint: e.target.value
+                        });
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      placeholder="Подсказка для ученика"
+                      className="w-full border border-gray-300 rounded px-3 py-2 resize-none overflow-hidden"
+                      rows={1}
+                    />
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Объяснение</label>
-                  <textarea
-                    value={editingQuestion.explanation}
-                    onChange={(e) => setEditingQuestion({
-                      ...editingQuestion,
-                      explanation: e.target.value
-                    })}
-                    placeholder="Подробное объяснение правильного ответа"
-                    className="w-full border border-gray-300 rounded px-3 py-2 min-h-[100px]"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium">Объяснение</label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={hasExplanation}
+                        onChange={(e) => {
+                          setHasExplanation(e.target.checked);
+                          if (!e.target.checked) {
+                            setEditingQuestion({
+                              ...editingQuestion,
+                              explanation: ''
+                            });
+                          }
+                        }}
+                        className="w-4 h-4"
+                      />
+                      Добавить объяснение
+                    </label>
+                  </div>
+                  {hasExplanation && (
+                    <textarea
+                      value={editingQuestion.explanation}
+                      onChange={(e) => {
+                        setEditingQuestion({
+                          ...editingQuestion,
+                          explanation: e.target.value
+                        });
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      placeholder="Подробное объяснение правильного ответа"
+                      className="w-full border border-gray-300 rounded px-3 py-2 resize-none overflow-hidden min-h-[80px]"
+                      rows={3}
+                    />
+                  )}
                 </div>
 
                 <div className="flex gap-2 justify-end pt-4">
