@@ -945,26 +945,24 @@ const QuestionBankSection = ({
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium">Подсказка</label>
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={hasHint}
-                        onChange={(e) => {
-                          setHasHint(e.target.checked);
-                          if (!e.target.checked) {
-                            setEditingQuestion({
-                              ...editingQuestion,
-                              hint: ''
-                            });
-                          }
-                        }}
-                        className="w-4 h-4"
-                      />
-                      Добавить подсказку
-                    </label>
-                  </div>
+                  <label className="flex items-center gap-2 text-sm font-medium mb-2">
+                    <input
+                      type="checkbox"
+                      checked={hasHint}
+                      onChange={(e) => {
+                        setHasHint(e.target.checked);
+                        if (!e.target.checked) {
+                          setEditingQuestion({
+                            ...editingQuestion,
+                            hint: '',
+                            hintImage: undefined
+                          });
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                    Подсказка
+                  </label>
                   {hasHint && (
                     <div className="space-y-2">
                       {editingQuestion.hintImage ? (
@@ -1021,26 +1019,24 @@ const QuestionBankSection = ({
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium">Объяснение</label>
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={hasExplanation}
-                        onChange={(e) => {
-                          setHasExplanation(e.target.checked);
-                          if (!e.target.checked) {
-                            setEditingQuestion({
-                              ...editingQuestion,
-                              explanation: ''
-                            });
-                          }
-                        }}
-                        className="w-4 h-4"
-                      />
-                      Добавить объяснение
-                    </label>
-                  </div>
+                  <label className="flex items-center gap-2 text-sm font-medium mb-2">
+                    <input
+                      type="checkbox"
+                      checked={hasExplanation}
+                      onChange={(e) => {
+                        setHasExplanation(e.target.checked);
+                        if (!e.target.checked) {
+                          setEditingQuestion({
+                            ...editingQuestion,
+                            explanation: '',
+                            explanationImage: undefined
+                          });
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                    Объяснение
+                  </label>
                   {hasExplanation && (
                     <div className="space-y-2">
                       {editingQuestion.explanationImage ? (
