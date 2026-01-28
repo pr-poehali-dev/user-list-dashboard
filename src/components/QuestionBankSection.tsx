@@ -65,6 +65,7 @@ const QuestionBankSection = ({
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
   const [hasHint, setHasHint] = useState(false);
   const [hasExplanation, setHasExplanation] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -769,11 +770,30 @@ const QuestionBankSection = ({
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/50" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-3xl shadow-xl max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="text-xl font-semibold mb-4">
-              Редактирование вопроса
-            </Dialog.Title>
+            <div className="flex items-center justify-between mb-4">
+              <Dialog.Title className="text-xl font-semibold">
+                Редактирование вопроса
+              </Dialog.Title>
+              <div className="flex gap-2">
+                <Button
+                  variant={!previewMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPreviewMode(false)}
+                >
+                  Редактирование
+                </Button>
+                <Button
+                  variant={previewMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPreviewMode(true)}
+                >
+                  Предпросмотр
+                </Button>
+              </div>
+            </div>
             {editingQuestion && (
-              <div className="space-y-4">
+              <div className="space-y-4">{!previewMode ? (
+                <>
                 <div>
                   <label className="block text-sm font-medium mb-2">Вопрос</label>
                   <div className="space-y-2">
@@ -1091,9 +1111,96 @@ const QuestionBankSection = ({
                     </div>
                   )}
                 </div>
+                </>
+              ) : (
+                <div className="space-y-6 border rounded-lg p-6 bg-gray-50">
+                  {/* Question Preview */}
+                  <div className="bg-white rounded-lg p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4">Вопрос:</h3>
+                    {editingQuestion.questionImage ? (
+                      <img src={editingQuestion.questionImage} alt="Question" className="max-w-full rounded border" />
+                    ) : (
+                      <p className="text-gray-800">{editingQuestion.question}</p>
+                    )}
+                  </div>
 
-                <div className="flex gap-2 justify-end pt-4">
-                  <Button variant="outline" onClick={() => setIsQuestionModalOpen(false)}>
+                  {/* Answers Preview */}
+                  <div className="bg-white rounded-lg p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4">
+                      {editingQuestion.answerType === 'set' ? 'Варианты ответов:' : 'Установите последовательность:'}
+                    </h3>
+                    <div className="space-y-3">
+                      {editingQuestion.answers.map((answer, index) => (
+                        <div 
+                          key={answer.id} 
+                          className={`flex items-center gap-3 p-3 rounded border-2 ${
+                            editingQuestion.answerType === 'set' && answer.isCorrect 
+                              ? 'border-green-500 bg-green-50' 
+                              : editingQuestion.answerType === 'sequence' && answer.sequenceOrder
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200'
+                          }`}
+                        >
+                          {editingQuestion.answerType === 'set' ? (
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                              answer.isCorrect ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                            }`}>
+                              {answer.isCorrect && <Icon name="Check" size={14} className="text-white" />}
+                            </div>
+                          ) : (
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
+                              answer.sequenceOrder ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
+                            }`}>
+                              {answer.sequenceOrder || '—'}
+                            </div>
+                          )}
+                          {answer.image ? (
+                            <img src={answer.image} alt={`Answer ${index + 1}`} className="max-w-xs rounded" />
+                          ) : (
+                            <span className="flex-1">{answer.text}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Hint Preview */}
+                  {(editingQuestion.hint || editingQuestion.hintImage) && (
+                    <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon name="Lightbulb" size={20} className="text-amber-600" />
+                        <h3 className="font-semibold text-amber-900">Подсказка</h3>
+                      </div>
+                      {editingQuestion.hintImage ? (
+                        <img src={editingQuestion.hintImage} alt="Hint" className="max-w-full rounded" />
+                      ) : (
+                        <p className="text-amber-800">{editingQuestion.hint}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Explanation Preview */}
+                  {(editingQuestion.explanation || editingQuestion.explanationImage) && (
+                    <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon name="Info" size={20} className="text-blue-600" />
+                        <h3 className="font-semibold text-blue-900">Объяснение</h3>
+                      </div>
+                      {editingQuestion.explanationImage ? (
+                        <img src={editingQuestion.explanationImage} alt="Explanation" className="max-w-full rounded" />
+                      ) : (
+                        <p className="text-blue-800">{editingQuestion.explanation}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+                <div className="flex gap-2 justify-end pt-4 border-t">
+                  <Button variant="outline" onClick={() => {
+                    setIsQuestionModalOpen(false);
+                    setPreviewMode(false);
+                  }}>
                     Отмена
                   </Button>
                   <Button onClick={handleSaveQuestion}>
