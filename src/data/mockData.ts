@@ -12,15 +12,20 @@ export type User = {
 export type QuestionAnswer = {
   id: string;
   text: string;
+  image?: string;
   isCorrect: boolean;
+  sequenceOrder?: number;
 };
 
 export type QuestionData = {
   id: string;
   question: string;
+  questionImage?: string;
   answers: QuestionAnswer[];
   hint: string;
+  hintImage?: string;
   explanation: string;
+  explanationImage?: string;
   answerType: 'set' | 'sequence';
 };
 
