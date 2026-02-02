@@ -1258,7 +1258,8 @@ const QuestionBankSection = ({
                     setIsQuestionModalOpen(false);
                     setPreviewMode(false);
                   }}>
-                    Отмена
+                    <Icon name="ArrowLeft" size={16} />
+                    Назад
                   </Button>
                   <Button 
                     onClick={handleSaveQuestion}
