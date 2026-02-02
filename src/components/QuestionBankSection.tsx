@@ -865,7 +865,20 @@ const QuestionBankSection = ({
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium">Варианты ответов</label>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Варианты ответов</label>
+                      {editingQuestion.answerType === 'set' ? (
+                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                          <Icon name="Info" size={12} />
+                          Отметьте галочкой правильные ответы
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                          <Icon name="Info" size={12} />
+                          Укажите порядковый номер для правильной последовательности
+                        </p>
+                      )}
+                    </div>
                     <Button size="sm" onClick={handleAddAnswer}>
                       <Icon name="Plus" size={16} className="mr-1" />
                       Добавить вариант
@@ -893,7 +906,11 @@ const QuestionBankSection = ({
                                 )
                               });
                             }}
-                            className="w-16 border border-gray-300 rounded px-2 py-2 text-sm"
+                            className={`w-16 border-2 rounded px-2 py-2 text-sm transition-colors ${
+                              answer.sequenceOrder && editingQuestion.answers.filter(a => a.sequenceOrder === answer.sequenceOrder).length > 1
+                                ? 'border-red-400 bg-red-50'
+                                : 'border-gray-300'
+                            }`}
                           >
                             <option value="">—</option>
                             {editingQuestion.answers.map((_, i) => (
@@ -962,6 +979,46 @@ const QuestionBankSection = ({
                       </div>
                     ))}
                   </div>
+                  {editingQuestion.answerType === 'sequence' && (() => {
+                    const usedOrders = editingQuestion.answers
+                      .map(a => a.sequenceOrder)
+                      .filter(Boolean) as number[];
+                    const uniqueOrders = new Set(usedOrders);
+                    const hasDuplicates = usedOrders.length !== uniqueOrders.size;
+                    const missingNumbers: number[] = [];
+                    
+                    if (usedOrders.length > 0) {
+                      const maxOrder = Math.max(...usedOrders);
+                      for (let i = 1; i < maxOrder; i++) {
+                        if (!usedOrders.includes(i)) {
+                          missingNumbers.push(i);
+                        }
+                      }
+                    }
+                    
+                    const hasErrors = hasDuplicates || missingNumbers.length > 0;
+                    
+                    if (hasErrors) {
+                      return (
+                        <div className="mt-2 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded text-sm">
+                          <div className="flex items-start gap-2">
+                            <Icon name="AlertTriangle" size={16} className="text-yellow-600 mt-0.5 flex-shrink-0" />
+                            <div className="space-y-1">
+                              {hasDuplicates && (
+                                <p className="text-yellow-800 font-medium">⚠️ Некоторые номера используются дважды</p>
+                              )}
+                              {missingNumbers.length > 0 && (
+                                <p className="text-yellow-800">
+                                  Пропущены номера: {missingNumbers.join(', ')}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
 
                 <div>
@@ -1203,7 +1260,28 @@ const QuestionBankSection = ({
                   }}>
                     Отмена
                   </Button>
-                  <Button onClick={handleSaveQuestion}>
+                  <Button 
+                    onClick={handleSaveQuestion}
+                    disabled={editingQuestion.answerType === 'sequence' && (() => {
+                      const usedOrders = editingQuestion.answers
+                        .map(a => a.sequenceOrder)
+                        .filter(Boolean) as number[];
+                      const uniqueOrders = new Set(usedOrders);
+                      const hasDuplicates = usedOrders.length !== uniqueOrders.size;
+                      const missingNumbers: number[] = [];
+                      
+                      if (usedOrders.length > 0) {
+                        const maxOrder = Math.max(...usedOrders);
+                        for (let i = 1; i < maxOrder; i++) {
+                          if (!usedOrders.includes(i)) {
+                            missingNumbers.push(i);
+                          }
+                        }
+                      }
+                      
+                      return hasDuplicates || missingNumbers.length > 0;
+                    })()}
+                  >
                     Сохранить
                   </Button>
                 </div>
