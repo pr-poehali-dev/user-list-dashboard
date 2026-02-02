@@ -823,7 +823,7 @@ const QuestionBankSection = ({
                             e.target.style.height = 'auto';
                             e.target.style.height = e.target.scrollHeight + 'px';
                           }}
-                          className="w-full border border-gray-300 rounded px-3 py-2 resize-none overflow-hidden"
+                          className="w-full border-2 border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
                           rows={1}
                         />
                         <label className="inline-flex items-center gap-2 px-3 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm">
@@ -926,7 +926,7 @@ const QuestionBankSection = ({
                                   e.target.style.height = e.target.scrollHeight + 'px';
                                 }}
                                 placeholder={`Вариант ${index + 1}`}
-                                className="w-full border border-gray-300 rounded px-3 py-2 resize-none overflow-hidden"
+                                className="w-full border-2 border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
                                 rows={1}
                               />
                               <label className="inline-flex items-center gap-2 px-2 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-xs">
@@ -1012,7 +1012,7 @@ const QuestionBankSection = ({
                               e.target.style.height = e.target.scrollHeight + 'px';
                             }}
                             placeholder="Подсказка для ученика"
-                            className="w-full border border-gray-300 rounded px-3 py-2 resize-none overflow-hidden"
+                            className="w-full border-2 border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
                             rows={1}
                           />
                           <label className="inline-flex items-center gap-2 px-3 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm">
@@ -1086,7 +1086,7 @@ const QuestionBankSection = ({
                               e.target.style.height = e.target.scrollHeight + 'px';
                             }}
                             placeholder="Подробное объяснение правильного ответа"
-                            className="w-full border border-gray-300 rounded px-3 py-2 resize-none overflow-hidden min-h-[80px]"
+                            className="w-full border-2 border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 rounded px-3 py-2 resize-none overflow-hidden min-h-[80px] transition-colors"
                             rows={3}
                           />
                           <label className="inline-flex items-center gap-2 px-3 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm">
