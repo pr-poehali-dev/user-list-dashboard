@@ -66,6 +66,10 @@ const QuestionBankSection = ({
   const [hasHint, setHasHint] = useState(false);
   const [hasExplanation, setHasExplanation] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [showQuestionText, setShowQuestionText] = useState(true);
+  const [showAnswerTexts, setShowAnswerTexts] = useState<Record<string, boolean>>({});
+  const [showHintText, setShowHintText] = useState(true);
+  const [showExplanationText, setShowExplanationText] = useState(true);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -450,6 +454,11 @@ const QuestionBankSection = ({
       questionsData[editingQuestion.id] = editingQuestion;
       setIsQuestionModalOpen(false);
       setEditingQuestion(null);
+      setPreviewMode(false);
+      setShowQuestionText(true);
+      setShowAnswerTexts({});
+      setShowHintText(true);
+      setShowExplanationText(true);
     }
   };
 
@@ -464,6 +473,7 @@ const QuestionBankSection = ({
         ...editingQuestion,
         answers: [...editingQuestion.answers, newAnswer]
       });
+      setShowAnswerTexts(prev => ({ ...prev, [newAnswer.id]: true }));
     }
   };
 
@@ -472,6 +482,11 @@ const QuestionBankSection = ({
       setEditingQuestion({
         ...editingQuestion,
         answers: editingQuestion.answers.filter(a => a.id !== answerId)
+      });
+      setShowAnswerTexts(prev => {
+        const newState = { ...prev };
+        delete newState[answerId];
+        return newState;
       });
     }
   };
@@ -545,6 +560,14 @@ const QuestionBankSection = ({
               setEditingQuestion(questionData);
               setHasHint(!!questionData.hint);
               setHasExplanation(!!questionData.explanation);
+              setShowQuestionText(true);
+              const answerTextsState: Record<string, boolean> = {};
+              questionData.answers.forEach(a => {
+                answerTextsState[a.id] = true;
+              });
+              setShowAnswerTexts(answerTextsState);
+              setShowHintText(true);
+              setShowExplanationText(true);
               setIsQuestionModalOpen(true);
             }
           }}
@@ -795,9 +818,18 @@ const QuestionBankSection = ({
               <div className="space-y-4">{!previewMode ? (
                 <>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Вопрос</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium">Вопрос</label>
+                    <button
+                      onClick={() => setShowQuestionText(!showQuestionText)}
+                      className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    >
+                      <Icon name={showQuestionText ? "EyeOff" : "Eye"} size={14} />
+                      {showQuestionText ? 'Скрыть текст' : 'Показать текст'}
+                    </button>
+                  </div>
                   <div className="space-y-2">
-                    <textarea
+                    {showQuestionText && <textarea
                       value={editingQuestion.question}
                       onChange={(e) => {
                         setEditingQuestion({
@@ -814,7 +846,7 @@ const QuestionBankSection = ({
                       placeholder="Введите текст вопроса"
                       className="w-full border-2 border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
                       rows={1}
-                    />
+                    />}
                     {editingQuestion.questionImage ? (
                       <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 border-2 border-gray-200">
                         <div className="relative mb-3">
@@ -941,7 +973,17 @@ const QuestionBankSection = ({
                           </select>
                         )}
                         <div className="flex-1 space-y-2">
-                          <textarea
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-medium text-gray-500">Вариант {index + 1}</span>
+                            <button
+                              onClick={() => setShowAnswerTexts(prev => ({ ...prev, [answer.id]: !prev[answer.id] }))}
+                              className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                            >
+                              <Icon name={showAnswerTexts[answer.id] ? "EyeOff" : "Eye"} size={12} />
+                              {showAnswerTexts[answer.id] ? 'Скрыть' : 'Показать'}
+                            </button>
+                          </div>
+                          {showAnswerTexts[answer.id] && <textarea
                             value={answer.text}
                             onChange={(e) => {
                               handleUpdateAnswer(answer.id, 'text', e.target.value);
@@ -952,10 +994,10 @@ const QuestionBankSection = ({
                               e.target.style.height = 'auto';
                               e.target.style.height = e.target.scrollHeight + 'px';
                             }}
-                            placeholder={`Вариант ${index + 1}`}
+                            placeholder={`Текст варианта ${index + 1}`}
                             className="w-full border-2 border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
                             rows={1}
-                          />
+                          />}
                           {answer.image ? (
                             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-2 border-2 border-blue-200">
                               <div className="relative mb-2">
@@ -1083,7 +1125,16 @@ const QuestionBankSection = ({
                   </label>
                   {hasHint && (
                     <div className="space-y-2">
-                      <textarea
+                      <div className="flex items-center gap-2 mb-1">
+                        <button
+                          onClick={() => setShowHintText(!showHintText)}
+                          className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        >
+                          <Icon name={showHintText ? "EyeOff" : "Eye"} size={12} />
+                          {showHintText ? 'Скрыть текст' : 'Показать текст'}
+                        </button>
+                      </div>
+                      {showHintText && <textarea
                         value={editingQuestion.hint}
                         onChange={(e) => {
                           setEditingQuestion({
@@ -1100,7 +1151,7 @@ const QuestionBankSection = ({
                         placeholder="Подсказка для ученика"
                         className="w-full border-2 border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
                         rows={1}
-                      />
+                      />}
                       {editingQuestion.hintImage ? (
                         <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 border-2 border-orange-200">
                           <div className="relative mb-3">
@@ -1178,7 +1229,16 @@ const QuestionBankSection = ({
                   </label>
                   {hasExplanation && (
                     <div className="space-y-2">
-                      <textarea
+                      <div className="flex items-center gap-2 mb-1">
+                        <button
+                          onClick={() => setShowExplanationText(!showExplanationText)}
+                          className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        >
+                          <Icon name={showExplanationText ? "EyeOff" : "Eye"} size={12} />
+                          {showExplanationText ? 'Скрыть текст' : 'Показать текст'}
+                        </button>
+                      </div>
+                      {showExplanationText && <textarea
                         value={editingQuestion.explanation}
                         onChange={(e) => {
                           setEditingQuestion({
@@ -1195,7 +1255,7 @@ const QuestionBankSection = ({
                         placeholder="Подробное объяснение правильного ответа"
                         className="w-full border-2 border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 rounded px-3 py-2 resize-none overflow-hidden min-h-[80px] transition-colors"
                         rows={3}
-                      />
+                      />}
                       {editingQuestion.explanationImage ? (
                         <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-200">
                           <div className="relative mb-3">
@@ -1257,10 +1317,12 @@ const QuestionBankSection = ({
                   {/* Question Preview */}
                   <div className="bg-white rounded-lg p-6 shadow-sm">
                     <h3 className="text-lg font-semibold mb-4">Вопрос:</h3>
-                    {editingQuestion.questionImage ? (
+                    {editingQuestion.question && <p className="text-gray-800 mb-3">{editingQuestion.question}</p>}
+                    {editingQuestion.questionImage && (
                       <img src={editingQuestion.questionImage} alt="Question" className="max-w-full rounded border" />
-                    ) : (
-                      <p className="text-gray-800">{editingQuestion.question}</p>
+                    )}
+                    {!editingQuestion.question && !editingQuestion.questionImage && (
+                      <p className="text-gray-400 italic">Текст или изображение вопроса не добавлены</p>
                     )}
                   </div>
 
@@ -1294,11 +1356,15 @@ const QuestionBankSection = ({
                               {answer.sequenceOrder || '—'}
                             </div>
                           )}
-                          {answer.image ? (
-                            <img src={answer.image} alt={`Answer ${index + 1}`} className="max-w-xs rounded" />
-                          ) : (
-                            <span className="flex-1">{answer.text}</span>
-                          )}
+                          <div className="flex-1 space-y-2">
+                            {answer.text && <span className="block">{answer.text}</span>}
+                            {answer.image && (
+                              <img src={answer.image} alt={`Answer ${index + 1}`} className="max-w-xs rounded" />
+                            )}
+                            {!answer.text && !answer.image && (
+                              <span className="text-gray-400 italic">Вариант {index + 1} (пусто)</span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1311,10 +1377,9 @@ const QuestionBankSection = ({
                         <Icon name="Lightbulb" size={20} className="text-amber-600" />
                         <h3 className="font-semibold text-amber-900">Подсказка</h3>
                       </div>
-                      {editingQuestion.hintImage ? (
+                      {editingQuestion.hint && <p className="text-amber-800 mb-3">{editingQuestion.hint}</p>}
+                      {editingQuestion.hintImage && (
                         <img src={editingQuestion.hintImage} alt="Hint" className="max-w-full rounded" />
-                      ) : (
-                        <p className="text-amber-800">{editingQuestion.hint}</p>
                       )}
                     </div>
                   )}
@@ -1326,10 +1391,9 @@ const QuestionBankSection = ({
                         <Icon name="Info" size={20} className="text-blue-600" />
                         <h3 className="font-semibold text-blue-900">Объяснение</h3>
                       </div>
-                      {editingQuestion.explanationImage ? (
+                      {editingQuestion.explanation && <p className="text-blue-800 mb-3">{editingQuestion.explanation}</p>}
+                      {editingQuestion.explanationImage && (
                         <img src={editingQuestion.explanationImage} alt="Explanation" className="max-w-full rounded" />
-                      ) : (
-                        <p className="text-blue-800">{editingQuestion.explanation}</p>
                       )}
                     </div>
                   )}
@@ -1340,6 +1404,11 @@ const QuestionBankSection = ({
                   <Button variant="outline" onClick={() => {
                     setIsQuestionModalOpen(false);
                     setPreviewMode(false);
+                    setEditingQuestion(null);
+                    setShowQuestionText(true);
+                    setShowAnswerTexts({});
+                    setShowHintText(true);
+                    setShowExplanationText(true);
                   }}>
                     <Icon name="ArrowLeft" size={16} />
                     Назад
