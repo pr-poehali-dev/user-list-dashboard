@@ -797,54 +797,53 @@ const QuestionBankSection = ({
                 <div>
                   <label className="block text-sm font-medium mb-2">Вопрос</label>
                   <div className="space-y-2">
-                    {editingQuestion.questionImage ? (
-                      <div className="relative inline-block">
-                        <img src={editingQuestion.questionImage} alt="Question" className="max-w-xs max-h-40 rounded border" />
+                    <textarea
+                      value={editingQuestion.question}
+                      onChange={(e) => {
+                        setEditingQuestion({
+                          ...editingQuestion,
+                          question: e.target.value
+                        });
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      placeholder="Введите текст вопроса"
+                      className="w-full border-2 border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
+                      rows={1}
+                    />
+                    {editingQuestion.questionImage && (
+                      <div className="relative inline-block bg-gray-50 rounded-lg p-2 border border-gray-200">
+                        <img src={editingQuestion.questionImage} alt="Question" className="max-w-full max-h-48 rounded" />
                         <button
                           onClick={() => setEditingQuestion({...editingQuestion, questionImage: undefined})}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                          title="Удалить изображение"
                         >
-                          ×
+                          <Icon name="X" size={16} />
                         </button>
                       </div>
-                    ) : (
-                      <>
-                        <textarea
-                          value={editingQuestion.question}
-                          onChange={(e) => {
-                            setEditingQuestion({
-                              ...editingQuestion,
-                              question: e.target.value
-                            });
-                            e.target.style.height = 'auto';
-                            e.target.style.height = e.target.scrollHeight + 'px';
-                          }}
-                          onFocus={(e) => {
-                            e.target.style.height = 'auto';
-                            e.target.style.height = e.target.scrollHeight + 'px';
-                          }}
-                          className="w-full border-2 border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
-                          rows={1}
-                        />
-                        <label className="inline-flex items-center gap-2 px-3 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm">
-                          <Icon name="Image" size={16} />
-                          Прикрепить изображение
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleImageUpload(file, (url) => {
-                                  setEditingQuestion({...editingQuestion, questionImage: url, question: ''});
-                                });
-                              }
-                            }}
-                          />
-                        </label>
-                      </>
                     )}
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm transition-colors">
+                      <Icon name="Image" size={16} className="text-gray-600" />
+                      {editingQuestion.questionImage ? 'Заменить изображение' : 'Добавить изображение'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleImageUpload(file, (url) => {
+                              setEditingQuestion({...editingQuestion, questionImage: url});
+                            });
+                          }
+                        }}
+                      />
+                    </label>
                   </div>
                 </div>
 
@@ -919,53 +918,50 @@ const QuestionBankSection = ({
                           </select>
                         )}
                         <div className="flex-1 space-y-2">
-                          {answer.image ? (
-                            <div className="relative inline-block">
-                              <img src={answer.image} alt={`Answer ${index + 1}`} className="max-w-xs max-h-32 rounded border" />
+                          <textarea
+                            value={answer.text}
+                            onChange={(e) => {
+                              handleUpdateAnswer(answer.id, 'text', e.target.value);
+                              e.target.style.height = 'auto';
+                              e.target.style.height = e.target.scrollHeight + 'px';
+                            }}
+                            onFocus={(e) => {
+                              e.target.style.height = 'auto';
+                              e.target.style.height = e.target.scrollHeight + 'px';
+                            }}
+                            placeholder={`Вариант ${index + 1}`}
+                            className="w-full border-2 border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
+                            rows={1}
+                          />
+                          {answer.image && (
+                            <div className="relative inline-block bg-gray-50 rounded-lg p-2 border border-gray-200">
+                              <img src={answer.image} alt={`Answer ${index + 1}`} className="max-w-full max-h-32 rounded" />
                               <button
                                 onClick={() => handleUpdateAnswer(answer.id, 'image', '')}
-                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                                title="Удалить изображение"
                               >
-                                ×
+                                <Icon name="X" size={14} />
                               </button>
                             </div>
-                          ) : (
-                            <>
-                              <textarea
-                                value={answer.text}
-                                onChange={(e) => {
-                                  handleUpdateAnswer(answer.id, 'text', e.target.value);
-                                  e.target.style.height = 'auto';
-                                  e.target.style.height = e.target.scrollHeight + 'px';
-                                }}
-                                onFocus={(e) => {
-                                  e.target.style.height = 'auto';
-                                  e.target.style.height = e.target.scrollHeight + 'px';
-                                }}
-                                placeholder={`Вариант ${index + 1}`}
-                                className="w-full border-2 border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
-                                rows={1}
-                              />
-                              <label className="inline-flex items-center gap-2 px-2 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-xs">
-                                <Icon name="Image" size={14} />
-                                Изображение
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      handleImageUpload(file, (url) => {
-                                        handleUpdateAnswer(answer.id, 'image', url);
-                                        handleUpdateAnswer(answer.id, 'text', '');
-                                      });
-                                    }
-                                  }}
-                                />
-                              </label>
-                            </>
                           )}
+                          <label className="inline-flex items-center gap-2 px-2 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-xs transition-colors">
+                            <Icon name="Image" size={14} className="text-gray-600" />
+                            {answer.image ? 'Заменить' : 'Изображение'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleImageUpload(file, (url) => {
+                                    handleUpdateAnswer(answer.id, 'image', url);
+                                  });
+                                }
+                              }}
+                            />
+                          </label>
                         </div>
                         <Button
                           size="sm"
@@ -1042,55 +1038,53 @@ const QuestionBankSection = ({
                   </label>
                   {hasHint && (
                     <div className="space-y-2">
-                      {editingQuestion.hintImage ? (
-                        <div className="relative inline-block">
-                          <img src={editingQuestion.hintImage} alt="Hint" className="max-w-xs max-h-32 rounded border" />
+                      <textarea
+                        value={editingQuestion.hint}
+                        onChange={(e) => {
+                          setEditingQuestion({
+                            ...editingQuestion,
+                            hint: e.target.value
+                          });
+                          e.target.style.height = 'auto';
+                          e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.height = 'auto';
+                          e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
+                        placeholder="Подсказка для ученика"
+                        className="w-full border-2 border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
+                        rows={1}
+                      />
+                      {editingQuestion.hintImage && (
+                        <div className="relative inline-block bg-gray-50 rounded-lg p-2 border border-gray-200">
+                          <img src={editingQuestion.hintImage} alt="Hint" className="max-w-full max-h-40 rounded" />
                           <button
                             onClick={() => setEditingQuestion({...editingQuestion, hintImage: undefined})}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                            title="Удалить изображение"
                           >
-                            ×
+                            <Icon name="X" size={16} />
                           </button>
                         </div>
-                      ) : (
-                        <>
-                          <textarea
-                            value={editingQuestion.hint}
-                            onChange={(e) => {
-                              setEditingQuestion({
-                                ...editingQuestion,
-                                hint: e.target.value
-                              });
-                              e.target.style.height = 'auto';
-                              e.target.style.height = e.target.scrollHeight + 'px';
-                            }}
-                            onFocus={(e) => {
-                              e.target.style.height = 'auto';
-                              e.target.style.height = e.target.scrollHeight + 'px';
-                            }}
-                            placeholder="Подсказка для ученика"
-                            className="w-full border-2 border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
-                            rows={1}
-                          />
-                          <label className="inline-flex items-center gap-2 px-3 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm">
-                            <Icon name="Image" size={16} />
-                            Прикрепить изображение
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  handleImageUpload(file, (url) => {
-                                    setEditingQuestion({...editingQuestion, hintImage: url, hint: ''});
-                                  });
-                                }
-                              }}
-                            />
-                          </label>
-                        </>
                       )}
+                      <label className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm transition-colors">
+                        <Icon name="Image" size={16} className="text-gray-600" />
+                        {editingQuestion.hintImage ? 'Заменить изображение' : 'Добавить изображение'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleImageUpload(file, (url) => {
+                                setEditingQuestion({...editingQuestion, hintImage: url});
+                              });
+                            }
+                          }}
+                        />
+                      </label>
                     </div>
                   )}
                 </div>
@@ -1116,55 +1110,53 @@ const QuestionBankSection = ({
                   </label>
                   {hasExplanation && (
                     <div className="space-y-2">
-                      {editingQuestion.explanationImage ? (
-                        <div className="relative inline-block">
-                          <img src={editingQuestion.explanationImage} alt="Explanation" className="max-w-xs max-h-40 rounded border" />
+                      <textarea
+                        value={editingQuestion.explanation}
+                        onChange={(e) => {
+                          setEditingQuestion({
+                            ...editingQuestion,
+                            explanation: e.target.value
+                          });
+                          e.target.style.height = 'auto';
+                          e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.height = 'auto';
+                          e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
+                        placeholder="Подробное объяснение правильного ответа"
+                        className="w-full border-2 border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 rounded px-3 py-2 resize-none overflow-hidden min-h-[80px] transition-colors"
+                        rows={3}
+                      />
+                      {editingQuestion.explanationImage && (
+                        <div className="relative inline-block bg-gray-50 rounded-lg p-2 border border-gray-200">
+                          <img src={editingQuestion.explanationImage} alt="Explanation" className="max-w-full max-h-48 rounded" />
                           <button
                             onClick={() => setEditingQuestion({...editingQuestion, explanationImage: undefined})}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                            title="Удалить изображение"
                           >
-                            ×
+                            <Icon name="X" size={16} />
                           </button>
                         </div>
-                      ) : (
-                        <>
-                          <textarea
-                            value={editingQuestion.explanation}
-                            onChange={(e) => {
-                              setEditingQuestion({
-                                ...editingQuestion,
-                                explanation: e.target.value
-                              });
-                              e.target.style.height = 'auto';
-                              e.target.style.height = e.target.scrollHeight + 'px';
-                            }}
-                            onFocus={(e) => {
-                              e.target.style.height = 'auto';
-                              e.target.style.height = e.target.scrollHeight + 'px';
-                            }}
-                            placeholder="Подробное объяснение правильного ответа"
-                            className="w-full border-2 border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 rounded px-3 py-2 resize-none overflow-hidden min-h-[80px] transition-colors"
-                            rows={3}
-                          />
-                          <label className="inline-flex items-center gap-2 px-3 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm">
-                            <Icon name="Image" size={16} />
-                            Прикрепить изображение
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  handleImageUpload(file, (url) => {
-                                    setEditingQuestion({...editingQuestion, explanationImage: url, explanation: ''});
-                                  });
-                                }
-                              }}
-                            />
-                          </label>
-                        </>
                       )}
+                      <label className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm transition-colors">
+                        <Icon name="Image" size={16} className="text-gray-600" />
+                        {editingQuestion.explanationImage ? 'Заменить изображение' : 'Добавить изображение'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleImageUpload(file, (url) => {
+                                setEditingQuestion({...editingQuestion, explanationImage: url});
+                              });
+                            }
+                          }}
+                        />
+                      </label>
                     </div>
                   )}
                 </div>
