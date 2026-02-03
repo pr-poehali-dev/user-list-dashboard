@@ -815,58 +815,35 @@ const QuestionBankSection = ({
                       className="w-full border-2 border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
                       rows={1}
                     />
-                    {editingQuestion.questionImage ? (
-                      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 border-2 border-gray-200">
-                        <div className="relative mb-3">
-                          <img src={editingQuestion.questionImage} alt="Question" className="w-full max-h-64 object-contain rounded" />
-                        </div>
-                        <div className="flex gap-2">
-                          <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm transition-all hover:border-blue-400">
-                            <Icon name="RefreshCw" size={16} className="text-blue-600" />
-                            <span className="font-medium">Заменить</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  handleImageUpload(file, (url) => {
-                                    setEditingQuestion({...editingQuestion, questionImage: url});
-                                  });
-                                }
-                              }}
-                            />
-                          </label>
-                          <button
-                            onClick={() => setEditingQuestion({...editingQuestion, questionImage: undefined})}
-                            className="px-3 py-2 bg-white border border-red-300 rounded hover:bg-red-50 text-red-600 transition-all hover:border-red-400 flex items-center gap-2"
-                            title="Удалить изображение"
-                          >
-                            <Icon name="Trash2" size={16} />
-                            <span className="font-medium text-sm">Удалить</span>
-                          </button>
-                        </div>
+                    {editingQuestion.questionImage && (
+                      <div className="relative inline-block bg-gray-50 rounded-lg p-2 border border-gray-200">
+                        <img src={editingQuestion.questionImage} alt="Question" className="max-w-full max-h-48 rounded" />
+                        <button
+                          onClick={() => setEditingQuestion({...editingQuestion, questionImage: undefined})}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                          title="Удалить изображение"
+                        >
+                          <Icon name="X" size={16} />
+                        </button>
                       </div>
-                    ) : (
-                      <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 text-sm transition-all group">
-                        <Icon name="ImagePlus" size={20} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-                        <span className="font-medium text-gray-600 group-hover:text-blue-600 transition-colors">Добавить изображение</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              handleImageUpload(file, (url) => {
-                                setEditingQuestion({...editingQuestion, questionImage: url});
-                              });
-                            }
-                          }}
-                        />
-                      </label>
                     )}
+                    <label className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm transition-colors">
+                      <Icon name="Image" size={16} className="text-gray-600" />
+                      {editingQuestion.questionImage ? 'Заменить изображение' : 'Добавить изображение'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleImageUpload(file, (url) => {
+                              setEditingQuestion({...editingQuestion, questionImage: url});
+                            });
+                          }
+                        }}
+                      />
+                    </label>
                   </div>
                 </div>
 
@@ -956,57 +933,35 @@ const QuestionBankSection = ({
                             className="w-full border-2 border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
                             rows={1}
                           />
-                          {answer.image ? (
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-2 border-2 border-blue-200">
-                              <div className="relative mb-2">
-                                <img src={answer.image} alt={`Answer ${index + 1}`} className="w-full max-h-40 object-contain rounded" />
-                              </div>
-                              <div className="flex gap-2">
-                                <label className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-white border border-blue-300 rounded cursor-pointer hover:bg-blue-50 text-xs transition-all">
-                                  <Icon name="RefreshCw" size={12} className="text-blue-600" />
-                                  <span className="font-medium">Заменить</span>
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) {
-                                        handleImageUpload(file, (url) => {
-                                          handleUpdateAnswer(answer.id, 'image', url);
-                                        });
-                                      }
-                                    }}
-                                  />
-                                </label>
-                                <button
-                                  onClick={() => handleUpdateAnswer(answer.id, 'image', '')}
-                                  className="px-2 py-1.5 bg-white border border-red-300 rounded hover:bg-red-50 text-red-600 transition-all flex items-center gap-1.5"
-                                  title="Удалить"
-                                >
-                                  <Icon name="X" size={12} />
-                                </button>
-                              </div>
+                          {answer.image && (
+                            <div className="relative inline-block bg-gray-50 rounded-lg p-2 border border-gray-200">
+                              <img src={answer.image} alt={`Answer ${index + 1}`} className="max-w-full max-h-32 rounded" />
+                              <button
+                                onClick={() => handleUpdateAnswer(answer.id, 'image', '')}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                                title="Удалить изображение"
+                              >
+                                <Icon name="X" size={14} />
+                              </button>
                             </div>
-                          ) : (
-                            <label className="flex items-center justify-center gap-1.5 px-2 py-2 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 text-xs transition-all group">
-                              <Icon name="ImagePlus" size={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-                              <span className="font-medium text-gray-500 group-hover:text-blue-600 transition-colors">Изображение</span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    handleImageUpload(file, (url) => {
-                                      handleUpdateAnswer(answer.id, 'image', url);
-                                    });
-                                  }
-                                }}
-                              />
-                            </label>
                           )}
+                          <label className="inline-flex items-center gap-2 px-2 py-1 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-xs transition-colors">
+                            <Icon name="Image" size={14} className="text-gray-600" />
+                            {answer.image ? 'Заменить' : 'Изображение'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleImageUpload(file, (url) => {
+                                    handleUpdateAnswer(answer.id, 'image', url);
+                                  });
+                                }
+                              }}
+                            />
+                          </label>
                         </div>
                         <Button
                           size="sm"
@@ -1101,58 +1056,35 @@ const QuestionBankSection = ({
                         className="w-full border-2 border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded px-3 py-2 resize-none overflow-hidden transition-colors"
                         rows={1}
                       />
-                      {editingQuestion.hintImage ? (
-                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 border-2 border-orange-200">
-                          <div className="relative mb-3">
-                            <img src={editingQuestion.hintImage} alt="Hint" className="w-full max-h-48 object-contain rounded" />
-                          </div>
-                          <div className="flex gap-2">
-                            <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-orange-300 rounded cursor-pointer hover:bg-orange-50 text-sm transition-all">
-                              <Icon name="RefreshCw" size={16} className="text-orange-600" />
-                              <span className="font-medium">Заменить</span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    handleImageUpload(file, (url) => {
-                                      setEditingQuestion({...editingQuestion, hintImage: url});
-                                    });
-                                  }
-                                }}
-                              />
-                            </label>
-                            <button
-                              onClick={() => setEditingQuestion({...editingQuestion, hintImage: undefined})}
-                              className="px-3 py-2 bg-white border border-red-300 rounded hover:bg-red-50 text-red-600 transition-all flex items-center gap-2"
-                              title="Удалить"
-                            >
-                              <Icon name="Trash2" size={16} />
-                              <span className="font-medium text-sm">Удалить</span>
-                            </button>
-                          </div>
+                      {editingQuestion.hintImage && (
+                        <div className="relative inline-block bg-gray-50 rounded-lg p-2 border border-gray-200">
+                          <img src={editingQuestion.hintImage} alt="Hint" className="max-w-full max-h-40 rounded" />
+                          <button
+                            onClick={() => setEditingQuestion({...editingQuestion, hintImage: undefined})}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                            title="Удалить изображение"
+                          >
+                            <Icon name="X" size={16} />
+                          </button>
                         </div>
-                      ) : (
-                        <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-orange-400 hover:bg-orange-50/50 text-sm transition-all group">
-                          <Icon name="ImagePlus" size={20} className="text-gray-400 group-hover:text-orange-500 transition-colors" />
-                          <span className="font-medium text-gray-600 group-hover:text-orange-600 transition-colors">Добавить изображение</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleImageUpload(file, (url) => {
-                                  setEditingQuestion({...editingQuestion, hintImage: url});
-                                });
-                              }
-                            }}
-                          />
-                        </label>
                       )}
+                      <label className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm transition-colors">
+                        <Icon name="Image" size={16} className="text-gray-600" />
+                        {editingQuestion.hintImage ? 'Заменить изображение' : 'Добавить изображение'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleImageUpload(file, (url) => {
+                                setEditingQuestion({...editingQuestion, hintImage: url});
+                              });
+                            }
+                          }}
+                        />
+                      </label>
                     </div>
                   )}
                 </div>
@@ -1196,58 +1128,35 @@ const QuestionBankSection = ({
                         className="w-full border-2 border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 rounded px-3 py-2 resize-none overflow-hidden min-h-[80px] transition-colors"
                         rows={3}
                       />
-                      {editingQuestion.explanationImage ? (
-                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-200">
-                          <div className="relative mb-3">
-                            <img src={editingQuestion.explanationImage} alt="Explanation" className="w-full max-h-56 object-contain rounded" />
-                          </div>
-                          <div className="flex gap-2">
-                            <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-green-300 rounded cursor-pointer hover:bg-green-50 text-sm transition-all">
-                              <Icon name="RefreshCw" size={16} className="text-green-600" />
-                              <span className="font-medium">Заменить</span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    handleImageUpload(file, (url) => {
-                                      setEditingQuestion({...editingQuestion, explanationImage: url});
-                                    });
-                                  }
-                                }}
-                              />
-                            </label>
-                            <button
-                              onClick={() => setEditingQuestion({...editingQuestion, explanationImage: undefined})}
-                              className="px-3 py-2 bg-white border border-red-300 rounded hover:bg-red-50 text-red-600 transition-all flex items-center gap-2"
-                              title="Удалить"
-                            >
-                              <Icon name="Trash2" size={16} />
-                              <span className="font-medium text-sm">Удалить</span>
-                            </button>
-                          </div>
+                      {editingQuestion.explanationImage && (
+                        <div className="relative inline-block bg-gray-50 rounded-lg p-2 border border-gray-200">
+                          <img src={editingQuestion.explanationImage} alt="Explanation" className="max-w-full max-h-48 rounded" />
+                          <button
+                            onClick={() => setEditingQuestion({...editingQuestion, explanationImage: undefined})}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
+                            title="Удалить изображение"
+                          >
+                            <Icon name="X" size={16} />
+                          </button>
                         </div>
-                      ) : (
-                        <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-400 hover:bg-green-50/50 text-sm transition-all group">
-                          <Icon name="ImagePlus" size={20} className="text-gray-400 group-hover:text-green-500 transition-colors" />
-                          <span className="font-medium text-gray-600 group-hover:text-green-600 transition-colors">Добавить изображение</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleImageUpload(file, (url) => {
-                                  setEditingQuestion({...editingQuestion, explanationImage: url});
-                                });
-                              }
-                            }}
-                          />
-                        </label>
                       )}
+                      <label className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded cursor-pointer hover:bg-gray-50 text-sm transition-colors">
+                        <Icon name="Image" size={16} className="text-gray-600" />
+                        {editingQuestion.explanationImage ? 'Заменить изображение' : 'Добавить изображение'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleImageUpload(file, (url) => {
+                                setEditingQuestion({...editingQuestion, explanationImage: url});
+                              });
+                            }
+                          }}
+                        />
+                      </label>
                     </div>
                   )}
                 </div>
