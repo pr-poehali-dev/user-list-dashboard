@@ -283,7 +283,7 @@ const Index = () => {
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between p-4 md:p-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                   <Icon name="GraduationCap" size={20} className="text-white" />
                 </div>
                 <div>
