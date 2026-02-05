@@ -46,6 +46,7 @@ const QuestionBankSection = ({
     y: number;
     item: any;
   }>({ show: false, x: 0, y: 0, item: null });
+  const [showCreateSubmenu, setShowCreateSubmenu] = useState(false);
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [draggedItem, setDraggedItem] = useState<any>(null);
@@ -70,6 +71,22 @@ const QuestionBankSection = ({
   const [showAnswerTexts, setShowAnswerTexts] = useState<Record<string, boolean>>({});
   const [showHintText, setShowHintText] = useState(true);
   const [showExplanationText, setShowExplanationText] = useState(true);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (contextMenu.show) {
+        closeContextMenu();
+      }
+    };
+
+    if (contextMenu.show) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [contextMenu.show]);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders(prev => 
@@ -174,6 +191,7 @@ const QuestionBankSection = ({
 
   const closeContextMenu = () => {
     setContextMenu({ show: false, x: 0, y: 0, item: null });
+    setShowCreateSubmenu(false);
   };
 
   const handleAddFolder = () => {
@@ -207,6 +225,39 @@ const QuestionBankSection = ({
     setExpandedFolders(prev => [...prev, parentItem.id]);
     setEditingItem(newFolder.id);
     setEditingName('Новый каталог');
+    closeContextMenu();
+  };
+
+  const handleAddQuestion = () => {
+    const parentItem = contextMenu.item;
+    const newQuestion = {
+      id: `question-${Date.now()}`,
+      name: 'Новый вопрос',
+      type: 'question'
+    };
+
+    const addQuestionToTree = (items: any[]): any[] => {
+      return items.map(item => {
+        if (item.id === parentItem.id && item.type === 'folder') {
+          return {
+            ...item,
+            children: [...(item.children || []), newQuestion]
+          };
+        }
+        if (item.children) {
+          return {
+            ...item,
+            children: addQuestionToTree(item.children)
+          };
+        }
+        return item;
+      });
+    };
+
+    setTreeData(addQuestionToTree(treeData));
+    setExpandedFolders(prev => [...prev, parentItem.id]);
+    setEditingItem(newQuestion.id);
+    setEditingName('Новый вопрос');
     closeContextMenu();
   };
 
@@ -659,15 +710,49 @@ const QuestionBankSection = ({
         <div
           className="fixed bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 min-w-[200px]"
           style={{ left: contextMenu.x, top: contextMenu.y }}
+          onMouseLeave={() => setShowCreateSubmenu(false)}
         >
           {contextMenu.item.type === 'folder' && (
-            <button
-              className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
-              onClick={handleAddFolder}
-            >
-              <Icon name="FolderPlus" size={16} />
-              Создать подкаталог
-            </button>
+            <div className="relative">
+              <button
+                className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 justify-between"
+                onMouseEnter={() => setShowCreateSubmenu(true)}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name="Plus" size={16} />
+                  Создать
+                </div>
+                <Icon name="ChevronRight" size={16} className="text-gray-400" />
+              </button>
+              {showCreateSubmenu && (
+                <div
+                  className="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[200px]"
+                  onMouseEnter={() => setShowCreateSubmenu(true)}
+                  onMouseLeave={() => setShowCreateSubmenu(false)}
+                >
+                  <button
+                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+                    onClick={() => {
+                      handleAddFolder();
+                      closeContextMenu();
+                    }}
+                  >
+                    <Icon name="FolderPlus" size={16} />
+                    Создать подкаталог
+                  </button>
+                  <button
+                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+                    onClick={() => {
+                      handleAddQuestion();
+                      closeContextMenu();
+                    }}
+                  >
+                    <Icon name="FilePlus" size={16} />
+                    Создать вопрос
+                  </button>
+                </div>
+              )}
+            </div>
           )}
           {contextMenu.item.type === 'question' && (
             <button
