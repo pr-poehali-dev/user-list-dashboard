@@ -18,6 +18,7 @@ const teacherSections = [
 const Index = () => {
   const [search, setSearch] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [mtlsError, setMtlsError] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingText, setLoadingText] = useState('Подключение к серверу...');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -246,6 +247,69 @@ const Index = () => {
       clearInterval(messageInterval);
     };
   }, []);
+
+  if (mtlsError) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-gray-800 border border-red-500/30 rounded-xl shadow-2xl p-8 max-w-lg w-full">
+          <div className="text-center mb-6">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-500/10 border-2 border-red-500/40 flex items-center justify-center">
+              <Icon name="ShieldX" size={36} className="text-red-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-1">Ошибка подключения</h2>
+            <p className="text-gray-400 text-sm">mTLS Handshake Failed</p>
+          </div>
+
+          <div className="bg-gray-900/60 border border-gray-700 rounded-lg p-4 mb-5 font-mono text-sm">
+            <div className="flex items-center gap-2 mb-3 text-red-400">
+              <Icon name="AlertTriangle" size={14} />
+              <span className="font-semibold">SSL/TLS ERROR 525</span>
+            </div>
+            <div className="space-y-1 text-gray-400 text-xs leading-relaxed">
+              <p><span className="text-gray-500">timestamp:</span> {new Date().toISOString()}</p>
+              <p><span className="text-gray-500">error:</span> <span className="text-red-300">CERTIFICATE_VERIFY_FAILED</span></p>
+              <p><span className="text-gray-500">detail:</span> Клиентский сертификат не прошёл проверку подлинности на сервере. Цепочка доверия нарушена.</p>
+              <p><span className="text-gray-500">issuer:</span> CN=RZD Corporate CA, O=OAO RZD, C=RU</p>
+              <p><span className="text-gray-500">subject:</span> CN=client.edu.rzd.ru</p>
+              <p><span className="text-gray-500">reason:</span> unable to get local issuer certificate</p>
+              <p><span className="text-gray-500">depth:</span> 0</p>
+            </div>
+          </div>
+
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-6">
+            <div className="flex gap-2">
+              <Icon name="Info" size={16} className="text-amber-400 mt-0.5 flex-shrink-0" />
+              <p className="text-amber-200/80 text-xs leading-relaxed">
+                Сертификат безопасности вашей рабочей станции не распознан сервером. Убедитесь, что корневой сертификат корпоративного CA установлен в хранилище доверенных сертификатов, либо обратитесь в службу информационной безопасности.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+              onClick={() => window.location.reload()}
+            >
+              <Icon name="RefreshCw" size={14} />
+              <span className="ml-2">Повторить</span>
+            </Button>
+            <Button
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => setMtlsError(false)}
+            >
+              <Icon name="LogIn" size={14} />
+              <span className="ml-2">Продолжить всё равно</span>
+            </Button>
+          </div>
+
+          <p className="text-center text-gray-600 text-xs mt-4">
+            Код ошибки: ERR_BAD_SSL_CLIENT_AUTH_CERT
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
