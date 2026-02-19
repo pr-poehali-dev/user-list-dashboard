@@ -19,6 +19,10 @@ const Index = () => {
   const [search, setSearch] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [mtlsError, setMtlsError] = useState(true);
+  const [retrying, setRetrying] = useState(false);
+  const [retryProgress, setRetryProgress] = useState(0);
+  const [retryStatus, setRetryStatus] = useState('');
+  const [retryFailed, setRetryFailed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingText, setLoadingText] = useState('Подключение к серверу...');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -37,6 +41,34 @@ const Index = () => {
   const [isDeleteGroupModalOpen, setIsDeleteGroupModalOpen] = useState(false);
   const [editGroupName, setEditGroupName] = useState('');
   const [treeData, setTreeData] = useState(questionTree);
+
+  const handleRetryConnection = () => {
+    setRetrying(true);
+    setRetryFailed(false);
+    setRetryProgress(0);
+    setRetryStatus('Установка TCP-соединения...');
+
+    const steps = [
+      { progress: 20, text: 'Установка TCP-соединения...', delay: 400 },
+      { progress: 45, text: 'TLS ClientHello отправлен...', delay: 900 },
+      { progress: 65, text: 'Ожидание ServerHello...', delay: 1500 },
+      { progress: 80, text: 'Проверка клиентского сертификата...', delay: 2200 },
+      { progress: 95, text: 'Верификация цепочки доверия...', delay: 2900 },
+    ];
+
+    steps.forEach(({ progress, text, delay }) => {
+      setTimeout(() => {
+        setRetryProgress(progress);
+        setRetryStatus(text);
+      }, delay);
+    });
+
+    setTimeout(() => {
+      setRetrying(false);
+      setRetryFailed(true);
+      setRetryProgress(0);
+    }, 3500);
+  };
 
   const handleAdminToggle = () => {
     setIsAdmin(!isAdmin);
@@ -285,18 +317,42 @@ const Index = () => {
             </div>
           </div>
 
+          {retrying && (
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-500 font-mono">{retryStatus}</span>
+                <span className="text-xs text-blue-600 font-mono">{retryProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-blue-500 h-1.5 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${retryProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {retryFailed && (
+            <div className="mb-5 flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-300">
+              <Icon name="XCircle" size={14} className="text-red-500 flex-shrink-0" />
+              <p className="text-red-700 text-xs">Повторное подключение не удалось — сервер отклонил сертификат</p>
+            </div>
+          )}
+
           <div className="flex gap-3">
             <Button
               variant="outline"
               className="flex-1"
-              onClick={() => window.location.reload()}
+              onClick={handleRetryConnection}
+              disabled={retrying}
             >
-              <Icon name="RefreshCw" size={14} />
-              <span className="ml-2">Повторить</span>
+              <Icon name="RefreshCw" size={14} className={retrying ? 'animate-spin' : ''} />
+              <span className="ml-2">{retrying ? 'Подключение...' : 'Повторить'}</span>
             </Button>
             <Button
               className="flex-1 bg-red-600 hover:bg-red-700 text-white"
               onClick={() => setMtlsError(false)}
+              disabled={retrying}
             >
               <Icon name="LogIn" size={14} />
               <span className="ml-2">Продолжить всё равно</span>
