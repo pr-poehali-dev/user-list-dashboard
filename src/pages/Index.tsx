@@ -17,6 +17,7 @@ const teacherSections = [
 
 const Index = () => {
   const [search, setSearch] = useState('');
+  const [teacherSearch, setTeacherSearch] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [mtlsError, setMtlsError] = useState(true);
   const [retrying, setRetrying] = useState(false);
@@ -90,7 +91,7 @@ const Index = () => {
         return (
           <UserManagementSection
             users={users}
-            search={search}
+            search={teacherSearch}
             selectedGroup={selectedGroup}
             setSelectedGroup={setSelectedGroup}
             isEditGroupModalOpen={isEditGroupModalOpen}
@@ -464,8 +465,8 @@ const Index = () => {
                 <Icon name="Search" size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input 
                   placeholder="Поиск пользователей..." 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  value={teacherSearch}
+                  onChange={(e) => setTeacherSearch(e.target.value)}
                   className="pl-10"
                 />
               </div>
