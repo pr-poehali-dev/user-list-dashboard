@@ -130,7 +130,7 @@ const Index = () => {
             <p className="text-gray-600">Здесь будут отображаться планы обучения.</p>
           </div>
         );
-      case 'groups':
+      case 'groups': {
         if (selectedGroup) {
           const groupUsers = users.filter(user => user.group === selectedGroup);
           
@@ -250,6 +250,7 @@ const Index = () => {
             </div>
           </div>
         );
+      }
       default:
         return null;
     }

@@ -46,7 +46,7 @@ const generateUsers = () => {
     '19.02.2024', '05.04.2024', '28.07.2024', '14.10.2024', '01.01.2025'
   ];
   
-  const users = [];
+  const users: User[] = [];
   for (let i = 1; i <= 1000; i++) {
     const birthYear = 1970 + (i % 35);
     const birthMonth = (i % 12) + 1;

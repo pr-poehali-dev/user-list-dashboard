@@ -329,7 +329,7 @@ const UserManagementSection = ({
     <>
       <div className="bg-white rounded-lg border shadow-sm">
         <div className="p-6 border-b flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Пользователи</h2>
+          <h2 className="text-xl font-semibold">Пользователи <span className="text-sm font-normal text-gray-400">({filteredAndSortedUsers.length} из {users.length})</span></h2>
           <Button className="flex items-center gap-2">
             <Icon name="Plus" size={16} />
             Добавить пользователя
@@ -481,22 +481,30 @@ const UserManagementSection = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.map((user) => (
-              <TableRow 
-                key={user.id} 
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => setSelectedUser(user)}
-              >
-                <TableCell className="font-mono text-sm">{user.id}</TableCell>
-                <TableCell className="font-medium">
-                  {user.surname} {user.name} {user.patronymic}
+            {paginatedData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-gray-400">
+                  {users.length === 0 ? 'Нет пользователей в системе' : 'Нет результатов по заданным фильтрам'}
                 </TableCell>
-                <TableCell>{user.group}</TableCell>
-                <TableCell>{user.direction}</TableCell>
-                <TableCell>{user.specialty}</TableCell>
-                <TableCell>{user.birthDate}</TableCell>
               </TableRow>
-            ))}
+            ) : (
+              paginatedData.map((user) => (
+                <TableRow 
+                  key={user.id} 
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => setSelectedUser(user)}
+                >
+                  <TableCell className="font-mono text-sm">{user.id}</TableCell>
+                  <TableCell className="font-medium">
+                    {user.surname} {user.name} {user.patronymic}
+                  </TableCell>
+                  <TableCell>{user.group}</TableCell>
+                  <TableCell>{user.direction}</TableCell>
+                  <TableCell>{user.specialty}</TableCell>
+                  <TableCell>{user.birthDate}</TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
 
