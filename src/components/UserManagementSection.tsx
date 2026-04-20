@@ -590,47 +590,57 @@ const UserManagementSection = ({
       <Dialog.Root open={selectedUser !== null} onOpenChange={(open) => !open && setSelectedUser(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
-            <Dialog.Title className="text-xl font-semibold mb-4">
-              Информация о пользователе
-            </Dialog.Title>
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-full max-w-lg shadow-xl overflow-hidden">
             {selectedUser && (
-              <div className="space-y-3">
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Табельный номер:</span>
-                  <span className="font-medium">{selectedUser.id}</span>
+              <>
+                <div className="bg-gray-50 border-b px-6 py-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <Icon name="User" size={20} className="text-blue-600" />
+                  </div>
+                  <div>
+                    <Dialog.Title className="text-base font-semibold text-gray-900">
+                      {selectedUser.surname} {selectedUser.name} {selectedUser.patronymic}
+                    </Dialog.Title>
+                    <p className="text-xs text-gray-500">№ {selectedUser.id}</p>
+                  </div>
                 </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">ФИО:</span>
-                  <span className="font-medium">
-                    {selectedUser.surname} {selectedUser.name} {selectedUser.patronymic}
-                  </span>
+
+                <div className="px-6 py-4 space-y-0">
+                  {[
+                    { label: 'Фамилия', value: selectedUser.surname },
+                    { label: 'Имя', value: selectedUser.name },
+                    { label: 'Отчество', value: selectedUser.patronymic },
+                    { label: 'Дирекция', value: selectedUser.direction },
+                    { label: 'Табельный номер', value: selectedUser.id },
+                    { label: 'Основная должность', value: selectedUser.specialty },
+                    { label: 'Совмещаемая должность', value: selectedUser.combinedSpecialty },
+                    { label: 'Диспетчер по грузовой работе', value: selectedUser.isDispatcher ? 'Да' : 'Нет' },
+                    { label: 'Группа', value: selectedUser.group },
+                    { label: 'Создан', value: selectedUser.createdAt },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex items-center justify-between py-2.5 border-b last:border-0">
+                      <span className="text-sm text-gray-500 min-w-0 flex-1">{label}</span>
+                      <span className="text-sm font-medium text-gray-900 text-right ml-4">{String(value)}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Группа:</span>
-                  <span className="font-medium">{selectedUser.group}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Направление:</span>
-                  <span className="font-medium">{selectedUser.direction}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Специальность:</span>
-                  <span className="font-medium">{selectedUser.specialty}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Дата рождения:</span>
-                  <span className="font-medium">{selectedUser.birthDate}</span>
-                </div>
-                <div className="flex gap-2 justify-end pt-4">
-                  <Button variant="outline" onClick={() => setSelectedUser(null)}>
-                    Закрыть
+
+                <div className="px-6 py-4 border-t bg-gray-50 flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setSelectedUser(null)} className="flex items-center gap-1.5">
+                    <Icon name="ArrowLeft" size={14} />
+                    Назад
                   </Button>
-                  <Button>
-                    Редактировать
+                  <div className="flex-1" />
+                  <Button variant="outline" size="sm" className="flex items-center gap-1.5">
+                    <Icon name="Pencil" size={14} />
+                    Изменить
+                  </Button>
+                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-1.5">
+                    <Icon name="Trash2" size={14} />
+                    Удалить
                   </Button>
                 </div>
-              </div>
+              </>
             )}
           </Dialog.Content>
         </Dialog.Portal>

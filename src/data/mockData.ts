@@ -6,7 +6,10 @@ export type User = {
   group: string;
   direction: string;
   specialty: string;
+  combinedSpecialty: string;
+  isDispatcher: boolean;
   birthDate: string;
+  createdAt: string;
 };
 
 export type QuestionAnswer = {
@@ -36,6 +39,12 @@ const generateUsers = () => {
   const groups = ['Победители', 'Безымянная', 'Группа номер 5', 'Звездочки', 'Молния', 'Орлы', 'Тигры', 'Драконы'];
   const directions = ['Западно-Сибирская', 'Восточно-Сибирская', 'Октябрьская', 'Свердловская', 'Камень-Устинская', 'Московская', 'Северная'];
   const specialties = ['Машинист электровоза', 'Помощник машиниста', 'Диспетчер', 'Проводник', 'Слесарь по ремонту', 'Электромонтер', 'Инженер-путеец', 'Составитель поездов'];
+  const combinedSpecialties = ['—', '—', 'Инструктор по безопасности', '—', 'Электромонтер', '—', 'Составитель поездов', '—', 'Проводник', 'Помощник машиниста'];
+
+  const createdDates = [
+    '15.01.2023', '03.03.2023', '22.06.2023', '11.09.2023', '07.11.2023',
+    '19.02.2024', '05.04.2024', '28.07.2024', '14.10.2024', '01.01.2025'
+  ];
   
   const users = [];
   for (let i = 1; i <= 1000; i++) {
@@ -51,7 +60,10 @@ const generateUsers = () => {
       group: groups[i % groups.length],
       direction: directions[i % directions.length],
       specialty: specialties[i % specialties.length],
-      birthDate: `${birthDay.toString().padStart(2, '0')}.${birthMonth.toString().padStart(2, '0')}.${birthYear}`
+      combinedSpecialty: combinedSpecialties[i % combinedSpecialties.length],
+      isDispatcher: i % 7 === 0,
+      birthDate: `${birthDay.toString().padStart(2, '0')}.${birthMonth.toString().padStart(2, '0')}.${birthYear}`,
+      createdAt: createdDates[i % createdDates.length]
     });
   }
   return users;
