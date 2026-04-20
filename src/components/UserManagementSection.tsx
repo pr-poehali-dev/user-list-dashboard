@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -49,6 +49,25 @@ const UserManagementSection = ({
   isAuthModalOpen,
   setIsAuthModalOpen
 }: UserManagementSectionProps) => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editPreviewMode, setEditPreviewMode] = useState(false);
+
+  useEffect(() => {
+    if (editingUser) setEditPreviewMode(false);
+  }, [editingUser]);
+
+  const handleOpenEdit = () => {
+    if (!selectedUser) return;
+    setEditingUser({ ...selectedUser });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    setIsEditModalOpen(false);
+    setEditingUser(null);
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [sortConfigs, setSortConfigs] = useState<Array<{ key: string; direction: 'asc' | 'desc' }>>([]);
@@ -639,7 +658,7 @@ const UserManagementSection = ({
                     Назад
                   </Button>
                   <div className="flex-1" />
-                  <Button variant="outline" size="sm" className="flex items-center gap-1.5">
+                  <Button variant="outline" size="sm" onClick={handleOpenEdit} className="flex items-center gap-1.5">
                     <Icon name="Pencil" size={14} />
                     Изменить
                   </Button>
@@ -650,6 +669,164 @@ const UserManagementSection = ({
                 </div>
               </>
             )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Edit User Modal */}
+      <Dialog.Root open={isEditModalOpen} onOpenChange={(open) => { if (!open) { setIsEditModalOpen(false); setEditingUser(null); } }}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/50" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-2xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <Dialog.Title className="text-xl font-semibold">
+                Редактирование пользователя
+              </Dialog.Title>
+              <div className="flex gap-2">
+                <Button variant={!editPreviewMode ? 'default' : 'outline'} size="sm" onClick={() => setEditPreviewMode(false)}>
+                  Редактирование
+                </Button>
+                <Button variant={editPreviewMode ? 'default' : 'outline'} size="sm" onClick={() => setEditPreviewMode(true)}>
+                  Предпросмотр
+                </Button>
+              </div>
+            </div>
+
+            {editingUser && !editPreviewMode && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Фамилия</label>
+                    <input
+                      value={editingUser.surname}
+                      onChange={(e) => setEditingUser({ ...editingUser, surname: e.target.value })}
+                      className="w-full border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded px-3 py-2 outline-none transition-colors text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Имя</label>
+                    <input
+                      value={editingUser.name}
+                      onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                      className="w-full border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded px-3 py-2 outline-none transition-colors text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Отчество</label>
+                  <input
+                    value={editingUser.patronymic}
+                    onChange={(e) => setEditingUser({ ...editingUser, patronymic: e.target.value })}
+                    className="w-full border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded px-3 py-2 outline-none transition-colors text-sm"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Табельный номер</label>
+                    <input
+                      value={editingUser.id}
+                      disabled
+                      className="w-full border-2 border-gray-200 bg-gray-50 rounded px-3 py-2 text-sm text-gray-400 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Дирекция</label>
+                    <select
+                      value={editingUser.direction}
+                      onChange={(e) => setEditingUser({ ...editingUser, direction: e.target.value })}
+                      className="w-full border-2 border-blue-200 focus:border-blue-500 rounded px-3 py-2 outline-none transition-colors text-sm"
+                    >
+                      {directions.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Основная должность</label>
+                    <select
+                      value={editingUser.specialty}
+                      onChange={(e) => setEditingUser({ ...editingUser, specialty: e.target.value })}
+                      className="w-full border-2 border-blue-200 focus:border-blue-500 rounded px-3 py-2 outline-none transition-colors text-sm"
+                    >
+                      {specialties.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Совмещаемая должность</label>
+                    <input
+                      value={editingUser.combinedSpecialty}
+                      onChange={(e) => setEditingUser({ ...editingUser, combinedSpecialty: e.target.value })}
+                      placeholder="Не указана"
+                      className="w-full border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded px-3 py-2 outline-none transition-colors text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Группа</label>
+                    <select
+                      value={editingUser.group}
+                      onChange={(e) => setEditingUser({ ...editingUser, group: e.target.value })}
+                      className="w-full border-2 border-blue-200 focus:border-blue-500 rounded px-3 py-2 outline-none transition-colors text-sm"
+                    >
+                      {groups.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Диспетчер по грузовой работе</label>
+                    <div className="flex items-center h-[42px]">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editingUser.isDispatcher}
+                          onChange={(e) => setEditingUser({ ...editingUser, isDispatcher: e.target.checked })}
+                          className="w-4 h-4 accent-blue-600"
+                        />
+                        <span className="text-sm text-gray-700">{editingUser.isDispatcher ? 'Да' : 'Нет'}</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {editingUser && editPreviewMode && (
+              <div className="space-y-0 border rounded-lg overflow-hidden">
+                {[
+                  { label: 'Фамилия', value: editingUser.surname },
+                  { label: 'Имя', value: editingUser.name },
+                  { label: 'Отчество', value: editingUser.patronymic },
+                  { label: 'Дирекция', value: editingUser.direction },
+                  { label: 'Табельный номер', value: editingUser.id },
+                  { label: 'Основная должность', value: editingUser.specialty },
+                  { label: 'Совмещаемая должность', value: editingUser.combinedSpecialty },
+                  { label: 'Диспетчер по грузовой работе', value: editingUser.isDispatcher ? 'Да' : 'Нет' },
+                  { label: 'Группа', value: editingUser.group },
+                  { label: 'Создан', value: editingUser.createdAt },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center justify-between px-4 py-3 border-b last:border-0 odd:bg-gray-50">
+                    <span className="text-sm text-gray-500">{label}</span>
+                    <span className="text-sm font-medium text-gray-900">{String(value)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 mt-6 pt-4 border-t">
+              <Button variant="outline" onClick={() => { setIsEditModalOpen(false); setEditingUser(null); }} className="flex items-center gap-1.5">
+                <Icon name="ArrowLeft" size={14} />
+                Назад
+              </Button>
+              <div className="flex-1" />
+              <Button onClick={handleSaveEdit} className="flex items-center gap-1.5">
+                <Icon name="Save" size={14} />
+                Сохранить
+              </Button>
+            </div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
