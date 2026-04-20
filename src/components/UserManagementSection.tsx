@@ -616,23 +616,18 @@ const UserManagementSection = ({
       {/* User Detail Modal */}
       <Dialog.Root open={selectedUser !== null} onOpenChange={(open) => !open && setSelectedUser(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg w-full max-w-lg shadow-xl overflow-hidden">
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg">
             {selectedUser && (
-              <>
-                <div className="bg-gray-50 border-b px-6 py-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                    <Icon name="User" size={20} className="text-blue-600" />
+              <div className="space-y-4">
+                <Dialog.Title className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon name="User" size={20} className="text-white" />
                   </div>
-                  <div>
-                    <Dialog.Title className="text-base font-semibold text-gray-900">
-                      {selectedUser.surname} {selectedUser.name} {selectedUser.patronymic}
-                    </Dialog.Title>
-                    <p className="text-xs text-gray-500">№ {selectedUser.id}</p>
-                  </div>
-                </div>
+                  {selectedUser.surname} {selectedUser.name} {selectedUser.patronymic}
+                </Dialog.Title>
 
-                <div className="px-6 py-4 space-y-0">
+                <div className="space-y-3">
                   {[
                     { label: 'Фамилия', value: selectedUser.surname },
                     { label: 'Имя', value: selectedUser.name },
@@ -645,30 +640,32 @@ const UserManagementSection = ({
                     { label: 'Группа', value: selectedUser.group },
                     { label: 'Создан', value: selectedUser.createdAt },
                   ].map(({ label, value }) => (
-                    <div key={label} className="flex items-center justify-between py-2.5 border-b last:border-0">
-                      <span className="text-sm text-gray-500 min-w-0 flex-1">{label}</span>
-                      <span className="text-sm font-medium text-gray-900 text-right ml-4">{String(value)}</span>
+                    <div key={label}>
+                      <label className="text-sm font-medium text-gray-600">{label}</label>
+                      <p className="text-base text-gray-900">{String(value)}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="px-6 py-4 border-t bg-gray-50 flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setSelectedUser(null)} className="flex items-center gap-1.5">
-                    <Icon name="ArrowLeft" size={14} />
-                    Назад
-                  </Button>
-                  <div className="flex-1" />
-                  <Button variant="outline" size="sm" onClick={handleOpenEdit} className="flex items-center gap-1.5">
-                    <Icon name="Pencil" size={14} />
+                <div className="flex gap-3">
+                  <Button className="flex-1" onClick={handleOpenEdit}>
+                    <Icon name="Pencil" size={16} className="mr-2" />
                     Изменить
                   </Button>
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-1.5">
-                    <Icon name="Trash2" size={14} />
+                  <Button variant="outline" className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">
+                    <Icon name="Trash2" size={16} className="mr-2" />
                     Удалить
                   </Button>
                 </div>
-              </>
+              </div>
             )}
+            <Dialog.Close
+              onClick={() => setSelectedUser(null)}
+              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            >
+              <Icon name="X" size={16} />
+              <span className="sr-only">Закрыть</span>
+            </Dialog.Close>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
