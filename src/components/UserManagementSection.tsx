@@ -226,7 +226,7 @@ const UserManagementSection = ({
             </div>
           </div>
 
-          <div className="space-y-0 border rounded-lg overflow-hidden mb-6">
+          <div className="grid grid-cols-2 gap-3 mb-6">
             {[
               { label: 'Фамилия', value: selectedUser.surname },
               { label: 'Имя', value: selectedUser.name },
@@ -239,9 +239,9 @@ const UserManagementSection = ({
               { label: 'Группа', value: selectedUser.group },
               { label: 'Создан', value: selectedUser.createdAt },
             ].map(({ label, value }) => (
-              <div key={label} className="flex items-center justify-between px-4 py-3 border-b last:border-0 odd:bg-gray-50">
-                <span className="text-sm text-gray-500">{label}</span>
-                <span className="text-sm font-medium text-gray-900">{String(value)}</span>
+              <div key={label} className="bg-gray-50 rounded-lg px-4 py-3">
+                <p className="text-xs text-gray-500 mb-0.5">{label}</p>
+                <p className="text-sm font-semibold text-gray-900">{String(value)}</p>
               </div>
             ))}
           </div>
