@@ -234,7 +234,6 @@ const UserManagementSection = ({
               { label: 'Дирекция', value: selectedUser.direction },
               { label: 'Табельный номер', value: selectedUser.id },
               { label: 'Основная должность', value: selectedUser.specialty },
-              { label: 'Совмещаемая должность', value: selectedUser.combinedSpecialty },
               { label: 'Диспетчер по грузовой работе', value: selectedUser.isDispatcher ? 'Да' : 'Нет' },
               { label: 'Группа', value: selectedUser.group },
               { label: 'Создан', value: selectedUser.createdAt },
@@ -244,6 +243,17 @@ const UserManagementSection = ({
                 <p className="text-sm font-semibold text-gray-900">{String(value)}</p>
               </div>
             ))}
+            <div className="bg-gray-50 rounded-lg px-4 py-3 col-span-2">
+              <p className="text-xs text-gray-500 mb-1">Совмещаемые должности</p>
+              {selectedUser.combinedSpecialty.length === 0
+                ? <p className="text-sm font-semibold text-gray-400">Не указаны</p>
+                : <div className="flex flex-wrap gap-1.5">
+                    {selectedUser.combinedSpecialty.map((cs, i) => (
+                      <span key={i} className="text-xs bg-blue-100 text-blue-700 font-medium px-2 py-0.5 rounded-full">{cs}</span>
+                    ))}
+                  </div>
+              }
+            </div>
           </div>
 
           <div className="flex gap-3">
@@ -306,9 +316,42 @@ const UserManagementSection = ({
                         {specialties.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Совмещаемая должность</label>
-                      <input value={editingUser.combinedSpecialty} onChange={(e) => setEditingUser({ ...editingUser, combinedSpecialty: e.target.value })} placeholder="Не указана" className="w-full border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded px-3 py-2 outline-none transition-colors text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Совмещаемые должности</label>
+                    <div className="space-y-2">
+                      {editingUser.combinedSpecialty.map((cs, idx) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                          <select
+                            value={cs}
+                            onChange={(e) => {
+                              const updated = [...editingUser.combinedSpecialty];
+                              updated[idx] = e.target.value;
+                              setEditingUser({ ...editingUser, combinedSpecialty: updated });
+                            }}
+                            className="flex-1 border-2 border-blue-200 focus:border-blue-500 rounded px-3 py-2 outline-none transition-colors text-sm"
+                          >
+                            {specialties.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingUser({ ...editingUser, combinedSpecialty: editingUser.combinedSpecialty.filter((_, i) => i !== idx) })}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200 px-2"
+                          >
+                            <Icon name="X" size={14} />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingUser({ ...editingUser, combinedSpecialty: [...editingUser.combinedSpecialty, specialties[0]] })}
+                        className="flex items-center gap-1.5 text-blue-600 border-blue-200 hover:bg-blue-50"
+                      >
+                        <Icon name="Plus" size={14} />
+                        Добавить должность
+                      </Button>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -340,16 +383,26 @@ const UserManagementSection = ({
                     { label: 'Дирекция', value: editingUser.direction },
                     { label: 'Табельный номер', value: editingUser.id },
                     { label: 'Основная должность', value: editingUser.specialty },
-                    { label: 'Совмещаемая должность', value: editingUser.combinedSpecialty },
                     { label: 'Диспетчер по грузовой работе', value: editingUser.isDispatcher ? 'Да' : 'Нет' },
                     { label: 'Группа', value: editingUser.group },
                     { label: 'Создан', value: editingUser.createdAt },
                   ].map(({ label, value }) => (
-                    <div key={label} className="flex items-center justify-between px-4 py-3 border-b last:border-0 odd:bg-gray-50">
+                    <div key={label} className="flex items-center justify-between px-4 py-3 border-b odd:bg-gray-50">
                       <span className="text-sm text-gray-500">{label}</span>
                       <span className="text-sm font-medium text-gray-900">{String(value)}</span>
                     </div>
                   ))}
+                  <div className="flex items-center justify-between px-4 py-3 border-b odd:bg-gray-50">
+                    <span className="text-sm text-gray-500">Совмещаемые должности</span>
+                    {editingUser.combinedSpecialty.length === 0
+                      ? <span className="text-sm font-medium text-gray-400">Не указаны</span>
+                      : <div className="flex flex-wrap gap-1 justify-end">
+                          {editingUser.combinedSpecialty.map((cs, i) => (
+                            <span key={i} className="text-xs bg-blue-100 text-blue-700 font-medium px-2 py-0.5 rounded-full">{cs}</span>
+                          ))}
+                        </div>
+                    }
+                  </div>
                 </div>
               )}
 
