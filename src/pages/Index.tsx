@@ -41,6 +41,7 @@ const Index = () => {
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
   const [isDeleteGroupModalOpen, setIsDeleteGroupModalOpen] = useState(false);
   const [editGroupName, setEditGroupName] = useState('');
+  const [editGroupSpecialty, setEditGroupSpecialty] = useState('');
   const [treeData, setTreeData] = useState(questionTree);
 
   const handleRetryConnection = () => {
@@ -157,12 +158,13 @@ const Index = () => {
                     size="sm"
                     onClick={() => {
                       setEditGroupName(selectedGroup);
+                      setEditGroupSpecialty('');
                       setIsEditGroupModalOpen(true);
                     }}
                     className="flex items-center gap-2"
                   >
                     <Icon name="Edit" size={14} />
-                    Переименовать
+                    Изменить
                   </Button>
                   <Button 
                     variant="destructive" 
@@ -708,13 +710,13 @@ const Index = () => {
                 <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                   <Icon name="Edit" size={20} className="text-white" />
                 </div>
-                Переименовать группу
+                Изменить группу
               </Dialog.Title>
               
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600 block mb-2">
-                    Новое название группы
+                    Название группы
                   </label>
                   <Input
                     value={editGroupName}
@@ -722,12 +724,30 @@ const Index = () => {
                     placeholder="Введите название..."
                   />
                 </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-2">
+                    Родительская специальность
+                  </label>
+                  <select
+                    value={editGroupSpecialty}
+                    onChange={(e) => setEditGroupSpecialty(e.target.value)}
+                    className="w-full border-2 border-blue-200 focus:border-blue-500 rounded px-3 py-2 outline-none transition-colors text-sm bg-white"
+                  >
+                    <option value="">— Не указана —</option>
+                    {['Машинист электровоза', 'Помощник машиниста', 'Диспетчер', 'Проводник', 'Слесарь по ремонту', 'Электромонтер', 'Инженер-путеец', 'Составитель поездов'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  {editGroupSpecialty && (
+                    <p className="text-xs text-blue-600 mt-1">Группа будет привязана к специальности: {editGroupSpecialty}</p>
+                  )}
+                </div>
                 
-                <div className="flex gap-3">
+                <div className="flex gap-3 pt-2">
                   <Button 
                     className="flex-1"
                     onClick={() => {
-                      alert(`Группа переименована на "${editGroupName}"`);
                       setSelectedGroup(editGroupName);
                       setIsEditGroupModalOpen(false);
                     }}
