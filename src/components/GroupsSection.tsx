@@ -142,7 +142,14 @@ const GroupsSection = ({
                     value={editGroupName}
                     onChange={(e) => setEditGroupName(e.target.value)}
                     placeholder="Введите название..."
+                    className={!editGroupName.trim() ? 'border-red-300 focus-visible:ring-red-300' : ''}
                   />
+                  {!editGroupName.trim() && (
+                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                      <Icon name="AlertCircle" size={12} />
+                      Название группы обязательно
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -152,13 +159,19 @@ const GroupsSection = ({
                   <select
                     value={editGroupSpecialty}
                     onChange={(e) => setEditGroupSpecialty(e.target.value)}
-                    className="w-full border-2 border-blue-200 focus:border-blue-500 rounded px-3 py-2 outline-none transition-colors text-sm bg-white"
+                    className={`w-full border-2 rounded px-3 py-2 outline-none transition-colors text-sm bg-white ${!editGroupSpecialty ? 'border-red-300 focus:border-red-400' : 'border-blue-200 focus:border-blue-500'}`}
                   >
                     <option value="">— Не указана —</option>
                     {['Машинист электровоза', 'Помощник машиниста', 'Диспетчер', 'Проводник', 'Слесарь по ремонту', 'Электромонтер', 'Инженер-путеец', 'Составитель поездов'].map(s => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
+                  {!editGroupSpecialty && (
+                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                      <Icon name="AlertCircle" size={12} />
+                      Выберите родительскую специальность
+                    </p>
+                  )}
                   {editGroupSpecialty && (
                     <p className="text-xs text-blue-600 mt-1">Группа будет привязана к специальности: {editGroupSpecialty}</p>
                   )}
@@ -178,6 +191,7 @@ const GroupsSection = ({
                 <div className="flex gap-3 pt-2">
                   <Button
                     className="flex-1"
+                    disabled={!editGroupName.trim() || !editGroupSpecialty}
                     onClick={() => {
                       setSelectedGroup(editGroupName);
                       setIsEditGroupModalOpen(false);
