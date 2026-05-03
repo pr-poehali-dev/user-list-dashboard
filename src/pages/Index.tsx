@@ -31,6 +31,7 @@ const Index = () => {
   const [isDeleteGroupModalOpen, setIsDeleteGroupModalOpen] = useState(false);
   const [editGroupName, setEditGroupName] = useState('');
   const [editGroupSpecialty, setEditGroupSpecialty] = useState('');
+  const [editGroupCreatedAt, setEditGroupCreatedAt] = useState('');
 
   const handleRetryConnection = () => {
     setRetrying(true);
@@ -125,6 +126,8 @@ const Index = () => {
         setEditGroupName={setEditGroupName}
         editGroupSpecialty={editGroupSpecialty}
         setEditGroupSpecialty={setEditGroupSpecialty}
+        editGroupCreatedAt={editGroupCreatedAt}
+        setEditGroupCreatedAt={setEditGroupCreatedAt}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
         isAuthModalOpen={isAuthModalOpen}

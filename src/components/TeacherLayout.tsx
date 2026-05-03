@@ -28,6 +28,8 @@ interface TeacherLayoutProps {
   setEditGroupName: (name: string) => void;
   editGroupSpecialty: string;
   setEditGroupSpecialty: (specialty: string) => void;
+  editGroupCreatedAt: string;
+  setEditGroupCreatedAt: (date: string) => void;
   selectedUser: User | null;
   setSelectedUser: (user: User | null) => void;
   isAuthModalOpen: boolean;
@@ -46,6 +48,8 @@ const TeacherLayout = ({
   setEditGroupName,
   editGroupSpecialty,
   setEditGroupSpecialty,
+  editGroupCreatedAt,
+  setEditGroupCreatedAt,
   selectedUser,
   setSelectedUser,
   isAuthModalOpen,
@@ -118,6 +122,8 @@ const TeacherLayout = ({
             setEditGroupName={setEditGroupName}
             editGroupSpecialty={editGroupSpecialty}
             setEditGroupSpecialty={setEditGroupSpecialty}
+            editGroupCreatedAt={editGroupCreatedAt}
+            setEditGroupCreatedAt={setEditGroupCreatedAt}
           />
         );
       default:

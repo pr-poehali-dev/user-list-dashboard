@@ -16,6 +16,8 @@ interface GroupsSectionProps {
   setEditGroupName: (name: string) => void;
   editGroupSpecialty: string;
   setEditGroupSpecialty: (specialty: string) => void;
+  editGroupCreatedAt: string;
+  setEditGroupCreatedAt: (date: string) => void;
 }
 
 const GroupsSection = ({
@@ -30,6 +32,8 @@ const GroupsSection = ({
   setEditGroupName,
   editGroupSpecialty,
   setEditGroupSpecialty,
+  editGroupCreatedAt,
+  setEditGroupCreatedAt,
 }: GroupsSectionProps) => {
   if (selectedGroup) {
     const groupUsers = users.filter(user => user.group === selectedGroup);
@@ -58,6 +62,7 @@ const GroupsSection = ({
                 onClick={() => {
                   setEditGroupName(selectedGroup);
                   setEditGroupSpecialty('');
+                  setEditGroupCreatedAt('');
                   setIsEditGroupModalOpen(true);
                 }}
                 className="flex items-center gap-2"
@@ -157,6 +162,17 @@ const GroupsSection = ({
                   {editGroupSpecialty && (
                     <p className="text-xs text-blue-600 mt-1">Группа будет привязана к специальности: {editGroupSpecialty}</p>
                   )}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-2">
+                    Дата создания группы
+                  </label>
+                  <Input
+                    type="date"
+                    value={editGroupCreatedAt}
+                    onChange={(e) => setEditGroupCreatedAt(e.target.value)}
+                  />
                 </div>
 
                 <div className="flex gap-3 pt-2">
