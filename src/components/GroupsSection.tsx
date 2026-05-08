@@ -181,11 +181,44 @@ const GroupsSection = ({
                   <label className="text-sm font-medium text-gray-600 block mb-2">
                     Дата создания группы
                   </label>
-                  <Input
-                    type="date"
-                    value={editGroupCreatedAt}
-                    onChange={(e) => setEditGroupCreatedAt(e.target.value)}
-                  />
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={editGroupCreatedAt.split('-')[2] || ''}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        const parts = editGroupCreatedAt.split('-');
+                        setEditGroupCreatedAt([parts[0] || '', parts[1] || '', v].join('-'));
+                      }}
+                      placeholder="ДД"
+                      maxLength={2}
+                      className="w-16 text-center"
+                    />
+                    <span className="text-gray-400 font-medium">/</span>
+                    <Input
+                      value={editGroupCreatedAt.split('-')[1] || ''}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        const parts = editGroupCreatedAt.split('-');
+                        setEditGroupCreatedAt([parts[0] || '', v, parts[2] || ''].join('-'));
+                      }}
+                      placeholder="ММ"
+                      maxLength={2}
+                      className="w-16 text-center"
+                    />
+                    <span className="text-gray-400 font-medium">/</span>
+                    <Input
+                      value={editGroupCreatedAt.split('-')[0] || ''}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, '').slice(0, 4);
+                        const parts = editGroupCreatedAt.split('-');
+                        setEditGroupCreatedAt([v, parts[1] || '', parts[2] || ''].join('-'));
+                      }}
+                      placeholder="ГГГГ"
+                      maxLength={4}
+                      className="flex-1 text-center"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Например: 15 / 09 / 2023</p>
                 </div>
 
                 <div className="flex gap-3 pt-2">
