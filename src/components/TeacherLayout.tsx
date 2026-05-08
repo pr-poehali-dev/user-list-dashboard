@@ -7,6 +7,7 @@ import { users, questionTree, User } from '@/data/mockData';
 import QuestionBankSection from '@/components/QuestionBankSection';
 import UserManagementSection from '@/components/UserManagementSection';
 import GroupsSection from '@/components/GroupsSection';
+import KnowledgeScopeSection from '@/components/KnowledgeScopeSection';
 
 const teacherSections = [
   { id: 'users', name: 'Пользователи', icon: 'Users' },
@@ -95,12 +96,7 @@ const TeacherLayout = ({
           />
         );
       case 'knowledge':
-        return (
-          <div className="bg-white rounded-lg border shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Объем знаний</h2>
-            <p className="text-gray-600">Здесь будет отображаться объем знаний студентов.</p>
-          </div>
-        );
+        return <KnowledgeScopeSection treeData={treeData} />;
       case 'plans':
         return (
           <div className="bg-white rounded-lg border shadow-sm p-6">
