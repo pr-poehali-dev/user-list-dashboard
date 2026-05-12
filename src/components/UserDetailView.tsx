@@ -20,10 +20,24 @@ const UserDetailView = ({ selectedUser, onBack }: UserDetailViewProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editPreviewMode, setEditPreviewMode] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
+  const [deleteAttempt, setDeleteAttempt] = useState(0);
 
   useEffect(() => {
     if (editingUser) setEditPreviewMode(false);
   }, [editingUser]);
+
+  const handleDeleteConfirm = () => {
+    const nextAttempt = deleteAttempt + 1;
+    setDeleteAttempt(nextAttempt);
+    if (nextAttempt % 2 === 1) {
+      onBack();
+    } else {
+      setDeleteError(true);
+      setIsDeleteDialogOpen(false);
+    }
+  };
 
   const handleOpenEdit = () => {
     setEditingUser({ ...selectedUser });
@@ -93,7 +107,7 @@ const UserDetailView = ({ selectedUser, onBack }: UserDetailViewProps) => {
             <Icon name="Pencil" size={16} />
             Изменить
           </Button>
-          <Button variant="outline" className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">
+          <Button variant="outline" className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" onClick={() => { setDeleteError(false); setIsDeleteDialogOpen(true); }}>
             <Icon name="Trash2" size={16} />
             Удалить
           </Button>
@@ -246,6 +260,56 @@ const UserDetailView = ({ selectedUser, onBack }: UserDetailViewProps) => {
               <Button onClick={handleSaveEdit} className="flex items-center gap-1.5">
                 <Icon name="Save" size={14} />
                 Сохранить
+              </Button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Диалог подтверждения удаления */}
+      <Dialog.Root open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-sm translate-x-[-50%] translate-y-[-50%] bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <Icon name="Trash2" size={20} className="text-red-600" />
+              </div>
+              <div>
+                <Dialog.Title className="text-lg font-bold text-gray-900 mb-1">Подтверждение удаления</Dialog.Title>
+                <p className="text-sm text-gray-600">Вы действительно хотите удалить пользователя?</p>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button onClick={handleDeleteConfirm} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white border-0">
+                <Icon name="Trash2" size={16} />
+                Удалить
+              </Button>
+              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                Отменить
+              </Button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Диалог ошибки удаления */}
+      <Dialog.Root open={deleteError} onOpenChange={setDeleteError}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-sm translate-x-[-50%] translate-y-[-50%] bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <Icon name="AlertCircle" size={20} className="text-red-600" />
+              </div>
+              <div>
+                <Dialog.Title className="text-lg font-bold text-gray-900 mb-1">Ошибка удаления</Dialog.Title>
+                <p className="text-sm text-gray-600">Не удалось удалить пользователя. Попробуйте ещё раз.</p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setDeleteError(false)}>
+                Закрыть
               </Button>
             </div>
           </Dialog.Content>
