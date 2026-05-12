@@ -303,8 +303,7 @@ const UserDetailView = ({ selectedUser, onBack }: UserDetailViewProps) => {
                 <Icon name="AlertCircle" size={20} className="text-red-600" />
               </div>
               <div>
-                <Dialog.Title className="text-lg font-bold text-gray-900 mb-1">Ошибка удаления</Dialog.Title>
-                <p className="text-sm text-gray-600">Не удалось удалить пользователя. Попробуйте ещё раз.</p>
+                <Dialog.Title className="text-lg font-bold text-gray-900">Не удалось удалить пользователя</Dialog.Title>
               </div>
             </div>
             <div className="flex justify-end">
