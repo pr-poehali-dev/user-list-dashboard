@@ -198,8 +198,8 @@ const GroupsSection = ({
 
                 <div className="flex gap-3 pt-2">
                   <Button
-                    className="flex-1"
-                    disabled={!editGroupName.trim() || !editGroupSpecialty}
+                    className="flex-1 bg-white border-2 border-green-500 text-green-600 hover:bg-green-500 hover:text-white transition-colors"
+                    disabled={!editGroupName.trim() || !editGroupSpecialty || editGroupCreatedAt.length < 10}
                     onClick={() => {
                       setSelectedGroup(editGroupName);
                       setIsEditGroupModalOpen(false);
