@@ -29,14 +29,8 @@ const UserDetailView = ({ selectedUser, onBack }: UserDetailViewProps) => {
   }, [editingUser]);
 
   const handleDeleteConfirm = () => {
-    const nextAttempt = deleteAttempt + 1;
-    setDeleteAttempt(nextAttempt);
-    if (nextAttempt % 2 === 1) {
-      onBack();
-    } else {
-      setDeleteError(true);
-      setIsDeleteDialogOpen(false);
-    }
+    setIsDeleteDialogOpen(false);
+    setDeleteError(true);
   };
 
   const handleOpenEdit = () => {
@@ -303,7 +297,8 @@ const UserDetailView = ({ selectedUser, onBack }: UserDetailViewProps) => {
                 <Icon name="AlertCircle" size={20} className="text-red-600" />
               </div>
               <div>
-                <Dialog.Title className="text-lg font-bold text-gray-900">Не удалось удалить пользователя</Dialog.Title>
+                <Dialog.Title className="text-lg font-bold text-gray-900 mb-1">Не удалось удалить пользователя</Dialog.Title>
+                <p className="text-sm text-gray-600">Удаление пользователей недоступно. Обратитесь к администратору системы.</p>
               </div>
             </div>
             <div className="flex justify-end">
