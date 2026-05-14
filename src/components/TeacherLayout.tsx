@@ -183,18 +183,7 @@ const TeacherLayout = ({
                   }`}
                 >
                   {section.id === 'groups' ? (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="3.8" r="2"/>
-                      <path d="M9.5 9.5 A2.5 2.5 0 0 1 14.5 9.5 Z"/>
-                      <ellipse cx="12" cy="8" rx="2.5" ry="1.5"/>
-                      <circle cx="4" cy="16.5" r="2"/>
-                      <ellipse cx="4" cy="20.5" rx="2.5" ry="1.5"/>
-                      <circle cx="20" cy="16.5" r="2"/>
-                      <ellipse cx="20" cy="20.5" rx="2.5" ry="1.5"/>
-                      <path d="M10.5 9.8 Q5.5 11 4.5 15" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-                      <path d="M13.5 9.8 Q18.5 11 19.5 15" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-                      <path d="M6.5 19.5 Q12 22 17.5 19.5" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-                    </svg>
+                    <img src="https://cdn.poehali.dev/projects/5d906ec0-f138-4a20-8cee-355c791bf35f/bucket/fef0d53f-325e-4577-a1f7-3f4d3bad55b2.png" width="18" height="18" style={{filter: teacherSection === 'groups' ? 'invert(27%) sepia(51%) saturate(500%) hue-rotate(100deg) brightness(90%)' : 'invert(40%)'}} />
                   ) : (
                     <Icon name={section.icon} size={16} />
                   )}
