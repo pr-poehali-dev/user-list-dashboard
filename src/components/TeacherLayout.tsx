@@ -9,7 +9,7 @@ import UserManagementSection from '@/components/UserManagementSection';
 import GroupsSection from '@/components/GroupsSection';
 import KnowledgeScopeSection from '@/components/KnowledgeScopeSection';
 
-const GROUP_ICON_OPTIONS = ['Layers', 'Grid2x2', 'BookCopy', 'Network', 'LayoutList', 'FolderOpen'];
+const GROUP_ICON_OPTIONS = ['Users2', 'Layers', 'Grid2x2', 'BookCopy', 'Network', 'LayoutList', 'FolderOpen'];
 
 const teacherSections = [
   { id: 'users', name: 'Пользователи', icon: 'Users' },
@@ -60,7 +60,7 @@ const TeacherLayout = ({
 }: TeacherLayoutProps) => {
   const [teacherSection, setTeacherSection] = useState('users');
   const [isTeacherCollapsed, setIsTeacherCollapsed] = useState(false);
-  const [groupIcon, setGroupIcon] = useState('Layers');
+  const [groupIcon, setGroupIcon] = useState('Users2');
   const [showGroupIconPicker, setShowGroupIconPicker] = useState(false);
   const [teacherSearch, setTeacherSearch] = useState('');
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
