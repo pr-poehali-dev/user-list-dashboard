@@ -8,6 +8,7 @@ import QuestionBankSection from '@/components/QuestionBankSection';
 import UserManagementSection from '@/components/UserManagementSection';
 import GroupsSection from '@/components/GroupsSection';
 import KnowledgeScopeSection from '@/components/KnowledgeScopeSection';
+import PositionsSection from '@/components/PositionsSection';
 
 const GROUP_ICON_OPTIONS = ['Users2', 'Layers', 'Grid2x2', 'BookCopy', 'Network', 'LayoutList', 'FolderOpen'];
 
@@ -15,6 +16,7 @@ const teacherSections = [
   { id: 'users', name: 'Пользователи', icon: 'Users' },
   { id: 'questions', name: 'Банк вопросов', icon: 'FileQuestion' },
   { id: 'groups', name: 'Группы', icon: 'Layers' },
+  { id: 'positions', name: 'Должности', icon: 'Briefcase' },
   { id: 'knowledge', name: 'Объем знаний', icon: 'Brain' },
   { id: 'plans', name: 'Планы обучения', icon: 'BookOpen' },
 ];
@@ -99,6 +101,8 @@ const TeacherLayout = ({
             setQuestionSearch={setQuestionSearch}
           />
         );
+      case 'positions':
+        return <PositionsSection />;
       case 'knowledge':
         return <KnowledgeScopeSection treeData={treeData} />;
       case 'plans':
