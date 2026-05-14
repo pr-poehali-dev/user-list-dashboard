@@ -182,7 +182,21 @@ const TeacherLayout = ({
                       : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                   }`}
                 >
-                  <Icon name={section.id === 'groups' ? groupIcon : section.icon} size={16} />
+                  {section.id === 'groups' ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="3.5" r="2.5"/>
+                      <path d="M9 8.5c0-1.1.9-2 3-2s3 .9 3 2v1H9v-1z"/>
+                      <circle cx="3.5" cy="17" r="2.5"/>
+                      <path d="M0.5 22c0-1.1.9-2 3-2s3 .9 3 2v1h-6v-1z"/>
+                      <circle cx="20.5" cy="17" r="2.5"/>
+                      <path d="M17.5 22c0-1.1.9-2 3-2s3 .9 3 2v1h-6v-1z"/>
+                      <path d="M11 10.5 Q5 11 4.5 16" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                      <path d="M13 10.5 Q19 11 19.5 16" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                      <path d="M6.5 19.5 Q12 22 17.5 19.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                    </svg>
+                  ) : (
+                    <Icon name={section.icon} size={16} />
+                  )}
                   {section.name}
                   {section.id === 'groups' && teacherSection === 'groups' && (
                     <span
