@@ -33,13 +33,6 @@ const UserGroupView = ({
   return (
     <>
       <div className="bg-white rounded-lg border shadow-sm p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <Icon name="Users" size={22} className="text-blue-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900">{selectedGroup}</h2>
-        </div>
-
         <div className="flex items-center justify-between mb-6">
           <Button
             variant="outline"
@@ -71,6 +64,16 @@ const UserGroupView = ({
               <Icon name="Trash2" size={16} />
               Удалить
             </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 mb-5 pb-5 border-b">
+          <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <Icon name="Users" size={24} className="text-blue-600" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Группа</p>
+            <h2 className="text-2xl font-bold text-gray-900 leading-tight">{selectedGroup}</h2>
           </div>
         </div>
 
