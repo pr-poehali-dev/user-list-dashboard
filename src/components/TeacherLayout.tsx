@@ -184,15 +184,16 @@ const TeacherLayout = ({
                 >
                   {section.id === 'groups' ? (
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="3.5" r="2.5"/>
-                      <path d="M9 8.5c0-1.1.9-2 3-2s3 .9 3 2v1H9v-1z"/>
-                      <circle cx="3.5" cy="17" r="2.5"/>
-                      <path d="M0.5 22c0-1.1.9-2 3-2s3 .9 3 2v1h-6v-1z"/>
-                      <circle cx="20.5" cy="17" r="2.5"/>
-                      <path d="M17.5 22c0-1.1.9-2 3-2s3 .9 3 2v1h-6v-1z"/>
-                      <path d="M11 10.5 Q5 11 4.5 16" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-                      <path d="M13 10.5 Q19 11 19.5 16" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-                      <path d="M6.5 19.5 Q12 22 17.5 19.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                      <circle cx="12" cy="3.8" r="2"/>
+                      <path d="M9.5 9.5 A2.5 2.5 0 0 1 14.5 9.5 Z"/>
+                      <ellipse cx="12" cy="8" rx="2.5" ry="1.5"/>
+                      <circle cx="4" cy="16.5" r="2"/>
+                      <ellipse cx="4" cy="20.5" rx="2.5" ry="1.5"/>
+                      <circle cx="20" cy="16.5" r="2"/>
+                      <ellipse cx="20" cy="20.5" rx="2.5" ry="1.5"/>
+                      <path d="M10.5 9.8 Q5.5 11 4.5 15" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+                      <path d="M13.5 9.8 Q18.5 11 19.5 15" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+                      <path d="M6.5 19.5 Q12 22 17.5 19.5" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
                     </svg>
                   ) : (
                     <Icon name={section.icon} size={16} />

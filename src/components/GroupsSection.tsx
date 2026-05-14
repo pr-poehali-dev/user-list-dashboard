@@ -81,15 +81,15 @@ const GroupsSection = ({
           <div className="flex items-center gap-4 mb-6 pb-5 border-b">
             <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
               <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-600">
-                <circle cx="16" cy="4" r="3.5" fill="currentColor"/>
-                <path d="M11.5 10.5c0-1.4 2-2.5 4.5-2.5s4.5 1.1 4.5 2.5v1.5h-9v-1.5z" fill="currentColor"/>
-                <circle cx="4" cy="22" r="3.5" fill="currentColor"/>
-                <path d="M-0.5 28.5c0-1.4 2-2.5 4.5-2.5s4.5 1.1 4.5 2.5v1.5h-9v-1.5z" fill="currentColor"/>
-                <circle cx="28" cy="22" r="3.5" fill="currentColor"/>
-                <path d="M23.5 28.5c0-1.4 2-2.5 4.5-2.5s4.5 1.1 4.5 2.5v1.5h-9v-1.5z" fill="currentColor"/>
-                <path d="M14 13 Q6 14 5 20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                <path d="M18 13 Q26 14 27 20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                <path d="M8 25 Q16 29 24 25" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                <circle cx="16" cy="5" r="3" fill="currentColor"/>
+                <ellipse cx="16" cy="10.5" rx="3.5" ry="2" fill="currentColor"/>
+                <circle cx="5" cy="21" r="3" fill="currentColor"/>
+                <ellipse cx="5" cy="26.5" rx="3.5" ry="2" fill="currentColor"/>
+                <circle cx="27" cy="21" r="3" fill="currentColor"/>
+                <ellipse cx="27" cy="26.5" rx="3.5" ry="2" fill="currentColor"/>
+                <path d="M13.5 12 Q7 13.5 6.5 19" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+                <path d="M18.5 12 Q25 13.5 25.5 19" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+                <path d="M8.5 25 Q16 28.5 23.5 25" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
               </svg>
             </div>
             <div>
