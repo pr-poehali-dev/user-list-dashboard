@@ -41,20 +41,16 @@ const GroupsSection = ({
     return (
       <>
         <div className="bg-white rounded-lg border shadow-sm p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedGroup(null)}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <Icon name="ArrowLeft" size={16} />
-                Назад к группам
-              </Button>
-              <Icon name="ChevronRight" size={16} className="text-gray-400" />
-              <h2 className="text-xl font-semibold">{selectedGroup}</h2>
-            </div>
+          <div className="flex items-center justify-between mb-5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedGroup(null)}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <Icon name="ArrowLeft" size={16} />
+              Назад к группам
+            </Button>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -79,6 +75,16 @@ const GroupsSection = ({
                 <Icon name="Trash2" size={14} />
                 Удалить группу
               </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 mb-6 pb-5 border-b">
+            <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <Icon name="Users" size={28} className="text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-0.5">Группа</p>
+              <h2 className="text-2xl font-bold text-gray-900 leading-tight">{selectedGroup}</h2>
             </div>
           </div>
 
