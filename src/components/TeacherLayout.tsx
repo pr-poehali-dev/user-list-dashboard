@@ -9,6 +9,8 @@ import UserManagementSection from '@/components/UserManagementSection';
 import GroupsSection from '@/components/GroupsSection';
 import KnowledgeScopeSection from '@/components/KnowledgeScopeSection';
 
+const GROUP_ICON_OPTIONS = ['Layers', 'Grid2x2', 'BookCopy', 'Network', 'LayoutList', 'FolderOpen'];
+
 const teacherSections = [
   { id: 'users', name: 'Пользователи', icon: 'Users' },
   { id: 'questions', name: 'Банк вопросов', icon: 'FileQuestion' },
@@ -58,6 +60,8 @@ const TeacherLayout = ({
 }: TeacherLayoutProps) => {
   const [teacherSection, setTeacherSection] = useState('users');
   const [isTeacherCollapsed, setIsTeacherCollapsed] = useState(false);
+  const [groupIcon, setGroupIcon] = useState('Layers');
+  const [showGroupIconPicker, setShowGroupIconPicker] = useState(false);
   const [teacherSearch, setTeacherSearch] = useState('');
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const [questionSearch, setQuestionSearch] = useState('');
@@ -170,6 +174,7 @@ const TeacherLayout = ({
                   onClick={() => {
                     setTeacherSection(section.id);
                     setIsTeacherCollapsed(true);
+                    if (section.id !== 'groups') setShowGroupIconPicker(false);
                   }}
                   className={`flex items-center gap-2 px-6 py-3 border-b-2 md:border-b-2 md:border-r transition-colors ${
                     teacherSection === section.id
@@ -177,11 +182,39 @@ const TeacherLayout = ({
                       : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                   }`}
                 >
-                  <Icon name={section.icon} size={16} />
+                  <Icon name={section.id === 'groups' ? groupIcon : section.icon} size={16} />
                   {section.name}
+                  {section.id === 'groups' && teacherSection === 'groups' && (
+                    <span
+                      title="Выбрать иконку"
+                      onClick={(e) => { e.stopPropagation(); setShowGroupIconPicker(p => !p); }}
+                      className="ml-1 text-gray-400 hover:text-green-600 transition-colors"
+                    >
+                      <Icon name="Pencil" size={12} />
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
+            {showGroupIconPicker && teacherSection === 'groups' && (
+              <div className="border-t bg-green-50 px-6 py-3 flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-gray-500 mr-2">Выберите иконку:</span>
+                {GROUP_ICON_OPTIONS.map((icon) => (
+                  <button
+                    key={icon}
+                    onClick={() => { setGroupIcon(icon); setShowGroupIconPicker(false); }}
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors border ${
+                      groupIcon === icon
+                        ? 'bg-green-600 text-white border-green-600'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-green-400 hover:text-green-600'
+                    }`}
+                    title={icon}
+                  >
+                    <Icon name={icon} size={18} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
