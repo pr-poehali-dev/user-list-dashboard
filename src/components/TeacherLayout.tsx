@@ -183,7 +183,7 @@ const TeacherLayout = ({
                   }`}
                 >
                   {section.id === 'groups' ? (
-                    <img src="https://cdn.poehali.dev/projects/5d906ec0-f138-4a20-8cee-355c791bf35f/bucket/fef0d53f-325e-4577-a1f7-3f4d3bad55b2.png" width="18" height="18" style={{filter: teacherSection === 'groups' ? 'invert(27%) sepia(51%) saturate(500%) hue-rotate(100deg) brightness(90%)' : 'invert(40%)'}} />
+                    <img src="https://cdn.poehali.dev/projects/5d906ec0-f138-4a20-8cee-355c791bf35f/bucket/fef0d53f-325e-4577-a1f7-3f4d3bad55b2.png" width="18" height="18" style={{mixBlendMode: 'multiply', filter: teacherSection === 'groups' ? 'invert(27%) sepia(51%) saturate(500%) hue-rotate(100deg) brightness(90%)' : 'invert(40%)'}} />
                   ) : (
                     <Icon name={section.icon} size={16} />
                   )}

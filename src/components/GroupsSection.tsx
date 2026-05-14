@@ -80,7 +80,7 @@ const GroupsSection = ({
 
           <div className="flex items-center gap-4 mb-6 pb-5 border-b">
             <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <img src="https://cdn.poehali.dev/projects/5d906ec0-f138-4a20-8cee-355c791bf35f/bucket/fef0d53f-325e-4577-a1f7-3f4d3bad55b2.png" width="38" height="38" style={{filter: 'invert(27%) sepia(51%) saturate(500%) hue-rotate(100deg) brightness(90%)'}} />
+              <img src="https://cdn.poehali.dev/projects/5d906ec0-f138-4a20-8cee-355c791bf35f/bucket/fef0d53f-325e-4577-a1f7-3f4d3bad55b2.png" width="38" height="38" style={{mixBlendMode: 'multiply', filter: 'invert(27%) sepia(51%) saturate(500%) hue-rotate(100deg) brightness(90%)'}} />
             </div>
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-0.5">Группа</p>
