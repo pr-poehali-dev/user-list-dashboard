@@ -80,7 +80,17 @@ const GroupsSection = ({
 
           <div className="flex items-center gap-4 mb-6 pb-5 border-b">
             <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Icon name="Users" size={28} className="text-blue-600" />
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-600">
+                <circle cx="12" cy="3.5" r="2.5" fill="currentColor"/>
+                <path d="M9 8.5c0-1.1.9-2 3-2s3 .9 3 2v1H9v-1z" fill="currentColor"/>
+                <circle cx="3.5" cy="17" r="2.5" fill="currentColor"/>
+                <path d="M0.5 22c0-1.1.9-2 3-2s3 .9 3 2v1h-6v-1z" fill="currentColor"/>
+                <circle cx="20.5" cy="17" r="2.5" fill="currentColor"/>
+                <path d="M17.5 22c0-1.1.9-2 3-2s3 .9 3 2v1h-6v-1z" fill="currentColor"/>
+                <path d="M11 10.5 Q5 11 4.5 16" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                <path d="M13 10.5 Q19 11 19.5 16" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                <path d="M6.5 19.5 Q12 22 17.5 19.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+              </svg>
             </div>
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-0.5">Группа</p>
