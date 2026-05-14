@@ -12,7 +12,7 @@ import KnowledgeScopeSection from '@/components/KnowledgeScopeSection';
 const teacherSections = [
   { id: 'users', name: 'Пользователи', icon: 'Users' },
   { id: 'questions', name: 'Банк вопросов', icon: 'FileQuestion' },
-  { id: 'groups', name: 'Группы', icon: 'UsersRound' },
+  { id: 'groups', name: 'Группы', icon: 'Layers' },
   { id: 'knowledge', name: 'Объем знаний', icon: 'Brain' },
   { id: 'plans', name: 'Планы обучения', icon: 'BookOpen' },
 ];
