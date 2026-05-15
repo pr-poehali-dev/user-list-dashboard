@@ -55,6 +55,14 @@ const GroupsSection = ({
               <Button
                 variant="outline"
                 size="sm"
+                className="flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              >
+                <Icon name="BookOpen" size={14} />
+                План обучения
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setEditGroupName(selectedGroup);
                   setEditGroupSpecialty('');
