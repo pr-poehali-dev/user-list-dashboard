@@ -52,16 +52,25 @@ const GroupsSection = ({
     return (
       <>
         <div className="bg-white rounded-lg border shadow-sm p-6">
-          <div className="flex items-center justify-between mb-5">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedGroup(null)}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              <Icon name="ArrowLeft" size={16} />
-              Назад к группам
-            </Button>
+          <div className="flex items-center justify-between mb-6 pb-5 border-b">
+            <div className="flex items-center gap-4">
+              <div className="relative group/back flex-shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center">
+                  <img src="https://cdn.poehali.dev/projects/5d906ec0-f138-4a20-8cee-355c791bf35f/bucket/fef0d53f-325e-4577-a1f7-3f4d3bad55b2.png" width="38" height="38" style={{mixBlendMode: 'multiply', filter: 'invert(27%) sepia(51%) saturate(500%) hue-rotate(100deg) brightness(90%)'}} />
+                </div>
+                <button
+                  onClick={() => setSelectedGroup(null)}
+                  title="Назад к группам"
+                  className="absolute inset-0 w-14 h-14 rounded-2xl bg-gray-900/75 flex items-center justify-center opacity-0 group-hover/back:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Icon name="ArrowLeft" size={20} className="text-white" />
+                </button>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-0.5">Группа</p>
+                <h2 className="text-2xl font-bold text-gray-900 leading-tight">{selectedGroup}</h2>
+              </div>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -94,16 +103,6 @@ const GroupsSection = ({
                 <Icon name="Trash2" size={14} />
                 Удалить группу
               </Button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 mb-6 pb-5 border-b">
-            <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <img src="https://cdn.poehali.dev/projects/5d906ec0-f138-4a20-8cee-355c791bf35f/bucket/fef0d53f-325e-4577-a1f7-3f4d3bad55b2.png" width="38" height="38" style={{mixBlendMode: 'multiply', filter: 'invert(27%) sepia(51%) saturate(500%) hue-rotate(100deg) brightness(90%)'}} />
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-0.5">Группа</p>
-              <h2 className="text-2xl font-bold text-gray-900 leading-tight">{selectedGroup}</h2>
             </div>
           </div>
 
