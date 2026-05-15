@@ -60,9 +60,9 @@ const GroupsSection = ({
               <div>
                 <button
                   onClick={() => setSelectedGroup(null)}
-                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-600 transition-colors mb-0.5"
+                  className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors mb-1 group/btn"
                 >
-                  <Icon name="ArrowLeft" size={11} />
+                  <Icon name="ArrowLeft" size={14} className="group-hover/btn:-translate-x-0.5 transition-transform" />
                   Все группы
                 </button>
                 <h2 className="text-2xl font-bold text-gray-900 leading-tight">{selectedGroup}</h2>
