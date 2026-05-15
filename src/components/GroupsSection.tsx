@@ -1,8 +1,17 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import * as Dialog from '@radix-ui/react-dialog';
 import Icon from '@/components/ui/icon';
 import { User } from '@/data/mockData';
+
+type GroupMembership = 'primary' | 'secondary' | 'any';
+
+const membershipOptions: { value: GroupMembership; label: string; icon: string }[] = [
+  { value: 'primary',   label: 'Основная группа',       icon: 'Star' },
+  { value: 'secondary', label: 'Вспомогательная группа', icon: 'GitBranch' },
+  { value: 'any',       label: 'Любое участие',          icon: 'Users' },
+];
 
 interface GroupsSectionProps {
   users: User[];
@@ -35,6 +44,8 @@ const GroupsSection = ({
   editGroupCreatedAt,
   setEditGroupCreatedAt,
 }: GroupsSectionProps) => {
+  const [membership, setMembership] = useState<GroupMembership>('primary');
+
   if (selectedGroup) {
     const groupUsers = users.filter(user => user.group === selectedGroup);
 
@@ -107,6 +118,23 @@ const GroupsSection = ({
                   <p className="text-3xl font-bold text-gray-900">{groupUsers.length}</p>
                 </div>
               </div>
+            </div>
+
+            <div className="flex items-center gap-3 mb-1">
+              <div className="relative">
+                <Icon name="Filter" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <select
+                  value={membership}
+                  onChange={e => setMembership(e.target.value as GroupMembership)}
+                  className="pl-8 pr-8 py-2 text-sm border rounded-lg bg-white text-gray-700 appearance-none cursor-pointer hover:border-blue-400 focus:outline-none focus:border-blue-500 transition-colors"
+                >
+                  {membershipOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <Icon name="ChevronDown" size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
+              <span className="text-sm text-gray-400">{groupUsers.length} чел.</span>
             </div>
 
             <div className="border rounded-lg overflow-hidden">
