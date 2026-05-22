@@ -72,7 +72,7 @@ const GroupsSection = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                className="flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors"
               >
                 <Icon name="BookOpen" size={14} />
                 План обучения
@@ -86,16 +86,16 @@ const GroupsSection = ({
                   setEditGroupCreatedAt('');
                   setIsEditGroupModalOpen(true);
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-gray-600 hover:bg-gray-800 hover:text-white hover:border-gray-800 transition-colors"
               >
                 <Icon name="Edit" size={14} />
                 Изменить
               </Button>
               <Button
-                variant="destructive"
+                variant="outline"
                 size="sm"
                 onClick={() => setIsDeleteGroupModalOpen(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors"
               >
                 <Icon name="Trash2" size={14} />
                 Удалить группу
