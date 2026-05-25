@@ -8,9 +8,9 @@ import { User } from '@/data/mockData';
 type GroupMembership = 'primary' | 'secondary' | 'any';
 
 const membershipOptions: { value: GroupMembership; label: string; icon: string }[] = [
-  { value: 'primary',   label: 'Основная группа',       icon: 'Star' },
-  { value: 'secondary', label: 'Вспомогательная группа', icon: 'GitBranch' },
-  { value: 'any',       label: 'Любое участие',          icon: 'Users' },
+  { value: 'primary',   label: 'Эта группа — основная',       icon: 'Star' },
+  { value: 'secondary', label: 'Эта группа — дополнительная', icon: 'GitBranch' },
+  { value: 'any',       label: 'Все участники группы',         icon: 'Users' },
 ];
 
 interface GroupsSectionProps {
