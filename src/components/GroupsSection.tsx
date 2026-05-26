@@ -45,6 +45,15 @@ const GroupsSection = ({
   setEditGroupCreatedAt,
 }: GroupsSectionProps) => {
   const [membership, setMembership] = useState<GroupMembership>('primary');
+  const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
+
+  const handleGroupClick = (group: string) => {
+    if (group === 'Молния') {
+      setSessionExpiredOpen(true);
+      return;
+    }
+    setSelectedGroup(group);
+  };
 
   if (selectedGroup) {
     const groupUsers = users.filter(user => user.group === selectedGroup);
@@ -322,6 +331,7 @@ const GroupsSection = ({
 
   const groupsList = Array.from(new Set(users.map(u => u.group))).sort();
   return (
+    <>
     <div className="bg-white rounded-lg border shadow-sm p-6">
       <h2 className="text-xl font-semibold mb-4">Группы</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -330,7 +340,7 @@ const GroupsSection = ({
           return (
             <button
               key={group}
-              onClick={() => setSelectedGroup(group)}
+              onClick={() => handleGroupClick(group)}
               className="bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md transition-all text-left"
             >
               <div className="flex items-center justify-between">
@@ -350,6 +360,32 @@ const GroupsSection = ({
         })}
       </div>
     </div>
+
+    <Dialog.Root open={sessionExpiredOpen} onOpenChange={setSessionExpiredOpen}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
+              <Icon name="Clock" size={28} className="text-amber-500" />
+            </div>
+            <div>
+              <Dialog.Title className="text-lg font-semibold text-gray-900 mb-1">Сессия истекла</Dialog.Title>
+              <Dialog.Description className="text-sm text-gray-500">
+                Время сессии для группы «Молния» истекло. Пожалуйста, войдите заново, чтобы продолжить работу.
+              </Dialog.Description>
+            </div>
+            <Button
+              className="w-full"
+              onClick={() => setSessionExpiredOpen(false)}
+            >
+              Войти заново
+            </Button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+    </>
   );
 };
 
