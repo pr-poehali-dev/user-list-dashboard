@@ -293,6 +293,14 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
         </div>
       </div>
 
+      <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-4 mb-5">
+        <Icon name="Info" size={18} className="text-blue-500 mt-0.5 flex-shrink-0" />
+        <div className="text-sm text-blue-800">
+          <p className="font-medium mb-0.5">Что такое объём знаний?</p>
+          <p className="text-blue-600 leading-relaxed">Здесь вы задаёте, какие разделы из банка вопросов доступны для каждой должности при тестировании. Выберите должность и отметьте нужные разделы.</p>
+        </div>
+      </div>
+
       <div className="mb-5">
         <div className="relative">
           <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
