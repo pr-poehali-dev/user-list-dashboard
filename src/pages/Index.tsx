@@ -5,18 +5,12 @@ import * as Dialog from '@radix-ui/react-dialog';
 import Icon from '@/components/ui/icon';
 import { users, User } from '@/data/mockData';
 import UserManagementSection from '@/components/UserManagementSection';
-import MtlsErrorScreen from '@/components/MtlsErrorScreen';
 import LoadingScreen from '@/components/LoadingScreen';
 import TeacherLayout from '@/components/TeacherLayout';
 
 const Index = () => {
   const [search, setSearch] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [mtlsError, setMtlsError] = useState(true);
-  const [retrying, setRetrying] = useState(false);
-  const [retryProgress, setRetryProgress] = useState(0);
-  const [retryStatus, setRetryStatus] = useState('');
-  const [retryFailed, setRetryFailed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingText, setLoadingText] = useState('Подключение к серверу...');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -33,33 +27,6 @@ const Index = () => {
   const [editGroupSpecialty, setEditGroupSpecialty] = useState('');
   const [editGroupCreatedAt, setEditGroupCreatedAt] = useState('');
 
-  const handleRetryConnection = () => {
-    setRetrying(true);
-    setRetryFailed(false);
-    setRetryProgress(0);
-    setRetryStatus('Установка TCP-соединения...');
-
-    const steps = [
-      { progress: 20, text: 'Установка TCP-соединения...', delay: 400 },
-      { progress: 45, text: 'TLS ClientHello отправлен...', delay: 900 },
-      { progress: 65, text: 'Ожидание ServerHello...', delay: 1500 },
-      { progress: 80, text: 'Проверка клиентского сертификата...', delay: 2200 },
-      { progress: 95, text: 'Верификация цепочки доверия...', delay: 2900 },
-    ];
-
-    steps.forEach(({ progress, text, delay }) => {
-      setTimeout(() => {
-        setRetryProgress(progress);
-        setRetryStatus(text);
-      }, delay);
-    });
-
-    setTimeout(() => {
-      setRetrying(false);
-      setRetryFailed(true);
-      setRetryProgress(0);
-    }, 3500);
-  };
 
   const handleAdminToggle = () => {
     setIsAdmin(!isAdmin);
@@ -95,18 +62,6 @@ const Index = () => {
     };
   }, []);
 
-  if (mtlsError) {
-    return (
-      <MtlsErrorScreen
-        retrying={retrying}
-        retryProgress={retryProgress}
-        retryStatus={retryStatus}
-        retryFailed={retryFailed}
-        onRetry={handleRetryConnection}
-        onContinue={() => setMtlsError(false)}
-      />
-    );
-  }
 
   if (isLoading) {
     return <LoadingScreen loadingText={loadingText} />;

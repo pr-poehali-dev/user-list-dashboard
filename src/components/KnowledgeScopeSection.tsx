@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import { users } from '@/data/mockData';
 
 interface TreeNode {
   id: string;
@@ -14,6 +16,15 @@ interface KnowledgeScopeSectionProps {
 }
 
 type CheckState = 'checked' | 'unchecked' | 'partial';
+
+const getPositions = (): string[] => {
+  const set = new Set<string>();
+  users.forEach(u => {
+    if (u.specialty) set.add(u.specialty);
+    u.combinedSpecialty?.forEach(s => set.add(s));
+  });
+  return Array.from(set).sort();
+};
 
 const getAllFolderIds = (items: TreeNode[]): string[] => {
   const ids: string[] = [];
@@ -73,10 +84,12 @@ const filterTree = (items: TreeNode[], term: string): TreeNode[] => {
 };
 
 const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
+  const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const [checkedFolders, setCheckedFolders] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
 
+  const positions = useMemo(() => getPositions(), []);
   const filteredTree = useMemo(() => filterTree(treeData, search), [treeData, search]);
 
   useEffect(() => {
@@ -84,6 +97,13 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
       setExpandedFolders(searchInTree(treeData, search));
     }
   }, [search, treeData]);
+
+  const handleSelectPosition = (position: string) => {
+    setSelectedPosition(position);
+    setCheckedFolders(new Set());
+    setSearch('');
+    setExpandedFolders([]);
+  };
 
   const toggleFolder = (id: string) => {
     setExpandedFolders(prev =>
@@ -193,11 +213,50 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
     );
   };
 
+  if (!selectedPosition) {
+    return (
+      <div className="bg-white rounded-lg border shadow-sm p-6">
+        <h2 className="text-xl font-semibold mb-1">Объём знаний</h2>
+        <p className="text-sm text-gray-500 mb-5">Выберите должность, чтобы настроить объём знаний для неё</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {positions.map(position => (
+            <button
+              key={position}
+              onClick={() => handleSelectPosition(position)}
+              className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg text-left hover:border-blue-400 hover:shadow-sm transition-all group"
+            >
+              <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                <Icon name="Briefcase" size={18} className="text-blue-600" />
+              </div>
+              <span className="text-sm font-medium text-gray-800 leading-tight">{position}</span>
+              <Icon name="ChevronRight" size={15} className="text-gray-400 ml-auto flex-shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-lg border shadow-sm">
       <div className="p-4 border-b">
+        <div className="flex items-center gap-3 mb-3">
+          <button
+            onClick={() => setSelectedPosition(null)}
+            className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors group/btn"
+          >
+            <Icon name="ArrowLeft" size={14} className="group-hover/btn:-translate-x-0.5 transition-transform" />
+            Все должности
+          </button>
+        </div>
+
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl font-semibold">Объем знаний</h2>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+              <Icon name="Briefcase" size={16} className="text-blue-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">{selectedPosition}</h2>
+          </div>
           <div className="text-sm text-gray-500">
             Выбрано <span className="font-medium text-blue-600">{checkedCount}</span> из {totalFolders} разделов
           </div>
@@ -235,11 +294,17 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
         </div>
       </div>
 
-      <div className="p-2 max-h-[calc(100vh-280px)] overflow-y-auto">
-        {filteredTree.length === 0
-          ? <p className="text-sm text-gray-400 text-center py-8">Ничего не найдено</p>
-          : filteredTree.map(item => renderItem(item))
-        }
+      <div className="divide-y max-h-96 overflow-y-auto">
+        {filteredTree.map(item => renderItem(item))}
+      </div>
+
+      <div className="p-4 border-t flex justify-end">
+        <Button onClick={() => setSelectedPosition(null)} variant="outline" className="mr-2">
+          Отмена
+        </Button>
+        <Button>
+          Сохранить
+        </Button>
       </div>
     </div>
   );
