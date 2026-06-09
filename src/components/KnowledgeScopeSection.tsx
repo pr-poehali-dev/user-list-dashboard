@@ -154,17 +154,34 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
   const usersCount = (position: string) =>
     users.filter(u => u.specialty === position || u.combinedSpecialty?.includes(position)).length;
 
+  const rowCounter = { value: 0 };
+
   const renderItem = (item: TreeNode, depth = 0) => {
     if (item.type === 'question') return null;
     const isExpanded = expandedFolders.includes(item.id);
     const state = getFolderCheckState(item);
     const hasChildren = item.children?.some(c => c.type === 'folder');
+    const isEven = rowCounter.value % 2 === 0;
+    rowCounter.value += 1;
+
+    const isHighlighted = treeSearch.trim()
+      ? item.name.toLowerCase().includes(treeSearch.toLowerCase())
+      : false;
+
+    const getBg = () => {
+      if (isHighlighted) return '#fefce8';
+      if (state === 'checked') return '#dbeafe';
+      if (state === 'partial') return '#dbeafe';
+      return isEven ? '#ffffff' : '#f9fafe';
+    };
 
     return (
       <div key={item.id}>
         <div
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${state !== 'unchecked' ? 'bg-blue-50/40' : ''}`}
-          style={{ paddingLeft: `${12 + depth * 20}px` }}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors"
+          style={{ paddingLeft: `${12 + depth * 20}px`, backgroundColor: getBg() }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e0fafc')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = getBg())}
         >
           <button
             className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-600"
