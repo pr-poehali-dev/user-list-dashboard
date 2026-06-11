@@ -89,6 +89,10 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const [checkedFolders, setCheckedFolders] = useState<Set<string>>(new Set());
   const [treeSearch, setTreeSearch] = useState('');
+  const [equalizeOpen, setEqualizeOpen] = useState(false);
+  const [equalizeSearch, setEqualizeSearch] = useState('');
+  const [equalizing, setEqualizing] = useState(false);
+  const [equalizeSuccess, setEqualizeSuccess] = useState<string | null>(null);
 
   const positions = useMemo(() => getPositions(), []);
   const filteredPositions = positions.filter(p =>
@@ -107,6 +111,25 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
     setCheckedFolders(new Set());
     setTreeSearch('');
     setExpandedFolders([]);
+  };
+
+  const handleSelectAll = () => {
+    setCheckedFolders(new Set(getAllFolderIds(treeData)));
+  };
+
+  const handleDeselectAll = () => {
+    setCheckedFolders(new Set());
+  };
+
+  const handleEqualize = (fromPosition: string) => {
+    setEqualizing(true);
+    setTimeout(() => {
+      setEqualizing(false);
+      setEqualizeOpen(false);
+      setEqualizeSearch('');
+      setEqualizeSuccess(fromPosition);
+      setTimeout(() => setEqualizeSuccess(null), 3000);
+    }, 1200);
   };
 
   const toggleFolder = (id: string) => {
@@ -253,9 +276,9 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
           </div>
         </div>
 
-        <div className="p-3 border-b">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-48">
+        <div className="p-3 border-b space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative flex-1 min-w-40">
               <Icon name="Search" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <Input
                 value={treeSearch}
@@ -264,24 +287,80 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
                 className="pl-9 h-9 text-sm"
               />
             </div>
-            <div className="flex items-center gap-3 text-xs text-gray-400 flex-shrink-0">
-              <span className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded border-2 bg-blue-600 border-blue-600 inline-flex items-center justify-center">
-                  <Icon name="Check" size={10} className="text-white" />
-                </span>
-                включён
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded border-2 bg-blue-100 border-blue-400 inline-flex items-center justify-center">
-                  <span className="w-2 h-0.5 bg-blue-500 rounded-full" />
-                </span>
-                частично
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded border-2 border-gray-300 inline-flex" />
-                не выбран
-              </span>
+            <Button size="sm" variant="outline" onClick={handleSelectAll} className="h-9 gap-1.5 text-xs">
+              <Icon name="CheckSquare" size={14} />
+              Выбрать всё
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleDeselectAll} className="h-9 gap-1.5 text-xs">
+              <Icon name="Square" size={14} />
+              Снять всё
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => { setEqualizeOpen(v => !v); setEqualizeSearch(''); }} className="h-9 gap-1.5 text-xs">
+              <Icon name="Copy" size={14} />
+              Приравнять к…
+            </Button>
+          </div>
+
+          {equalizeOpen && (
+            <div className="border rounded-lg bg-gray-50 p-3">
+              <p className="text-xs text-gray-500 mb-2">Выберите должность, объём знаний которой скопировать:</p>
+              <div className="relative mb-2">
+                <Icon name="Search" size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input
+                  value={equalizeSearch}
+                  onChange={e => setEqualizeSearch(e.target.value)}
+                  placeholder="Поиск должности..."
+                  className="pl-8 h-8 text-xs"
+                  autoFocus
+                />
+              </div>
+              <div className="max-h-40 overflow-y-auto divide-y rounded-lg border bg-white">
+                {positions
+                  .filter(p => p !== selectedPosition && p.toLowerCase().includes(equalizeSearch.toLowerCase()))
+                  .map(p => (
+                    <button
+                      key={p}
+                      onClick={() => handleEqualize(p)}
+                      disabled={equalizing}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-blue-50 transition-colors disabled:opacity-50"
+                    >
+                      <Icon name="Briefcase" size={13} className="text-blue-400 flex-shrink-0" />
+                      <span className="flex-1 truncate">{p}</span>
+                      {equalizing ? (
+                        <Icon name="Loader" size={13} className="text-blue-400 animate-spin" />
+                      ) : (
+                        <Icon name="ChevronRight" size={13} className="text-gray-300" />
+                      )}
+                    </button>
+                  ))}
+              </div>
             </div>
+          )}
+
+          {equalizeSuccess && (
+            <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+              <Icon name="CheckCircle" size={14} className="text-green-500 flex-shrink-0" />
+              Объём знаний скопирован с «{equalizeSuccess}»
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 text-xs text-gray-400">
+            <span className="flex items-center gap-1.5">
+              <span className="w-4 h-4 rounded border-2 bg-blue-600 border-blue-600 inline-flex items-center justify-center">
+                <Icon name="Check" size={10} className="text-white" />
+              </span>
+              включён
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-4 h-4 rounded border-2 bg-blue-100 border-blue-400 inline-flex items-center justify-center">
+                <span className="w-2 h-0.5 bg-blue-500 rounded-full" />
+              </span>
+              частично
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-4 h-4 rounded border-2 border-gray-300 inline-flex" />
+              не выбран
+            </span>
           </div>
         </div>
 
