@@ -132,6 +132,14 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
     }, 1200);
   };
 
+  const handleExpandAll = () => {
+    setExpandedFolders(getAllFolderIds(treeData));
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedFolders([]);
+  };
+
   const toggleFolder = (id: string) => {
     setExpandedFolders(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
@@ -271,9 +279,7 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
             <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Объём знаний</p>
             <h2 className="text-base font-semibold text-gray-900 truncate">{selectedPosition}</h2>
           </div>
-          <div className="text-sm text-gray-500 flex-shrink-0">
-            Выбрано <span className="font-medium text-blue-600">{checkedCount}</span> из {totalFolders}
-          </div>
+
         </div>
 
         <div className="p-3 border-b space-y-2">
@@ -287,6 +293,14 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
                 className="pl-9 h-9 text-sm"
               />
             </div>
+            <Button size="sm" variant="outline" onClick={handleExpandAll} className="h-9 gap-1.5 text-xs">
+              <Icon name="ChevronsDownUp" size={14} />
+              Развернуть все
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleCollapseAll} className="h-9 gap-1.5 text-xs">
+              <Icon name="ChevronsUpDown" size={14} />
+              Свернуть все
+            </Button>
             <Button size="sm" variant="outline" onClick={handleSelectAll} className="h-9 gap-1.5 text-xs">
               <Icon name="CheckSquare" size={14} />
               Выбрать всё
