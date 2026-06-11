@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -11,8 +11,8 @@ import TeacherLayout from '@/components/TeacherLayout';
 const Index = () => {
   const [search, setSearch] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadingText, setLoadingText] = useState('Подключение к серверу...');
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
@@ -37,30 +37,7 @@ const Index = () => {
     setSelectedUser(null);
   };
 
-  useEffect(() => {
-    const loadingMessages = [
-      'Подключение к серверу...',
-      'Загрузка данных пользователей...',
-      'Настройка интерфейса...',
-      'Почти готово...'
-    ];
 
-    let messageIndex = 0;
-    const messageInterval = setInterval(() => {
-      messageIndex = (messageIndex + 1) % loadingMessages.length;
-      setLoadingText(loadingMessages[messageIndex]);
-    }, 800);
-
-    const loadingTimer = setTimeout(() => {
-      setIsLoading(false);
-      clearInterval(messageInterval);
-    }, 3200);
-
-    return () => {
-      clearTimeout(loadingTimer);
-      clearInterval(messageInterval);
-    };
-  }, []);
 
 
   if (isLoading) {
