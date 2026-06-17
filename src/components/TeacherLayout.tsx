@@ -9,6 +9,7 @@ import UserManagementSection from '@/components/UserManagementSection';
 import GroupsSection from '@/components/GroupsSection';
 import KnowledgeScopeSection from '@/components/KnowledgeScopeSection';
 import PositionsSection from '@/components/PositionsSection';
+import TrainingPlanSection from '@/components/TrainingPlanSection';
 
 const GROUP_ICON_OPTIONS = ['Users2', 'Layers', 'Grid2x2', 'BookCopy', 'Network', 'LayoutList', 'FolderOpen'];
 
@@ -68,6 +69,11 @@ const TeacherLayout = ({
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const [questionSearch, setQuestionSearch] = useState('');
   const [treeData, setTreeData] = useState(questionTree);
+  const [knowledgeScope, setKnowledgeScope] = useState<Record<string, Set<string>>>({});
+
+  const handleScopeChange = (position: string, folders: Set<string>) => {
+    setKnowledgeScope(prev => ({ ...prev, [position]: folders }));
+  };
 
   const renderTeacherContent = () => {
     switch (teacherSection) {
@@ -104,14 +110,9 @@ const TeacherLayout = ({
       case 'positions':
         return <PositionsSection />;
       case 'knowledge':
-        return <KnowledgeScopeSection treeData={treeData} />;
+        return <KnowledgeScopeSection treeData={treeData} onScopeChange={handleScopeChange} />;
       case 'plans':
-        return (
-          <div className="bg-white rounded-lg border shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Планы обучения</h2>
-            <p className="text-gray-600">Здесь будут отображаться планы обучения.</p>
-          </div>
-        );
+        return <TrainingPlanSection treeData={treeData} knowledgeScope={knowledgeScope} />;
       case 'groups':
         return (
           <GroupsSection

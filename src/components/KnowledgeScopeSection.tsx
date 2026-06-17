@@ -13,6 +13,7 @@ interface TreeNode {
 
 interface KnowledgeScopeSectionProps {
   treeData: TreeNode[];
+  onScopeChange?: (position: string, folders: Set<string>) => void;
 }
 
 type CheckState = 'checked' | 'unchecked' | 'partial';
@@ -83,7 +84,7 @@ const filterTree = (items: TreeNode[], term: string): TreeNode[] => {
   return items.map(filter).filter((x): x is TreeNode => x !== null);
 };
 
-const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
+const KnowledgeScopeSection = ({ treeData, onScopeChange }: KnowledgeScopeSectionProps) => {
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
   const [positionSearch, setPositionSearch] = useState('');
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
@@ -142,6 +143,7 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
     const result = newCount % 2 === 0 ? 'error' : 'success';
     setSaveResult(result);
     if (result === 'success') {
+      if (selectedPosition) onScopeChange?.(selectedPosition, new Set(checkedFolders));
       setTimeout(() => {
         setSaveResult(null);
         setSelectedPosition(null);
