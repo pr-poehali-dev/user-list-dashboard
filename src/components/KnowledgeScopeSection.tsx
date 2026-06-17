@@ -93,6 +93,9 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
   const [equalizeSearch, setEqualizeSearch] = useState('');
   const [equalizing, setEqualizing] = useState(false);
   const [equalizeSuccess, setEqualizeSuccess] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [saveCount, setSaveCount] = useState(0);
+  const [saveResult, setSaveResult] = useState<'success' | 'error' | null>(null);
 
   const positions = useMemo(() => getPositions(), []);
   const filteredPositions = positions.filter(p =>
@@ -130,6 +133,22 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
       setEqualizeSuccess(fromPosition);
       setTimeout(() => setEqualizeSuccess(null), 3000);
     }, 1200);
+  };
+
+  const handleSaveConfirm = () => {
+    const newCount = saveCount + 1;
+    setSaveCount(newCount);
+    setConfirmOpen(false);
+    const result = newCount % 2 === 0 ? 'error' : 'success';
+    setSaveResult(result);
+    if (result === 'success') {
+      setTimeout(() => {
+        setSaveResult(null);
+        setSelectedPosition(null);
+      }, 2000);
+    } else {
+      setTimeout(() => setSaveResult(null), 3500);
+    }
   };
 
   const handleExpandAll = () => {
@@ -263,7 +282,7 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
   };
 
   if (selectedPosition) {
-    return (
+    return (<>
       <div className="bg-white rounded-lg border shadow-sm">
         <div className="p-4 border-b flex items-center gap-3">
           <button
@@ -384,10 +403,62 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
 
         <div className="p-4 border-t flex justify-end gap-2">
           <Button variant="outline" onClick={() => setSelectedPosition(null)}>Отмена</Button>
-          <Button onClick={() => setSelectedPosition(null)}>Сохранить</Button>
+          <Button onClick={() => setConfirmOpen(true)}>Сохранить</Button>
         </div>
       </div>
-    );
+
+      {/* Диалог подтверждения */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmOpen(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <Icon name="Save" size={20} className="text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Сохранить изменения?</h3>
+                <p className="text-sm text-gray-500">Объём знаний для «{selectedPosition}» будет обновлён.</p>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setConfirmOpen(false)}>Отмена</Button>
+              <Button onClick={handleSaveConfirm}>Подтвердить</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Результат сохранения */}
+      {saveResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className={`pointer-events-auto flex items-start gap-3 px-5 py-4 rounded-xl shadow-xl border max-w-sm w-full mx-4 ${
+            saveResult === 'success'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}>
+            <Icon
+              name={saveResult === 'success' ? 'CheckCircle' : 'XCircle'}
+              size={22}
+              className={`flex-shrink-0 mt-0.5 ${saveResult === 'success' ? 'text-green-500' : 'text-red-500'}`}
+            />
+            <div>
+              <p className="font-semibold text-sm">
+                {saveResult === 'success' ? 'Успешно сохранено' : 'Ошибка при сохранении'}
+              </p>
+              <p className="text-xs mt-0.5 opacity-80">
+                {saveResult === 'success'
+                  ? `Объём знаний для «${selectedPosition}» успешно обновлён.`
+                  : 'Не удалось сохранить изменения. Попробуйте ещё раз.'}
+              </p>
+            </div>
+            <button onClick={() => setSaveResult(null)} className="ml-auto opacity-50 hover:opacity-100">
+              <Icon name="X" size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+    </>);
   }
 
   return (
