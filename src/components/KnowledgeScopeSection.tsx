@@ -145,9 +145,9 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
       setTimeout(() => {
         setSaveResult(null);
         setSelectedPosition(null);
-      }, 2000);
+      }, 10000);
     } else {
-      setTimeout(() => setSaveResult(null), 3500);
+      setTimeout(() => setSaveResult(null), 10000);
     }
   };
 
