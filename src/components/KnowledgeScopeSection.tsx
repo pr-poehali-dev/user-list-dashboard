@@ -410,20 +410,30 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
       {/* Диалог подтверждения */}
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmOpen(false)} />
-          <div className="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <Icon name="Save" size={20} className="text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Сохранить изменения?</h3>
-                <p className="text-sm text-gray-500">Объём знаний для «{selectedPosition}» будет обновлён.</p>
-              </div>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setConfirmOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="px-7 pt-7 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Сохранить изменения</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Вы обновляете объём знаний для должности<br />
+                <span className="font-medium text-gray-700">«{selectedPosition}»</span>.
+                Продолжить?
+              </p>
             </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setConfirmOpen(false)}>Отмена</Button>
-              <Button onClick={handleSaveConfirm}>Подтвердить</Button>
+            <div className="h-px bg-gray-100" />
+            <div className="px-7 py-4 flex gap-3 justify-end bg-gray-50/60">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleSaveConfirm}
+                className="px-5 py-2 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Сохранить
+              </button>
             </div>
           </div>
         </div>
@@ -431,29 +441,36 @@ const KnowledgeScopeSection = ({ treeData }: KnowledgeScopeSectionProps) => {
 
       {/* Результат сохранения */}
       {saveResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div className={`pointer-events-auto flex items-start gap-3 px-5 py-4 rounded-xl shadow-xl border max-w-sm w-full mx-4 ${
+        <div className="fixed bottom-6 right-6 z-50 pointer-events-auto">
+          <div className={`flex items-start gap-3.5 px-5 py-4 rounded-xl shadow-2xl border w-80 ${
             saveResult === 'success'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-white border-gray-200'
+              : 'bg-white border-gray-200'
           }`}>
-            <Icon
-              name={saveResult === 'success' ? 'CheckCircle' : 'XCircle'}
-              size={22}
-              className={`flex-shrink-0 mt-0.5 ${saveResult === 'success' ? 'text-green-500' : 'text-red-500'}`}
-            />
-            <div>
-              <p className="font-semibold text-sm">
-                {saveResult === 'success' ? 'Успешно сохранено' : 'Ошибка при сохранении'}
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+              saveResult === 'success' ? 'bg-emerald-100' : 'bg-red-100'
+            }`}>
+              <Icon
+                name={saveResult === 'success' ? 'Check' : 'X'}
+                size={15}
+                className={saveResult === 'success' ? 'text-emerald-600' : 'text-red-500'}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900">
+                {saveResult === 'success' ? 'Изменения сохранены' : 'Не удалось сохранить'}
               </p>
-              <p className="text-xs mt-0.5 opacity-80">
+              <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
                 {saveResult === 'success'
-                  ? `Объём знаний для «${selectedPosition}» успешно обновлён.`
-                  : 'Не удалось сохранить изменения. Попробуйте ещё раз.'}
+                  ? `Объём знаний для «${selectedPosition}» обновлён.`
+                  : 'Произошла ошибка. Попробуйте ещё раз.'}
               </p>
             </div>
-            <button onClick={() => setSaveResult(null)} className="ml-auto opacity-50 hover:opacity-100">
-              <Icon name="X" size={16} />
+            <button
+              onClick={() => setSaveResult(null)}
+              className="text-gray-300 hover:text-gray-500 transition-colors mt-0.5 flex-shrink-0"
+            >
+              <Icon name="X" size={14} />
             </button>
           </div>
         </div>
