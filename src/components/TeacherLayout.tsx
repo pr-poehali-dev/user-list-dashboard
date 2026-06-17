@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import * as Dialog from '@radix-ui/react-dialog';
 import Icon from '@/components/ui/icon';
-import { users, questionTree, User } from '@/data/mockData';
+import { users, questionTree, defaultKnowledgeScope, User } from '@/data/mockData';
 import QuestionBankSection from '@/components/QuestionBankSection';
 import UserManagementSection from '@/components/UserManagementSection';
 import GroupsSection from '@/components/GroupsSection';
@@ -69,7 +69,11 @@ const TeacherLayout = ({
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const [questionSearch, setQuestionSearch] = useState('');
   const [treeData, setTreeData] = useState(questionTree);
-  const [knowledgeScope, setKnowledgeScope] = useState<Record<string, Set<string>>>({});
+  const [knowledgeScope, setKnowledgeScope] = useState<Record<string, Set<string>>>(
+    () => Object.fromEntries(
+      Object.entries(defaultKnowledgeScope).map(([k, v]) => [k, new Set(v)])
+    )
+  );
 
   const handleScopeChange = (position: string, folders: Set<string>) => {
     setKnowledgeScope(prev => ({ ...prev, [position]: folders }));
@@ -110,7 +114,7 @@ const TeacherLayout = ({
       case 'positions':
         return <PositionsSection />;
       case 'knowledge':
-        return <KnowledgeScopeSection treeData={treeData} onScopeChange={handleScopeChange} />;
+        return <KnowledgeScopeSection treeData={treeData} onScopeChange={handleScopeChange} knowledgeScope={knowledgeScope} />;
       case 'plans':
         return <TrainingPlanSection treeData={treeData} knowledgeScope={knowledgeScope} />;
       case 'groups':
