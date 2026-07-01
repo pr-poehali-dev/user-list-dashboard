@@ -16,6 +16,11 @@ interface TrainingPlan {
   name: string;
   description: string;
   createdAt: string;
+  dateStart?: string;
+  dateEnd?: string;
+  questionsCount?: number;
+  answerTime?: number;
+  isActive?: boolean;
 }
 
 interface TrainingPlanSectionProps {
@@ -113,6 +118,14 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
   const [checkedFolders, setCheckedFolders] = useState<Set<string>>(new Set());
   const [treeSearch, setTreeSearch] = useState('');
 
+  const [formName, setFormName] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formDateStart, setFormDateStart] = useState('');
+  const [formDateEnd, setFormDateEnd] = useState('');
+  const [formQuestionsCount, setFormQuestionsCount] = useState('');
+  const [formAnswerTime, setFormAnswerTime] = useState('');
+  const [formIsActive, setFormIsActive] = useState(true);
+
   const positions = useMemo(() => getPositions(), []);
   const filteredPositions = positions.filter(p =>
     p.toLowerCase().includes(positionSearch.toLowerCase())
@@ -144,6 +157,13 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
 
   const handleSelectPlan = (plan: TrainingPlan) => {
     setSelectedPlan(plan);
+    setFormName(plan.name);
+    setFormDescription(plan.description);
+    setFormDateStart(plan.dateStart ?? '');
+    setFormDateEnd(plan.dateEnd ?? '');
+    setFormQuestionsCount(plan.questionsCount?.toString() ?? '');
+    setFormAnswerTime(plan.answerTime?.toString() ?? '');
+    setFormIsActive(plan.isActive ?? true);
     setCheckedFolders(new Set());
     setExpandedFolders([]);
     setTreeSearch('');
@@ -246,6 +266,7 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
 
     return (
       <div className="bg-white rounded-lg border shadow-sm">
+        {/* Шапка */}
         <div className="p-4 border-b flex items-center gap-3">
           <button
             onClick={() => setSelectedPlan(null)}
@@ -260,70 +281,156 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
             <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">{selectedPosition}</p>
             <h2 className="text-base font-semibold text-gray-900 truncate">{selectedPlan.name}</h2>
           </div>
-          <span className="text-xs text-gray-400 flex-shrink-0">
-            {checkedCount} / {totalAllowed} разделов
-          </span>
+          {/* Переключатель активности */}
+          <button
+            onClick={() => setFormIsActive(v => !v)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              formIsActive
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                : 'bg-gray-100 border-gray-200 text-gray-500'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${formIsActive ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+            {formIsActive ? 'Активен' : 'Неактивен'}
+          </button>
         </div>
 
-        <div className="p-3 border-b">
-          <div className="bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 flex items-start gap-2 mb-3">
-            <Icon name="Info" size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-amber-700 leading-relaxed">
-              Доступны только разделы, включённые в объём знаний для должности <strong>{selectedPosition}</strong>.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="relative flex-1 min-w-40">
-              <Icon name="Search" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <Input
-                value={treeSearch}
-                onChange={e => setTreeSearch(e.target.value)}
-                placeholder="Поиск по разделам..."
-                className="pl-9 h-9 text-sm"
-              />
+        {/* Двухколоночный layout */}
+        <div className="flex min-h-0">
+
+          {/* Левая колонка — поля */}
+          <div className="w-80 flex-shrink-0 border-r flex flex-col">
+            <div className="p-4 flex-1 overflow-y-auto space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Название плана</label>
+                <Input
+                  value={formName}
+                  onChange={e => setFormName(e.target.value)}
+                  placeholder="Введите название"
+                  className="text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Описание</label>
+                <textarea
+                  value={formDescription}
+                  onChange={e => setFormDescription(e.target.value)}
+                  placeholder="Краткое описание программы..."
+                  rows={3}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Дата начала</label>
+                  <Input
+                    type="date"
+                    value={formDateStart}
+                    onChange={e => setFormDateStart(e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Дата окончания</label>
+                  <Input
+                    type="date"
+                    value={formDateEnd}
+                    onChange={e => setFormDateEnd(e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Количество вопросов</label>
+                <div className="relative">
+                  <Icon name="Hash" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    type="number"
+                    min={1}
+                    value={formQuestionsCount}
+                    onChange={e => setFormQuestionsCount(e.target.value)}
+                    placeholder="Например: 20"
+                    className="pl-8 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Время на ответ (мин)</label>
+                <div className="relative">
+                  <Icon name="Clock" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    type="number"
+                    min={1}
+                    value={formAnswerTime}
+                    onChange={e => setFormAnswerTime(e.target.value)}
+                    placeholder="Например: 30"
+                    className="pl-8 text-sm"
+                  />
+                </div>
+              </div>
             </div>
-            <Button size="sm" variant="outline" onClick={handleExpandAll} className="h-9 gap-1.5 text-xs">
-              <Icon name="ChevronsDownUp" size={14} />
-              Развернуть все
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleCollapseAll} className="h-9 gap-1.5 text-xs">
-              <Icon name="ChevronsUpDown" size={14} />
-              Свернуть все
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleSelectAll} className="h-9 gap-1.5 text-xs">
-              <Icon name="CheckSquare" size={14} />
-              Выбрать все
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleDeselectAll} className="h-9 gap-1.5 text-xs">
-              <Icon name="Square" size={14} />
-              Снять все
-            </Button>
           </div>
-        </div>
 
-        <div className="px-2 py-2 border-b flex items-center gap-4 text-xs text-gray-400">
-          <span className="flex items-center gap-1.5">
-            <span className="w-4 h-4 rounded border-2 border-slate-800 bg-slate-800 inline-flex items-center justify-center">
-              <Icon name="Check" size={9} className="text-white" />
-            </span>
-            выбран
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-4 h-4 rounded border-2 border-slate-800 bg-slate-200 inline-flex items-center justify-center">
-              <span className="w-2 h-0.5 bg-slate-600 rounded" />
-            </span>
-            частично
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-4 h-4 rounded border-2 border-gray-300 inline-flex" />
-            не выбран
-          </span>
-        </div>
+          {/* Правая колонка — дерево */}
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="p-3 border-b space-y-2">
+              <div className="bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 flex items-start gap-2">
+                <Icon name="Info" size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  Доступны только разделы из объёма знаний для «<strong>{selectedPosition}</strong>».
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="relative flex-1 min-w-32">
+                  <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    value={treeSearch}
+                    onChange={e => setTreeSearch(e.target.value)}
+                    placeholder="Поиск..."
+                    className="pl-8 h-8 text-xs"
+                  />
+                </div>
+                <Button size="sm" variant="outline" onClick={handleExpandAll} className="h-8 px-2 text-xs gap-1">
+                  <Icon name="ChevronsDownUp" size={13} />Развернуть
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleCollapseAll} className="h-8 px-2 text-xs gap-1">
+                  <Icon name="ChevronsUpDown" size={13} />Свернуть
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleSelectAll} className="h-8 px-2 text-xs gap-1">
+                  <Icon name="CheckSquare" size={13} />Все
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleDeselectAll} className="h-8 px-2 text-xs gap-1">
+                  <Icon name="Square" size={13} />Снять
+                </Button>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-gray-400 px-1">
+                <span className="flex items-center gap-1">
+                  <span className="w-3.5 h-3.5 rounded border-2 border-slate-800 bg-slate-800 inline-flex items-center justify-center">
+                    <Icon name="Check" size={8} className="text-white" />
+                  </span>выбран
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3.5 h-3.5 rounded border-2 border-slate-800 bg-slate-200 inline-flex items-center justify-center">
+                    <span className="w-1.5 h-px bg-slate-600 rounded" />
+                  </span>частично
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3.5 h-3.5 rounded border-2 border-gray-300 inline-flex" />не выбран
+                </span>
+                <span className="ml-auto font-medium text-gray-500">{checkedCount} / {totalAllowed}</span>
+              </div>
+            </div>
 
-        <div className="divide-y max-h-[420px] overflow-y-auto p-2">
-          {filteredTree.length === 0
-            ? <p className="text-sm text-gray-400 text-center py-8">Нет доступных разделов</p>
-            : filteredTree.map(item => renderItem(item))}
+            <div className="flex-1 overflow-y-auto p-2 max-h-[420px]">
+              {filteredTree.length === 0
+                ? <p className="text-sm text-gray-400 text-center py-8">Нет доступных разделов</p>
+                : filteredTree.map(item => renderItem(item))}
+            </div>
+          </div>
         </div>
 
         <div className="p-4 border-t flex justify-end gap-2">
