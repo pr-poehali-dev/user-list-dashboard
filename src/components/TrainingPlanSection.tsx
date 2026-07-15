@@ -20,6 +20,7 @@ interface TrainingPlan {
   dateEnd?: string;
   questionsCount?: number;
   answerTime?: number;
+  answerTimeUnlimited?: boolean;
   isActive?: boolean;
 }
 
@@ -124,6 +125,7 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
   const [formDateEnd, setFormDateEnd] = useState('');
   const [formQuestionsCount, setFormQuestionsCount] = useState('');
   const [formAnswerTime, setFormAnswerTime] = useState('');
+  const [formAnswerTimeUnlimited, setFormAnswerTimeUnlimited] = useState(false);
   const [formIsActive, setFormIsActive] = useState(true);
 
   const positions = useMemo(() => getPositions(), []);
@@ -163,6 +165,7 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
     setFormDateEnd(plan.dateEnd ?? '');
     setFormQuestionsCount(plan.questionsCount?.toString() ?? '');
     setFormAnswerTime(plan.answerTime?.toString() ?? '');
+    setFormAnswerTimeUnlimited(plan.answerTimeUnlimited ?? false);
     setFormIsActive(plan.isActive ?? true);
     setCheckedFolders(new Set());
     setExpandedFolders([]);
@@ -281,18 +284,6 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
             <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">{selectedPosition}</p>
             <h2 className="text-base font-semibold text-gray-900 truncate">{selectedPlan.name}</h2>
           </div>
-          {/* Переключатель активности */}
-          <button
-            onClick={() => setFormIsActive(v => !v)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-              formIsActive
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                : 'bg-gray-100 border-gray-200 text-gray-500'
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${formIsActive ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-            {formIsActive ? 'Активен' : 'Неактивен'}
-          </button>
         </div>
 
         {/* Двухколоночный layout */}
@@ -309,6 +300,36 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
                   placeholder="Введите название"
                   className="text-sm"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Статус плана</label>
+                <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+                  <button
+                    type="button"
+                    onClick={() => setFormIsActive(true)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      formIsActive
+                        ? 'bg-emerald-500 text-white shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${formIsActive ? 'bg-white' : 'bg-emerald-400'}`} />
+                    Активен
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormIsActive(false)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      !formIsActive
+                        ? 'bg-gray-500 text-white shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${!formIsActive ? 'bg-white' : 'bg-gray-400'}`} />
+                    Неактивен
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -359,16 +380,35 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Время на ответ (мин)</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-gray-500">Время на ответ (мин)</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormAnswerTimeUnlimited(v => !v)}
+                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors"
+                      style={{
+                        backgroundColor: formAnswerTimeUnlimited ? '#1e293b' : 'white',
+                        borderColor: formAnswerTimeUnlimited ? '#1e293b' : '#d1d5db',
+                      }}
+                    >
+                      {formAnswerTimeUnlimited && <Icon name="Check" size={9} className="text-white" />}
+                    </span>
+                    Без ограничений
+                  </button>
+                </div>
                 <div className="relative">
                   <Icon name="Clock" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <Input
                     type="number"
                     min={1}
-                    value={formAnswerTime}
+                    value={formAnswerTimeUnlimited ? '' : formAnswerTime}
                     onChange={e => setFormAnswerTime(e.target.value)}
-                    placeholder="Например: 30"
-                    className="pl-8 text-sm"
+                    disabled={formAnswerTimeUnlimited}
+                    placeholder={formAnswerTimeUnlimited ? 'Без ограничений' : 'Например: 30'}
+                    className="pl-8 text-sm disabled:bg-gray-50 disabled:text-gray-400"
                   />
                 </div>
               </div>
