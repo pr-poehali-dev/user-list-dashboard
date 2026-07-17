@@ -1,6 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { users } from '@/data/mockData';
 
@@ -16,6 +24,7 @@ interface TrainingPlan {
   name: string;
   description: string;
   createdAt: string;
+  positions: string[];
   dateStart?: string;
   dateEnd?: string;
   questionsCount?: number;
@@ -97,16 +106,29 @@ const filterTree = (items: TreeNode[], term: string, allowedIds: Set<string>): T
   return items.map(filter).filter((x): x is TreeNode => x !== null);
 };
 
-const MOCK_PLANS: Record<string, TrainingPlan[]> = {};
+let planIdCounter = 1;
+const genPlanId = () => `plan-${planIdCounter++}`;
 
-const getPositionPlans = (position: string): TrainingPlan[] => {
-  if (!MOCK_PLANS[position]) {
-    MOCK_PLANS[position] = [
-      { id: `${position}-1`, name: 'Базовый план', description: 'Обязательная программа обучения', createdAt: '12.01.2024' },
-      { id: `${position}-2`, name: 'Расширенный план', description: 'Углублённая программа для опытных сотрудников', createdAt: '05.03.2024' },
-    ];
-  }
-  return MOCK_PLANS[position];
+const createSeedPlans = (position: string): TrainingPlan[] => [
+  {
+    id: genPlanId(),
+    name: 'Базовый план',
+    description: 'Обязательная программа обучения',
+    createdAt: '12.01.2024',
+    positions: [position],
+  },
+  {
+    id: genPlanId(),
+    name: 'Расширенный план',
+    description: 'Углублённая программа для опытных сотрудников',
+    createdAt: '05.03.2024',
+    positions: [position],
+  },
+];
+
+const formatToday = () => {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
 };
 
 const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionProps) => {
@@ -133,10 +155,24 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
     p.toLowerCase().includes(positionSearch.toLowerCase())
   );
 
+  const [allPlans, setAllPlans] = useState<TrainingPlan[]>(() => {
+    const list: TrainingPlan[] = [];
+    positions.forEach(pos => list.push(...createSeedPlans(pos)));
+    return list;
+  });
+
+  const [isAddPlanOpen, setIsAddPlanOpen] = useState(false);
+  const [newPlanName, setNewPlanName] = useState('');
+  const [newPlanDescription, setNewPlanDescription] = useState('');
+  const [newPlanPositions, setNewPlanPositions] = useState<Set<string>>(new Set());
+  const [addPlanPositionSearch, setAddPlanPositionSearch] = useState('');
+
   const allowedIds: Set<string> = useMemo(() => {
-    if (!selectedPosition) return new Set();
-    return knowledgeScope[selectedPosition] ?? new Set(getAllFolderIds(treeData));
-  }, [selectedPosition, knowledgeScope, treeData]);
+    const targetPositions = selectedPlan ? selectedPlan.positions : (selectedPosition ? [selectedPosition] : []);
+    if (targetPositions.length === 0) return new Set();
+    const sets = targetPositions.map(pos => knowledgeScope[pos] ?? new Set(getAllFolderIds(treeData)));
+    return sets.reduce((acc, s) => new Set([...acc].filter(id => s.has(id))));
+  }, [selectedPlan, selectedPosition, knowledgeScope, treeData]);
 
   const filteredTree = useMemo(
     () => filterTree(treeData, treeSearch, allowedIds),
@@ -144,8 +180,8 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
   );
 
   const plans = useMemo(
-    () => selectedPosition ? getPositionPlans(selectedPosition) : [],
-    [selectedPosition]
+    () => selectedPosition ? allPlans.filter(p => p.positions.includes(selectedPosition)) : [],
+    [selectedPosition, allPlans]
   );
   const filteredPlans = plans.filter(p =>
     p.name.toLowerCase().includes(planSearch.toLowerCase())
@@ -171,6 +207,134 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
     setExpandedFolders([]);
     setTreeSearch('');
   };
+
+  const handleSavePlan = () => {
+    if (!selectedPlan) return;
+    setAllPlans(prev => prev.map(p => p.id === selectedPlan.id ? {
+      ...p,
+      name: formName,
+      description: formDescription,
+      dateStart: formDateStart,
+      dateEnd: formDateEnd,
+      questionsCount: formQuestionsCount ? Number(formQuestionsCount) : undefined,
+      answerTime: formAnswerTime ? Number(formAnswerTime) : undefined,
+      answerTimeUnlimited: formAnswerTimeUnlimited,
+      isActive: formIsActive,
+    } : p));
+    setSelectedPlan(null);
+  };
+
+  const openAddPlanDialog = () => {
+    setNewPlanName('');
+    setNewPlanDescription('');
+    setNewPlanPositions(new Set(selectedPosition ? [selectedPosition] : []));
+    setAddPlanPositionSearch('');
+    setIsAddPlanOpen(true);
+  };
+
+  const toggleNewPlanPosition = (pos: string) => {
+    setNewPlanPositions(prev => {
+      const next = new Set(prev);
+      if (next.has(pos)) next.delete(pos); else next.add(pos);
+      return next;
+    });
+  };
+
+  const handleCreatePlan = () => {
+    if (!newPlanName.trim() || newPlanPositions.size === 0) return;
+    const newPlan: TrainingPlan = {
+      id: genPlanId(),
+      name: newPlanName.trim(),
+      description: newPlanDescription.trim(),
+      createdAt: formatToday(),
+      positions: Array.from(newPlanPositions),
+      isActive: true,
+    };
+    setAllPlans(prev => [...prev, newPlan]);
+    setIsAddPlanOpen(false);
+    handleSelectPlan(newPlan);
+  };
+
+  const addPlanFilteredPositions = positions.filter(p =>
+    p.toLowerCase().includes(addPlanPositionSearch.toLowerCase())
+  );
+
+  const addPlanDialog = (
+    <Dialog open={isAddPlanOpen} onOpenChange={setIsAddPlanOpen}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Новый план обучения</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Название плана</label>
+            <Input
+              value={newPlanName}
+              onChange={e => setNewPlanName(e.target.value)}
+              placeholder="Введите название"
+              className="text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Описание</label>
+            <textarea
+              value={newPlanDescription}
+              onChange={e => setNewPlanDescription(e.target.value)}
+              placeholder="Краткое описание программы..."
+              rows={2}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-medium text-gray-500">Должности</label>
+              <span className="text-xs text-gray-400">{newPlanPositions.size} выбрано</span>
+            </div>
+            <div className="relative mb-2">
+              <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Input
+                value={addPlanPositionSearch}
+                onChange={e => setAddPlanPositionSearch(e.target.value)}
+                placeholder="Поиск должности..."
+                className="pl-8 h-8 text-xs"
+              />
+            </div>
+            <div className="border rounded-lg max-h-48 overflow-y-auto divide-y">
+              {addPlanFilteredPositions.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-4">Должности не найдены</p>
+              ) : (
+                addPlanFilteredPositions.map(pos => (
+                  <label
+                    key={pos}
+                    className="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+                  >
+                    <Checkbox
+                      checked={newPlanPositions.has(pos)}
+                      onCheckedChange={() => toggleNewPlanPosition(pos)}
+                    />
+                    <span className="text-gray-800">{pos}</span>
+                  </label>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsAddPlanOpen(false)}>Отмена</Button>
+          <Button
+            onClick={handleCreatePlan}
+            disabled={!newPlanName.trim() || newPlanPositions.size === 0}
+          >
+            Создать план
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 
   const getFolderCheckState = (item: TreeNode): CheckState => {
     if (item.type !== 'folder') return 'unchecked';
@@ -281,7 +445,9 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
             <Icon name="BookOpen" size={16} className="text-blue-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">{selectedPosition}</p>
+            <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold truncate">
+              {selectedPlan.positions.join(', ')}
+            </p>
             <h2 className="text-base font-semibold text-gray-900 truncate">{selectedPlan.name}</h2>
           </div>
         </div>
@@ -421,7 +587,7 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
               <div className="bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 flex items-start gap-2">
                 <Icon name="Info" size={14} className="text-amber-500 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-amber-700 leading-relaxed">
-                  Доступны только разделы из объёма знаний для «<strong>{selectedPosition}</strong>».
+                  Доступны только разделы, входящие в объём знаний {selectedPlan.positions.length > 1 ? 'всех выбранных должностей' : 'должности'}: «<strong>{selectedPlan.positions.join('», «')}</strong>».
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -475,7 +641,7 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
 
         <div className="p-4 border-t flex justify-end gap-2">
           <Button variant="outline" onClick={() => setSelectedPlan(null)}>Отмена</Button>
-          <Button onClick={() => setSelectedPlan(null)}>Сохранить</Button>
+          <Button onClick={handleSavePlan}>Сохранить</Button>
         </div>
       </div>
     );
@@ -483,6 +649,7 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
 
   if (selectedPosition) {
     return (
+      <>
       <div className="bg-white rounded-lg border shadow-sm">
         <div className="p-4 border-b flex items-center gap-3">
           <button
@@ -526,7 +693,14 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
                   <Icon name="FileText" size={16} className="text-blue-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{plan.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-gray-900 truncate">{plan.name}</p>
+                    {plan.positions.length > 1 && (
+                      <span className="flex-shrink-0 text-[10px] font-medium bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">
+                        {plan.positions.length} должности
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-400 truncate">{plan.description}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -539,26 +713,33 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
         </div>
 
         <div className="p-3 border-t">
-          <Button size="sm" variant="outline" className="w-full gap-2">
+          <Button size="sm" variant="outline" className="w-full gap-2" onClick={openAddPlanDialog}>
             <Icon name="Plus" size={14} />
             Добавить план
           </Button>
         </div>
       </div>
+      {addPlanDialog}
+      </>
     );
   }
 
   return (
+    <>
     <div className="bg-white rounded-lg border shadow-sm p-6">
       <div className="flex items-center gap-4 mb-6 pb-5 border-b">
         <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
           <Icon name="BookOpen" size={28} className="text-blue-600" />
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-0.5">Настройка</p>
           <h2 className="text-2xl font-bold text-gray-900">Планы обучения</h2>
           <p className="text-sm text-gray-500">{positions.length} должностей</p>
         </div>
+        <Button size="sm" className="gap-1.5" onClick={openAddPlanDialog}>
+          <Icon name="Plus" size={14} />
+          Добавить план
+        </Button>
       </div>
 
       <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-4 mb-5">
@@ -588,7 +769,7 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
           <p className="text-sm text-gray-400 text-center py-10">Должности не найдены</p>
         ) : (
           filteredPositions.map(position => {
-            const planCount = getPositionPlans(position).length;
+            const planCount = allPlans.filter(p => p.positions.includes(position)).length;
             return (
               <button
                 key={position}
@@ -609,6 +790,8 @@ const TrainingPlanSection = ({ treeData, knowledgeScope }: TrainingPlanSectionPr
         )}
       </div>
     </div>
+    {addPlanDialog}
+    </>
   );
 };
 
