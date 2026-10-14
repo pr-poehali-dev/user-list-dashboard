@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Ticket } from '@/data/ticketsData';
 import { sampleQuestions } from '@/data/questionsData';
+import SequenceAnswer from '@/components/SequenceAnswer';
 
 interface TicketPlayerProps {
   ticket: Ticket;
@@ -19,30 +20,9 @@ const formatTime = (totalSeconds: number) => {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 };
 
-const shuffleDifferent = (ids: string[]): string[] => {
-  if (ids.length < 2) return ids;
-  let result = ids;
-  let guard = 0;
-  while (result.every((id, i) => id === ids[i]) && guard < 20) {
-    result = [...ids];
-    for (let i = result.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [result[i], result[j]] = [result[j], result[i]];
-    }
-    guard++;
-  }
-  return result;
-};
-
 const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
   const questions = sampleQuestions;
-  const [orders, setOrders] = useState<Record<string, string[]>>(() =>
-    Object.fromEntries(
-      sampleQuestions
-        .filter(q => q.type === 'sequence')
-        .map(q => [q.id, shuffleDifferent(q.options.map(o => o.id))])
-    )
-  );
+  const [orders, setOrders] = useState<Record<string, string[]>>({});
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<Record<string, string[]>>({});
   const [answered, setAnswered] = useState<Record<string, boolean>>({});
@@ -91,22 +71,16 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
 
   const isSequence = question.type === 'sequence';
   const currentOrder = orders[question.id] ?? [];
-  const canAnswer = isSequence || currentSelection.length > 0;
-
-  const moveItem = (index: number, dir: -1 | 1) => {
-    if (isAnswered) return;
-    const target = index + dir;
-    if (target < 0 || target >= currentOrder.length) return;
-    const next = [...currentOrder];
-    [next[index], next[target]] = [next[target], next[index]];
-    setOrders(prev => ({ ...prev, [question.id]: next }));
-  };
+  const correctSequence = question.sequence ?? [];
+  const canAnswer = isSequence ? currentOrder.length > 0 : currentSelection.length > 0;
 
   const handleAnswer = () => {
     if (isAnswered || !canAnswer) return;
     let isCorrect: boolean;
     if (isSequence) {
-      isCorrect = question.options.every((o, i) => currentOrder[i] === o.id);
+      isCorrect =
+        currentOrder.length === correctSequence.length &&
+        correctSequence.every((id, i) => currentOrder[i] === id);
     } else {
       const correctIds = question.options.filter(o => o.correct).map(o => o.id).sort();
       const chosen = [...currentSelection].sort();
@@ -227,69 +201,35 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
           {question.image && (
             <img src={question.image} alt="" className="w-full max-h-72 object-contain rounded-lg border bg-gray-50 mb-4" />
           )}
-          <p className="text-xs text-gray-500 mb-3">
-            {isSequence ? 'Расставьте варианты в правильном порядке с помощью стрелок' : 'Выберите все правильные ответы'}
-          </p>
+          {!isSequence && <p className="text-xs text-gray-500 mb-3">Выберите все правильные ответы</p>}
 
           {isSequence ? (
-            <div className="space-y-2">
-              {currentOrder.map((optId, index) => {
-                const opt = question.options.find(o => o.id === optId)!;
-                const inPlace = question.options[index].id === optId;
-                let cls = 'border-gray-200';
-                if (isAnswered) cls = inPlace ? 'border-emerald-500 bg-emerald-50' : 'border-red-500 bg-red-50';
-                return (
-                  <div key={optId} className={`flex items-center gap-3 p-3 rounded-lg border-2 ${cls}`}>
-                    <span className="w-7 h-7 rounded-full bg-gray-800 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
-                      {index + 1}
-                    </span>
-                    {opt.image && (
-                      <img src={opt.image} alt="" className="w-20 h-20 object-contain rounded border bg-white flex-shrink-0" />
-                    )}
-                    {opt.text && <span className="text-sm text-gray-900 flex-1">{opt.text}</span>}
-                    {!isAnswered && (
-                      <div className="flex flex-col gap-1 ml-auto flex-shrink-0">
-                        <button
-                          onClick={() => moveItem(index, -1)}
-                          disabled={index === 0}
-                          className="p-1 rounded border bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                          <Icon name="ChevronUp" size={16} />
-                        </button>
-                        <button
-                          onClick={() => moveItem(index, 1)}
-                          disabled={index === currentOrder.length - 1}
-                          className="p-1 rounded border bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                          <Icon name="ChevronDown" size={16} />
-                        </button>
-                      </div>
-                    )}
-                    {isAnswered && (
-                      <Icon
-                        name={inPlace ? 'CheckCircle2' : 'XCircle'}
-                        size={18}
-                        className={`ml-auto flex-shrink-0 ${inPlace ? 'text-emerald-600' : 'text-red-600'}`}
-                      />
-                    )}
-                  </div>
-                );
-              })}
+            <>
+              <SequenceAnswer
+                options={question.options}
+                correctSequence={correctSequence}
+                chosen={currentOrder}
+                locked={isAnswered}
+                onChange={next => setOrders(prev => ({ ...prev, [question.id]: next }))}
+              />
               {isAnswered && !answered[question.id] && (
                 <div className="mt-3 rounded-lg border bg-gray-50 p-3">
                   <p className="text-xs font-semibold text-gray-500 mb-2">Правильная последовательность:</p>
                   <ol className="space-y-1 text-sm text-gray-800">
-                    {question.options.map((o, i) => (
-                      <li key={o.id} className="flex items-center gap-2">
-                        <span className="font-semibold">{i + 1}.</span>
-                        {o.image && <img src={o.image} alt="" className="w-8 h-8 object-contain rounded border bg-white" />}
-                        {o.text}
-                      </li>
-                    ))}
+                    {correctSequence.map((id, i) => {
+                      const o = question.options.find(x => x.id === id)!;
+                      return (
+                        <li key={id} className="flex items-center gap-2">
+                          <span className="font-semibold">{i + 1}.</span>
+                          {o.image && <img src={o.image} alt="" className="w-8 h-8 object-contain rounded border bg-white" />}
+                          {o.text}
+                        </li>
+                      );
+                    })}
                   </ol>
                 </div>
               )}
-            </div>
+            </>
           ) : (
           <div className="space-y-2">
             {question.options.map(opt => {

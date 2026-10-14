@@ -8,6 +8,7 @@ export interface AnswerOption {
 export interface TicketQuestion {
   id: string;
   type?: 'choice' | 'sequence';
+  sequence?: string[];
   text?: string;
   image?: string;
   options: AnswerOption[];
@@ -68,22 +69,27 @@ export const sampleQuestions: TicketQuestion[] = [
   {
     id: 'q7',
     type: 'sequence',
-    text: 'Расположите действия машиниста при внезапной остановке поезда в правильной последовательности.',
+    text: 'Выберите нужные действия машиниста при внезапной остановке поезда и расположите их в правильной последовательности.',
+    sequence: ['a', 'b', 'c', 'd'],
     options: [
       { id: 'a', text: 'Привести в действие тормоза' },
       { id: 'b', text: 'Сообщить диспетчеру о причине остановки' },
       { id: 'c', text: 'Осмотреть состав' },
       { id: 'd', text: 'Получить разрешение на дальнейшее движение' },
+      { id: 'e', text: 'Отключить связь с диспетчером' },
+      { id: 'f', text: 'Покинуть кабину и уйти со станции' },
     ],
   },
   {
     id: 'q8',
     type: 'sequence',
-    text: 'Расположите сигналы светофора в порядке от разрешающего движение к запрещающему.',
+    text: 'Расположите сигналы светофора в порядке от разрешающего движение к запрещающему. Лишние варианты не используйте.',
+    sequence: ['a', 'b', 'c'],
     options: [
       { id: 'a', image: IMG_GREEN, text: 'Зелёный' },
       { id: 'b', image: IMG_YELLOW, text: 'Жёлтый' },
       { id: 'c', image: IMG_RED, text: 'Красный' },
+      { id: 'd', text: 'Фиолетовый' },
     ],
   },
   {
