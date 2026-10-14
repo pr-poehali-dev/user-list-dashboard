@@ -7,6 +7,8 @@ import { users, User } from '@/data/mockData';
 import UserManagementSection from '@/components/UserManagementSection';
 import LoadingScreen from '@/components/LoadingScreen';
 import TeacherLayout from '@/components/TeacherLayout';
+import UserAuthProfile from '@/components/UserAuthProfile';
+import UserLayout from '@/components/UserLayout';
 
 const Index = () => {
   const [search, setSearch] = useState('');
@@ -14,6 +16,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [loggedUser, setLoggedUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
   const [teacherPassword, setTeacherPassword] = useState('');
@@ -44,10 +47,33 @@ const Index = () => {
     return <LoadingScreen loadingText={loadingText} />;
   }
 
+  if (loggedUser) {
+    return (
+      <UserLayout
+        user={loggedUser}
+        onExit={() => { setLoggedUser(null); setSelectedUser(null); }}
+      />
+    );
+  }
+
+  if (!isTeacherMode && selectedUser) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-6xl mx-auto">
+          <UserAuthProfile
+            user={selectedUser}
+            onBack={() => setSelectedUser(null)}
+            onLogin={() => setLoggedUser(selectedUser)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (isTeacherMode) {
     return (
       <TeacherLayout
-        onExit={() => setIsTeacherMode(false)}
+        onExit={() => { setIsTeacherMode(false); setSelectedUser(null); }}
         selectedGroup={selectedGroup}
         setSelectedGroup={setSelectedGroup}
         isEditGroupModalOpen={isEditGroupModalOpen}
