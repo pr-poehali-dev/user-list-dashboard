@@ -2,11 +2,12 @@ export interface AnswerOption {
   id: string;
   text?: string;
   image?: string;
-  correct: boolean;
+  correct?: boolean;
 }
 
 export interface TicketQuestion {
   id: string;
+  type?: 'choice' | 'sequence';
   text?: string;
   image?: string;
   options: AnswerOption[];
@@ -62,6 +63,27 @@ export const sampleQuestions: TicketQuestion[] = [
       { id: 'a', image: IMG_YELLOW, correct: true },
       { id: 'b', image: IMG_GREEN, correct: false },
       { id: 'c', image: IMG_RED, correct: false },
+    ],
+  },
+  {
+    id: 'q7',
+    type: 'sequence',
+    text: 'Расположите действия машиниста при внезапной остановке поезда в правильной последовательности.',
+    options: [
+      { id: 'a', text: 'Привести в действие тормоза' },
+      { id: 'b', text: 'Сообщить диспетчеру о причине остановки' },
+      { id: 'c', text: 'Осмотреть состав' },
+      { id: 'd', text: 'Получить разрешение на дальнейшее движение' },
+    ],
+  },
+  {
+    id: 'q8',
+    type: 'sequence',
+    text: 'Расположите сигналы светофора в порядке от разрешающего движение к запрещающему.',
+    options: [
+      { id: 'a', image: IMG_GREEN, text: 'Зелёный' },
+      { id: 'b', image: IMG_YELLOW, text: 'Жёлтый' },
+      { id: 'c', image: IMG_RED, text: 'Красный' },
     ],
   },
   {
