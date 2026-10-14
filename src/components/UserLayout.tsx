@@ -1,22 +1,29 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { User } from '@/data/mockData';
-import { tickets } from '@/data/ticketsData';
+import { tickets, Ticket } from '@/data/ticketsData';
 import TicketsTable from '@/components/TicketsTable';
-
-const userSections = [
-  { id: 'control', name: 'Контроль', icon: 'ClipboardCheck' },
-  { id: 'attestation', name: 'Аттестация', icon: 'Award' },
-];
 
 interface UserLayoutProps {
   user: User;
   onExit: () => void;
 }
 
+const modes = [
+  { id: 'control', name: 'Пройти контроль', description: 'Проверка знаний по билету', icon: 'ClipboardCheck' },
+  { id: 'attestation', name: 'Пройти аттестацию', description: 'Итоговая аттестация по билету', icon: 'Award' },
+];
+
 const UserLayout = ({ user, onExit }: UserLayoutProps) => {
-  const [section, setSection] = useState('control');
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -38,33 +45,44 @@ const UserLayout = ({ user, onExit }: UserLayoutProps) => {
             </Button>
           </div>
 
-          <div className="flex flex-col md:flex-row border-t">
-            {userSections.map(s => (
-              <button
-                key={s.id}
-                onClick={() => setSection(s.id)}
-                className={`flex items-center gap-2 px-6 py-3 border-b-2 md:border-r transition-colors ${
-                  section === s.id
-                    ? 'border-blue-600 text-blue-600 bg-blue-50'
-                    : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                }`}
-              >
-                <Icon name={s.icon} size={16} />
-                {s.name}
-              </button>
-            ))}
+          <div className="flex border-t">
+            <div className="flex items-center gap-2 px-6 py-3 border-b-2 border-blue-600 text-blue-600 bg-blue-50">
+              <Icon name="Ticket" size={16} />
+              Билеты
+            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto p-4 md:p-8">
-        {section === 'control' && (
-          <TicketsTable title="Контроль" tickets={tickets.filter(t => t.kind === 'control')} />
-        )}
-        {section === 'attestation' && (
-          <TicketsTable title="Аттестация" tickets={tickets.filter(t => t.kind === 'attestation')} />
-        )}
+        <TicketsTable title="Билеты" tickets={tickets} onSelect={setSelectedTicket} />
       </div>
+
+      <Dialog open={!!selectedTicket} onOpenChange={open => !open && setSelectedTicket(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Билет № {selectedTicket?.number}</DialogTitle>
+            <DialogDescription>{selectedTicket?.title}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {modes.map(m => (
+              <button
+                key={m.id}
+                onClick={() => setSelectedTicket(null)}
+                className="w-full flex items-center gap-3 p-4 rounded-lg border hover:bg-blue-50 hover:border-blue-300 transition-colors text-left"
+              >
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Icon name={m.icon} size={20} className="text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{m.name}</p>
+                  <p className="text-xs text-gray-500">{m.description}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

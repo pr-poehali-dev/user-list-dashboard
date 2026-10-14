@@ -16,9 +16,10 @@ const statusMeta: Record<TicketStatus, { label: string; className: string }> = {
 interface TicketsTableProps {
   title: string;
   tickets: Ticket[];
+  onSelect: (ticket: Ticket) => void;
 }
 
-const TicketsTable = ({ title, tickets }: TicketsTableProps) => {
+const TicketsTable = ({ title, tickets, onSelect }: TicketsTableProps) => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -91,7 +92,7 @@ const TicketsTable = ({ title, tickets }: TicketsTableProps) => {
             </TableRow>
           ) : (
             pageItems.map(t => (
-              <TableRow key={t.id}>
+              <TableRow key={t.id} className="cursor-pointer" onClick={() => onSelect(t)}>
                 <TableCell className="font-medium">{t.number}</TableCell>
                 <TableCell>{t.title}</TableCell>
                 <TableCell>{t.questionsCount}</TableCell>
@@ -104,12 +105,10 @@ const TicketsTable = ({ title, tickets }: TicketsTableProps) => {
                 </TableCell>
                 <TableCell>{t.result ?? '—'}</TableCell>
                 <TableCell className="text-right">
-                  {(t.status === 'new' || t.status === 'in_progress') && (
-                    <Button size="sm" className="gap-1.5">
-                      <Icon name="Play" size={14} />
-                      {t.status === 'new' ? 'Начать' : 'Продолжить'}
-                    </Button>
-                  )}
+                  <Button size="sm" variant="outline" className="gap-1.5" onClick={e => { e.stopPropagation(); onSelect(t); }}>
+                    <Icon name="Play" size={14} />
+                    Выбрать
+                  </Button>
                 </TableCell>
               </TableRow>
             ))
