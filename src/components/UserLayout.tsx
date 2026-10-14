@@ -11,6 +11,7 @@ import Icon from '@/components/ui/icon';
 import { User } from '@/data/mockData';
 import { tickets, Ticket } from '@/data/ticketsData';
 import TicketsTable from '@/components/TicketsTable';
+import TicketPlayer from '@/components/TicketPlayer';
 
 interface UserLayoutProps {
   user: User;
@@ -24,6 +25,11 @@ const modes = [
 
 const UserLayout = ({ user, onExit }: UserLayoutProps) => {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
+
+  if (activeTicket) {
+    return <TicketPlayer ticket={activeTicket} onExit={() => setActiveTicket(null)} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,7 +74,10 @@ const UserLayout = ({ user, onExit }: UserLayoutProps) => {
             {modes.map(m => (
               <button
                 key={m.id}
-                onClick={() => setSelectedTicket(null)}
+                onClick={() => {
+                  if (m.id === 'attestation' && selectedTicket) setActiveTicket(selectedTicket);
+                  setSelectedTicket(null);
+                }}
                 className="w-full flex items-center gap-3 p-4 rounded-lg border hover:bg-blue-50 hover:border-blue-300 transition-colors text-left"
               >
                 <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">

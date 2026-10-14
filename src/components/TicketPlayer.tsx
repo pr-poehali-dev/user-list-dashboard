@@ -1,0 +1,267 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import Icon from '@/components/ui/icon';
+import { Ticket } from '@/data/ticketsData';
+import { sampleQuestions } from '@/data/questionsData';
+
+interface TicketPlayerProps {
+  ticket: Ticket;
+  onExit: () => void;
+}
+
+const formatTime = (totalSeconds: number) => {
+  const s = Math.max(0, totalSeconds);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const mm = String(m).padStart(2, '0');
+  const ss = String(sec).padStart(2, '0');
+  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+};
+
+const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
+  const questions = sampleQuestions;
+  const [current, setCurrent] = useState(0);
+  const [selected, setSelected] = useState<Record<string, string[]>>({});
+  const [answered, setAnswered] = useState<Record<string, boolean>>({});
+  const [elapsed, setElapsed] = useState(0);
+  const [finished, setFinished] = useState(false);
+
+  const limitSeconds = ticket.timeLimit ? ticket.timeLimit * 60 : null;
+  const remaining = limitSeconds !== null ? limitSeconds - elapsed : null;
+  const timeIsOver = remaining !== null && remaining <= 0;
+
+  useEffect(() => {
+    if (finished) return;
+    const id = setInterval(() => setElapsed(v => v + 1), 1000);
+    return () => clearInterval(id);
+  }, [finished]);
+
+  useEffect(() => {
+    if (timeIsOver) setFinished(true);
+  }, [timeIsOver]);
+
+  const question = questions[current];
+  const isAnswered = question.id in answered;
+  const currentSelection = selected[question.id] ?? [];
+
+  const answeredCount = Object.keys(answered).length;
+  const correctCount = Object.values(answered).filter(Boolean).length;
+
+  const findUnanswered = (from: number, step: 1 | -1): number | null => {
+    for (let i = from + step; i >= 0 && i < questions.length; i += step) {
+      if (!(questions[i].id in answered)) return i;
+    }
+    return null;
+  };
+
+  const prevIndex = useMemo(() => findUnanswered(current, -1), [current, answered]);
+  const nextIndex = useMemo(() => findUnanswered(current, 1), [current, answered]);
+
+  const toggleOption = (optionId: string) => {
+    if (isAnswered) return;
+    setSelected(prev => {
+      const list = prev[question.id] ?? [];
+      const next = list.includes(optionId) ? list.filter(x => x !== optionId) : [...list, optionId];
+      return { ...prev, [question.id]: next };
+    });
+  };
+
+  const handleAnswer = () => {
+    if (isAnswered || currentSelection.length === 0) return;
+    const correctIds = question.options.filter(o => o.correct).map(o => o.id).sort();
+    const chosen = [...currentSelection].sort();
+    const isCorrect = correctIds.length === chosen.length && correctIds.every((id, i) => id === chosen[i]);
+    const nextAnswered = { ...answered, [question.id]: isCorrect };
+    setAnswered(nextAnswered);
+    if (Object.keys(nextAnswered).length === questions.length) {
+      setFinished(true);
+    }
+  };
+
+  const goNextAfterAnswer = () => {
+    const forward = findUnanswered(current, 1);
+    const back = findUnanswered(current, -1);
+    if (forward !== null) setCurrent(forward);
+    else if (back !== null) setCurrent(back);
+  };
+
+  if (finished) {
+    const total = questions.length;
+    const percent = Math.round((correctCount / total) * 100);
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+        <div className="max-w-xl mx-auto bg-white rounded-lg border shadow-sm p-8 text-center">
+          <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center ${percent >= 70 ? 'bg-emerald-100' : 'bg-red-100'}`}>
+            <Icon name={percent >= 70 ? 'CheckCircle2' : 'XCircle'} size={32} className={percent >= 70 ? 'text-emerald-600' : 'text-red-600'} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+            {timeIsOver && answeredCount < total ? 'Время вышло' : 'Аттестация завершена'}
+          </h2>
+          <p className="text-gray-500 mb-6">Билет № {ticket.number}. {ticket.title}</p>
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500">Верно</p>
+              <p className="text-lg font-semibold text-emerald-600">{correctCount} из {total}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500">Результат</p>
+              <p className="text-lg font-semibold text-gray-900">{percent}%</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500">Затрачено</p>
+              <p className="text-lg font-semibold text-gray-900">{formatTime(elapsed)}</p>
+            </div>
+          </div>
+          <Button onClick={onExit}>К списку билетов</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-4xl mx-auto flex items-center justify-between p-4 gap-3">
+          <div className="min-w-0">
+            <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Аттестация. Билет № {ticket.number}</p>
+            <h1 className="text-base font-semibold text-gray-900 truncate">{ticket.title}</h1>
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border font-mono text-sm font-semibold ${
+                remaining !== null && remaining <= 60
+                  ? 'bg-red-50 border-red-200 text-red-600'
+                  : 'bg-gray-50 border-gray-200 text-gray-800'
+              }`}
+            >
+              <Icon name="Timer" size={16} />
+              {remaining !== null ? formatTime(remaining) : formatTime(elapsed)}
+            </div>
+            <Button variant="outline" size="sm" onClick={onExit}>
+              <Icon name="X" size={16} />
+              <span className="hidden sm:inline">Прервать</span>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-4">
+        <div className="bg-white rounded-lg border shadow-sm p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-gray-500">
+              Отвечено: {answeredCount} из {questions.length}
+            </p>
+            <p className="text-sm text-gray-500">
+              {remaining !== null ? `Затрачено: ${formatTime(elapsed)}` : 'Без ограничения времени'}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {questions.map((q, i) => {
+              const done = q.id in answered;
+              const isCurrent = i === current;
+              let cls = 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50';
+              if (done) cls = answered[q.id] ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-red-500 border-red-500 text-white';
+              if (isCurrent && !done) cls = 'bg-blue-600 border-blue-600 text-white';
+              return (
+                <button
+                  key={q.id}
+                  disabled={done}
+                  onClick={() => setCurrent(i)}
+                  className={`w-9 h-9 rounded-lg border text-sm font-medium transition-colors disabled:cursor-not-allowed ${cls} ${
+                    isCurrent ? 'ring-2 ring-offset-1 ring-blue-300' : ''
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border shadow-sm p-6">
+          <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">
+            Вопрос {current + 1} из {questions.length}
+          </p>
+          {question.text && <p className="text-lg font-medium text-gray-900 mb-4">{question.text}</p>}
+          {question.image && (
+            <img src={question.image} alt="" className="w-full max-h-72 object-contain rounded-lg border bg-gray-50 mb-4" />
+          )}
+          <p className="text-xs text-gray-500 mb-3">Выберите все правильные ответы</p>
+
+          <div className="space-y-2">
+            {question.options.map(opt => {
+              const checked = currentSelection.includes(opt.id);
+              let cls = 'border-gray-200 hover:bg-gray-50';
+              if (checked && !isAnswered) cls = 'border-blue-500 bg-blue-50';
+              if (isAnswered) {
+                if (opt.correct) cls = 'border-emerald-500 bg-emerald-50';
+                else if (checked) cls = 'border-red-500 bg-red-50';
+                else cls = 'border-gray-200 opacity-60';
+              }
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => toggleOption(opt.id)}
+                  disabled={isAnswered}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-colors disabled:cursor-default ${cls}`}
+                >
+                  <span
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                      checked ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white'
+                    }`}
+                  >
+                    {checked && <Icon name="Check" size={12} className="text-white" />}
+                  </span>
+                  {opt.image && (
+                    <img src={opt.image} alt="" className="w-24 h-24 object-contain rounded border bg-white flex-shrink-0" />
+                  )}
+                  {opt.text && <span className="text-sm text-gray-900 flex-1">{opt.text}</span>}
+                  {isAnswered && opt.correct && <Icon name="CheckCircle2" size={18} className="text-emerald-600 flex-shrink-0 ml-auto" />}
+                  {isAnswered && !opt.correct && checked && <Icon name="XCircle" size={18} className="text-red-600 flex-shrink-0 ml-auto" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {isAnswered && (
+            <div
+              className={`mt-4 flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium ${
+                answered[question.id] ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+              }`}
+            >
+              <Icon name={answered[question.id] ? 'CheckCircle2' : 'XCircle'} size={18} />
+              {answered[question.id] ? 'Ответ верный' : 'Ответ неверный. Правильные варианты отмечены зелёным'}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-6 gap-3">
+            <Button variant="outline" disabled={prevIndex === null} onClick={() => prevIndex !== null && setCurrent(prevIndex)}>
+              <Icon name="ChevronLeft" size={16} />
+              Назад
+            </Button>
+
+            {isAnswered ? (
+              <Button onClick={goNextAfterAnswer} disabled={nextIndex === null && prevIndex === null}>
+                Следующий вопрос
+                <Icon name="ChevronRight" size={16} />
+              </Button>
+            ) : (
+              <Button onClick={handleAnswer} disabled={currentSelection.length === 0}>
+                <Icon name="Check" size={16} />
+                Дать ответ
+              </Button>
+            )}
+
+            <Button variant="outline" disabled={nextIndex === null} onClick={() => nextIndex !== null && setCurrent(nextIndex)}>
+              Вперёд
+              <Icon name="ChevronRight" size={16} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TicketPlayer;
