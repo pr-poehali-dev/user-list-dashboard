@@ -4,6 +4,7 @@ import Icon from '@/components/ui/icon';
 import { Ticket } from '@/data/ticketsData';
 import { sampleQuestions } from '@/data/questionsData';
 import SequenceAnswer from '@/components/SequenceAnswer';
+import ZoomImage from '@/components/ZoomImage';
 
 interface TicketPlayerProps {
   ticket: Ticket;
@@ -204,7 +205,9 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
             </p>
           )}
           {question.image && (
-            <img src={question.image} alt="" className="w-full max-h-64 md:max-h-80 object-contain rounded-lg border bg-gray-50 mb-4" />
+            <div className="mb-4 flex justify-center rounded-lg bg-gray-50 p-2">
+              <ZoomImage src={question.image} className="max-w-full max-h-64 md:max-h-96" />
+            </div>
           )}
           {!isSequence && <p className="text-xs text-gray-500 mb-3">Выберите все правильные ответы</p>}
 
@@ -260,14 +263,16 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
                   >
                     {checked && <Icon name="Check" size={12} className="text-white" />}
                   </span>
-                  {opt.image && (
-                    <img src={opt.image} alt="" className="w-20 h-20 md:w-24 md:h-24 object-contain rounded border bg-white flex-shrink-0" />
-                  )}
-                  {opt.text && (
-                    <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 min-w-0 whitespace-pre-line break-words">
-                      {opt.text}
-                    </span>
-                  )}
+                  <span className={`flex flex-1 min-w-0 gap-3 ${opt.image && opt.text ? 'flex-col sm:flex-row sm:items-start' : ''}`}>
+                    {opt.image && (
+                      <ZoomImage src={opt.image} className="w-full max-w-[280px] sm:w-44 sm:max-w-none max-h-56 sm:max-h-44" />
+                    )}
+                    {opt.text && (
+                      <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 min-w-0 whitespace-pre-line break-words">
+                        {opt.text}
+                      </span>
+                    )}
+                  </span>
                   {isAnswered && opt.correct && <Icon name="CheckCircle2" size={18} className="text-emerald-600 flex-shrink-0 mt-0.5" />}
                   {isAnswered && !opt.correct && checked && <Icon name="XCircle" size={18} className="text-red-600 flex-shrink-0 mt-0.5" />}
                 </button>

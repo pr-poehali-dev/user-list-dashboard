@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
+import ZoomImage from '@/components/ZoomImage';
 import { AnswerOption } from '@/data/questionsData';
 
 interface SequenceAnswerProps {
@@ -12,22 +13,15 @@ interface SequenceAnswerProps {
 
 type DragSource = 'bank' | 'answer';
 
-const OptionContent = ({ option, compact }: { option: AnswerOption; compact?: boolean }) => (
-  <>
-    {option.image && (
-      <img
-        src={option.image}
-        alt=""
-        draggable={false}
-        className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} object-contain rounded border bg-white flex-shrink-0`}
-      />
-    )}
+const OptionContent = ({ option }: { option: AnswerOption; compact?: boolean }) => (
+  <span className={`flex flex-1 min-w-0 gap-3 ${option.image && option.text ? 'flex-col sm:flex-row sm:items-start' : ''}`}>
+    {option.image && <ZoomImage src={option.image} className="w-full max-w-[240px] sm:w-36 sm:max-w-none max-h-48 sm:max-h-36" />}
     {option.text && (
       <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 min-w-0 text-left whitespace-pre-line break-words">
         {option.text}
       </span>
     )}
-  </>
+  </span>
 );
 
 const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: SequenceAnswerProps) => {
