@@ -135,8 +135,8 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-4xl mx-auto flex items-center justify-between p-4 gap-3">
+      <div className="bg-white border-b shadow-sm sticky top-0 z-20">
+        <div className="max-w-4xl mx-auto flex items-center justify-between p-3 md:p-4 gap-3">
           <div className="min-w-0">
             <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Аттестация. Билет № {ticket.number}</p>
             <h1 className="text-base font-semibold text-gray-900 truncate">{ticket.title}</h1>
@@ -160,7 +160,7 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-4">
+      <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4">
         <div className="bg-white rounded-lg border shadow-sm p-4">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-gray-500">
@@ -170,7 +170,7 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
               {remaining !== null ? `Затрачено: ${formatTime(elapsed)}` : 'Без ограничения времени'}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 max-h-[104px] overflow-y-auto p-1 -m-1">
             {questions.map((q, i) => {
               const done = q.id in answered;
               const isCurrent = i === current;
@@ -193,13 +193,18 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border shadow-sm p-6">
+        <div className="bg-white rounded-lg border shadow-sm">
+         <div className="p-4 md:p-6">
           <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">
             Вопрос {current + 1} из {questions.length}
           </p>
-          {question.text && <p className="text-lg font-medium text-gray-900 mb-4">{question.text}</p>}
+          {question.text && (
+            <p className="text-base md:text-lg font-medium text-gray-900 mb-4 leading-relaxed whitespace-pre-line break-words">
+              {question.text}
+            </p>
+          )}
           {question.image && (
-            <img src={question.image} alt="" className="w-full max-h-72 object-contain rounded-lg border bg-gray-50 mb-4" />
+            <img src={question.image} alt="" className="w-full max-h-64 md:max-h-80 object-contain rounded-lg border bg-gray-50 mb-4" />
           )}
           {!isSequence && <p className="text-xs text-gray-500 mb-3">Выберите все правильные ответы</p>}
 
@@ -246,21 +251,25 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
                   key={opt.id}
                   onClick={() => toggleOption(opt.id)}
                   disabled={isAnswered}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-colors disabled:cursor-default ${cls}`}
+                  className={`w-full flex items-start gap-3 p-3 md:p-4 rounded-lg border-2 text-left transition-colors disabled:cursor-default ${cls}`}
                 >
                   <span
-                    className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                    className={`w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                       checked ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white'
                     }`}
                   >
                     {checked && <Icon name="Check" size={12} className="text-white" />}
                   </span>
                   {opt.image && (
-                    <img src={opt.image} alt="" className="w-24 h-24 object-contain rounded border bg-white flex-shrink-0" />
+                    <img src={opt.image} alt="" className="w-20 h-20 md:w-24 md:h-24 object-contain rounded border bg-white flex-shrink-0" />
                   )}
-                  {opt.text && <span className="text-sm text-gray-900 flex-1">{opt.text}</span>}
-                  {isAnswered && opt.correct && <Icon name="CheckCircle2" size={18} className="text-emerald-600 flex-shrink-0 ml-auto" />}
-                  {isAnswered && !opt.correct && checked && <Icon name="XCircle" size={18} className="text-red-600 flex-shrink-0 ml-auto" />}
+                  {opt.text && (
+                    <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 min-w-0 whitespace-pre-line break-words">
+                      {opt.text}
+                    </span>
+                  )}
+                  {isAnswered && opt.correct && <Icon name="CheckCircle2" size={18} className="text-emerald-600 flex-shrink-0 mt-0.5" />}
+                  {isAnswered && !opt.correct && checked && <Icon name="XCircle" size={18} className="text-red-600 flex-shrink-0 mt-0.5" />}
                 </button>
               );
             })}
@@ -282,10 +291,11 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-6 gap-3">
+         </div>
+          <div className="sticky bottom-0 z-10 bg-white/95 backdrop-blur border-t rounded-b-lg px-4 md:px-6 py-3 flex items-center justify-between gap-2">
             <Button variant="outline" disabled={prevIndex === null} onClick={() => prevIndex !== null && setCurrent(prevIndex)}>
               <Icon name="ChevronLeft" size={16} />
-              Назад
+              <span className="hidden sm:inline">Назад</span>
             </Button>
 
             {isAnswered ? (
@@ -301,7 +311,7 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
             )}
 
             <Button variant="outline" disabled={nextIndex === null} onClick={() => nextIndex !== null && setCurrent(nextIndex)}>
-              Вперёд
+              <span className="hidden sm:inline">Вперёд</span>
               <Icon name="ChevronRight" size={16} />
             </Button>
           </div>

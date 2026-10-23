@@ -22,7 +22,11 @@ const OptionContent = ({ option, compact }: { option: AnswerOption; compact?: bo
         className={`${compact ? 'w-12 h-12' : 'w-16 h-16'} object-contain rounded border bg-white flex-shrink-0`}
       />
     )}
-    {option.text && <span className="text-sm text-gray-900 flex-1 text-left">{option.text}</span>}
+    {option.text && (
+      <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 min-w-0 text-left whitespace-pre-line break-words">
+        {option.text}
+      </span>
+    )}
   </>
 );
 
@@ -133,16 +137,16 @@ const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: 
                   draggable={!locked}
                   onDragStart={e => startDrag(e, id, 'answer')}
                   onDragEnd={resetDrag}
-                  className={`flex items-center gap-3 p-2.5 rounded-lg border-2 transition-colors ${cls} ${
+                  className={`flex items-start gap-3 p-3 rounded-lg border-2 transition-colors ${cls} ${
                     !locked ? 'cursor-grab active:cursor-grabbing' : ''
                   } ${drag?.id === id ? 'opacity-40' : ''}`}
                 >
-                  <span className="w-7 h-7 rounded-full bg-gray-800 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
+                  <span className="w-7 h-7 mt-0.5 rounded-full bg-gray-800 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
                     {index + 1}
                   </span>
                   <OptionContent option={opt} compact />
                   {!locked ? (
-                    <div className="flex items-center gap-1 ml-auto flex-shrink-0">
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
                       <Icon name="GripVertical" size={18} className="text-gray-300 hidden sm:block" />
                       <button
                         onClick={() => move(index, -1)}
@@ -172,7 +176,7 @@ const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: 
                     <Icon
                       name={inPlace ? 'CheckCircle2' : 'XCircle'}
                       size={18}
-                      className={`ml-auto flex-shrink-0 ${inPlace ? 'text-emerald-600' : 'text-red-600'}`}
+                      className={`mt-1 flex-shrink-0 ${inPlace ? 'text-emerald-600' : 'text-red-600'}`}
                     />
                   )}
                 </div>
@@ -200,12 +204,12 @@ const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: 
               e.preventDefault();
               handleDropOnBank();
             }}
-            className={`rounded-lg border p-3 min-h-[64px] grid gap-2 sm:grid-cols-2 transition-colors ${
+            className={`rounded-lg border p-3 min-h-[64px] grid gap-2 transition-colors ${
               overBank ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white'
             }`}
           >
             {bank.length === 0 && (
-              <p className="text-sm text-gray-400 sm:col-span-2 text-center py-2">Все варианты использованы</p>
+              <p className="text-sm text-gray-400 text-center py-2">Все варианты использованы</p>
             )}
             {bank.map(opt => (
               <button
@@ -214,12 +218,12 @@ const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: 
                 onDragStart={e => startDrag(e, opt.id, 'bank')}
                 onDragEnd={resetDrag}
                 onClick={() => onChange([...chosen, opt.id])}
-                className={`flex items-center gap-3 p-2.5 rounded-lg border-2 border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer ${
+                className={`flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer ${
                   drag?.id === opt.id ? 'opacity-40' : ''
                 }`}
               >
                 <OptionContent option={opt} compact />
-                <Icon name="Plus" size={16} className="text-blue-500 flex-shrink-0 ml-auto" />
+                <Icon name="Plus" size={16} className="text-blue-500 flex-shrink-0 mt-1" />
               </button>
             ))}
           </div>
