@@ -13,8 +13,9 @@ interface SequenceAnswerProps {
 
 type DragSource = 'bank' | 'answer';
 
-const OptionContent = ({ option }: { option: AnswerOption; compact?: boolean }) => (
+const OptionContent = ({ option, number }: { option: AnswerOption; number?: number }) => (
   <span className={`flex flex-1 min-w-0 gap-3 ${option.image && option.text ? 'flex-col sm:flex-row sm:items-start' : ''}`}>
+    {number !== undefined && <span className="text-xs font-semibold text-gray-400 mt-0.5 flex-shrink-0">№{number}</span>}
     {option.image && <ZoomImage src={option.image} className="w-full max-w-[240px] sm:w-36 sm:max-w-none max-h-48 sm:max-h-36" />}
     {option.text && (
       <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 min-w-0 text-left whitespace-pre-line break-words">
@@ -138,7 +139,7 @@ const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: 
                   <span className="w-7 h-7 mt-0.5 rounded-full bg-gray-800 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
                     {index + 1}
                   </span>
-                  <OptionContent option={opt} compact />
+                  <OptionContent option={opt} />
                   {!locked ? (
                     <div className="flex items-center gap-0.5 flex-shrink-0">
                       <Icon name="GripVertical" size={18} className="text-gray-300 hidden sm:block" />
@@ -216,7 +217,7 @@ const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: 
                   drag?.id === opt.id ? 'opacity-40' : ''
                 }`}
               >
-                <OptionContent option={opt} compact />
+                <OptionContent option={opt} number={options.indexOf(opt) + 1} />
                 <Icon name="Plus" size={16} className="text-blue-500 flex-shrink-0 mt-1" />
               </button>
             ))}

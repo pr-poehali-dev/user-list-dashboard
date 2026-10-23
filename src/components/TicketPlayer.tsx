@@ -25,6 +25,7 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
   const questions = sampleQuestions;
   const [orders, setOrders] = useState<Record<string, string[]>>({});
   const [current, setCurrent] = useState(0);
+  const [opened, setOpened] = useState<Record<string, boolean>>({});
   const [selected, setSelected] = useState<Record<string, string[]>>({});
   const [answered, setAnswered] = useState<Record<string, boolean>>({});
   const [elapsed, setElapsed] = useState(0);
@@ -73,6 +74,13 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
   const isSequence = question.type === 'sequence';
   const currentOrder = orders[question.id] ?? [];
   const correctSequence = question.sequence ?? [];
+  const isOpen = (kind: string) => !!opened[`${question.id}:${kind}`];
+  const togglePanel = (kind: string) =>
+    setOpened(prev => ({ ...prev, [`${question.id}:${kind}`]: !prev[`${question.id}:${kind}`] }));
+  const numberOf = (id: string) => question.options.findIndex(o => o.id === id) + 1;
+  const answerCode = isSequence
+    ? correctSequence.map(numberOf).join(' → ')
+    : question.options.filter(o => o.correct).map(o => numberOf(o.id)).join(', ');
   const canAnswer = isSequence ? currentOrder.length > 0 : currentSelection.length > 0;
 
   const handleAnswer = () => {
@@ -240,7 +248,7 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
             </>
           ) : (
           <div className="space-y-2">
-            {question.options.map(opt => {
+            {question.options.map((opt, optIndex) => {
               const checked = currentSelection.includes(opt.id);
               let cls = 'border-gray-200 hover:bg-gray-50';
               if (checked && !isAnswered) cls = 'border-blue-500 bg-blue-50';
@@ -256,6 +264,7 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
                   disabled={isAnswered}
                   className={`w-full flex items-start gap-3 p-3 md:p-4 rounded-lg border-2 text-left transition-colors disabled:cursor-default ${cls}`}
                 >
+                  <span className="text-sm font-semibold text-gray-400 mt-0.5 w-5 flex-shrink-0">{optIndex + 1}.</span>
                   <span
                     className={`w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                       checked ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white'
@@ -279,6 +288,49 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
               );
             })}
           </div>
+          )}
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => togglePanel('hint')} disabled={!question.hint}>
+              <Icon name="Lightbulb" size={16} />
+              Подсказка
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => togglePanel('code')}>
+              <Icon name="KeyRound" size={16} />
+              Код ответа
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => togglePanel('explanation')} disabled={!question.explanation}>
+              <Icon name="CircleCheck" size={16} />
+              Правильный ответ
+            </Button>
+            <Button variant="outline" size="sm">
+              <Icon name="BookOpen" size={16} />
+              Учебник
+            </Button>
+          </div>
+
+          {isOpen('hint') && question.hint && (
+            <div className="mt-3 flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              <Icon name="Lightbulb" size={18} className="flex-shrink-0 mt-0.5" />
+              <p className="leading-relaxed whitespace-pre-line break-words min-w-0">{question.hint}</p>
+            </div>
+          )}
+
+          {isOpen('code') && (
+            <div className="mt-3 flex gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+              <Icon name="KeyRound" size={18} className="flex-shrink-0 mt-0.5" />
+              <p className="leading-relaxed min-w-0">
+                {isSequence ? 'Правильная последовательность (номера вариантов): ' : 'Номера правильных ответов: '}
+                <span className="font-semibold">{answerCode || '—'}</span>
+              </p>
+            </div>
+          )}
+
+          {isOpen('explanation') && question.explanation && (
+            <div className="mt-3 flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+              <Icon name="CircleCheck" size={18} className="flex-shrink-0 mt-0.5" />
+              <p className="leading-relaxed whitespace-pre-line break-words min-w-0">{question.explanation}</p>
+            </div>
           )}
 
           {isAnswered && (
