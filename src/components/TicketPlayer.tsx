@@ -222,6 +222,7 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
           {isSequence ? (
             <>
               <SequenceAnswer
+                key={question.id}
                 options={question.options}
                 correctSequence={correctSequence}
                 chosen={currentOrder}

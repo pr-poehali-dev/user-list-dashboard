@@ -11,11 +11,8 @@ interface SequenceAnswerProps {
   locked: boolean;
 }
 
-type DragSource = 'bank' | 'answer';
-
-const OptionContent = ({ option, number }: { option: AnswerOption; number?: number }) => (
+const OptionContent = ({ option }: { option: AnswerOption }) => (
   <span className={`flex flex-1 min-w-0 gap-3 ${option.image && option.text ? 'flex-wrap items-start' : ''}`}>
-    {number !== undefined && <span className="text-xs font-semibold text-gray-400 mt-0.5 flex-shrink-0">№{number}</span>}
     {option.image && <ZoomImage src={option.image} />}
     {option.text && (
       <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 basis-60 min-w-0 text-left whitespace-pre-line break-words">
@@ -26,204 +23,112 @@ const OptionContent = ({ option, number }: { option: AnswerOption; number?: numb
 );
 
 const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: SequenceAnswerProps) => {
-  const [drag, setDrag] = useState<{ id: string; from: DragSource } | null>(null);
-  const [overIndex, setOverIndex] = useState<number | null>(null);
-  const [overBank, setOverBank] = useState(false);
-
-  const byId = (id: string) => options.find(o => o.id === id)!;
-  const bank = options.filter(o => !chosen.includes(o.id));
-
-  const insertAt = (id: string, index: number) => {
-    const without = chosen.filter(x => x !== id);
-    const fromIndex = chosen.indexOf(id);
-    const target = fromIndex !== -1 && fromIndex < index ? index - 1 : index;
-    const next = [...without];
-    next.splice(Math.max(0, Math.min(target, next.length)), 0, id);
-    onChange(next);
-  };
-
-  const resetDrag = () => {
-    setDrag(null);
-    setOverIndex(null);
-    setOverBank(false);
-  };
-
-  const handleDropOnAnswer = (index: number) => {
-    if (drag && !locked) insertAt(drag.id, index);
-    resetDrag();
-  };
-
-  const handleDropOnBank = () => {
-    if (drag && !locked && drag.from === 'answer') onChange(chosen.filter(x => x !== drag.id));
-    resetDrag();
-  };
-
-  const startDrag = (e: React.DragEvent, id: string, from: DragSource) => {
-    if (locked) return;
-    e.dataTransfer.setData('text/plain', id);
-    e.dataTransfer.effectAllowed = 'move';
-    setDrag({ id, from });
-  };
-
-  const move = (index: number, dir: -1 | 1) => {
-    const target = index + dir;
-    if (target < 0 || target >= chosen.length) return;
-    const next = [...chosen];
-    [next[index], next[target]] = [next[target], next[index]];
-    onChange(next);
-  };
-
-  const dropProps = (index: number) => ({
-    onDragOver: (e: React.DragEvent) => {
-      if (locked) return;
-      e.preventDefault();
-      setOverIndex(index);
-    },
-    onDragLeave: () => setOverIndex(prev => (prev === index ? null : prev)),
-    onDrop: (e: React.DragEvent) => {
-      e.preventDefault();
-      handleDropOnAnswer(index);
-    },
+  const [positions, setPositions] = useState<Record<string, number>>(() => {
+    const init: Record<string, number> = {};
+    chosen.forEach((id, i) => {
+      init[id] = i + 1;
+    });
+    return init;
   });
 
-  const DropLine = ({ index }: { index: number }) => (
-    <div
-      {...dropProps(index)}
-      className={`rounded-full transition-all ${
-        drag && overIndex === index ? 'h-2 bg-blue-500 my-1' : drag ? 'h-3' : 'h-1.5'
-      }`}
-    />
-  );
+  const commit = (next: Record<string, number>) => {
+    setPositions(next);
+    const ids = Object.keys(next).sort((a, b) => next[a] - next[b]);
+    onChange(ids);
+  };
+
+  const assign = (id: string, pos: number) => {
+    const next = { ...positions };
+    if (next[id] === pos) {
+      delete next[id];
+    } else {
+      Object.keys(next).forEach(k => {
+        if (next[k] === pos) delete next[k];
+      });
+      next[id] = pos;
+    }
+    commit(next);
+  };
+
+  if (locked) {
+    return (
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Ваш ответ</p>
+        {chosen.length === 0 && <p className="text-sm text-gray-400">Ответ не выбран</p>}
+        {chosen.map((id, index) => {
+          const opt = options.find(o => o.id === id)!;
+          const inPlace = correctSequence[index] === id;
+          return (
+            <div
+              key={id}
+              className={`flex items-start gap-3 p-3 rounded-lg border-2 ${
+                inPlace ? 'border-emerald-500 bg-emerald-50' : 'border-red-500 bg-red-50'
+              }`}
+            >
+              <span className="w-7 h-7 mt-0.5 rounded-full bg-gray-800 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
+                {index + 1}
+              </span>
+              <OptionContent option={opt} />
+              <Icon
+                name={inPlace ? 'CheckCircle2' : 'XCircle'}
+                size={18}
+                className={`mt-1 flex-shrink-0 ${inPlace ? 'text-emerald-600' : 'text-red-600'}`}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  const owner = (pos: number) => Object.keys(positions).find(k => positions[k] === pos);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ваш ответ</p>
-        <div
-          className={`rounded-lg border-2 border-dashed p-3 min-h-[96px] transition-colors ${
-            locked ? 'border-gray-200 bg-white' : drag ? 'border-blue-300 bg-blue-50/50' : 'border-gray-300 bg-gray-50'
-          }`}
-          onDragOver={e => {
-            if (locked) return;
-            e.preventDefault();
-            if (overIndex === null) setOverIndex(chosen.length);
-          }}
-          onDrop={e => {
-            e.preventDefault();
-            handleDropOnAnswer(overIndex ?? chosen.length);
-          }}
-        >
-          {chosen.length === 0 && (
-            <div className="flex flex-col items-center justify-center text-center text-gray-400 py-5 gap-1">
-              <Icon name="MousePointerClick" size={22} />
-              <p className="text-sm">Нажмите на нужные варианты ниже или перетащите их сюда</p>
-            </div>
-          )}
-
-          {chosen.map((id, index) => {
-            const opt = byId(id);
-            const inPlace = correctSequence[index] === id;
-            let cls = 'border-gray-200 bg-white hover:border-blue-300';
-            if (locked) cls = inPlace ? 'border-emerald-500 bg-emerald-50' : 'border-red-500 bg-red-50';
-            return (
-              <div key={id}>
-                {!locked && <DropLine index={index} />}
-                <div
-                  draggable={!locked}
-                  onDragStart={e => startDrag(e, id, 'answer')}
-                  onDragEnd={resetDrag}
-                  className={`flex items-start gap-3 p-3 rounded-lg border-2 transition-colors ${cls} ${
-                    !locked ? 'cursor-grab active:cursor-grabbing' : ''
-                  } ${drag?.id === id ? 'opacity-40' : ''}`}
-                >
-                  <span className="w-7 h-7 mt-0.5 rounded-full bg-gray-800 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
-                    {index + 1}
-                  </span>
-                  <OptionContent option={opt} />
-                  {!locked ? (
-                    <div className="flex items-center gap-0.5 flex-shrink-0">
-                      <Icon name="GripVertical" size={18} className="text-gray-300 hidden sm:block" />
-                      <button
-                        onClick={() => move(index, -1)}
-                        disabled={index === 0}
-                        title="Выше"
-                        className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-25 disabled:cursor-not-allowed"
-                      >
-                        <Icon name="ChevronUp" size={16} />
-                      </button>
-                      <button
-                        onClick={() => move(index, 1)}
-                        disabled={index === chosen.length - 1}
-                        title="Ниже"
-                        className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-25 disabled:cursor-not-allowed"
-                      >
-                        <Icon name="ChevronDown" size={16} />
-                      </button>
-                      <button
-                        onClick={() => onChange(chosen.filter(x => x !== id))}
-                        title="Убрать"
-                        className="p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50"
-                      >
-                        <Icon name="X" size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <Icon
-                      name={inPlace ? 'CheckCircle2' : 'XCircle'}
-                      size={18}
-                      className={`mt-1 flex-shrink-0 ${inPlace ? 'text-emerald-600' : 'text-red-600'}`}
-                    />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-          {!locked && chosen.length > 0 && <DropLine index={chosen.length} />}
-        </div>
-      </div>
-
-      {!locked && (
-        <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-            Варианты <span className="normal-case font-normal text-gray-400">(подходят не все)</span>
-          </p>
+    <div className="space-y-3">
+      <p className="text-xs text-gray-500">
+        Выберите номер для каждого подходящего варианта. Подходят не все варианты. Повторное нажатие на номер снимает выбор.
+      </p>
+      {options.map((opt, optIndex) => {
+        const pos = positions[opt.id];
+        return (
           <div
-            onDragOver={e => {
-              if (drag?.from === 'answer') {
-                e.preventDefault();
-                setOverBank(true);
-              }
-            }}
-            onDragLeave={() => setOverBank(false)}
-            onDrop={e => {
-              e.preventDefault();
-              handleDropOnBank();
-            }}
-            className={`rounded-lg border p-3 min-h-[64px] grid gap-2 transition-colors ${
-              overBank ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white'
+            key={opt.id}
+            className={`rounded-lg border-2 p-3 md:p-4 transition-colors ${
+              pos ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
             }`}
           >
-            {bank.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-2">Все варианты использованы</p>
-            )}
-            {bank.map(opt => (
-              <button
-                key={opt.id}
-                draggable
-                onDragStart={e => startDrag(e, opt.id, 'bank')}
-                onDragEnd={resetDrag}
-                onClick={() => onChange([...chosen, opt.id])}
-                className={`flex items-start gap-3 p-3 rounded-lg border-2 border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer ${
-                  drag?.id === opt.id ? 'opacity-40' : ''
-                }`}
-              >
-                <OptionContent option={opt} number={options.indexOf(opt) + 1} />
-                <Icon name="Plus" size={16} className="text-blue-500 flex-shrink-0 mt-1" />
-              </button>
-            ))}
+            <div className="flex items-start gap-3">
+              <span className="text-sm font-semibold text-gray-400 mt-0.5 w-5 flex-shrink-0">{optIndex + 1}.</span>
+              <OptionContent option={opt} />
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2 pl-8">
+              <span className="text-xs text-gray-500 mr-1">Место в порядке:</span>
+              {options.map((_, i) => {
+                const p = i + 1;
+                const mine = pos === p;
+                const takenBy = owner(p);
+                const taken = !!takenBy && !mine;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => assign(opt.id, p)}
+                    title={taken ? 'Номер занят, выбор переставит его сюда' : `Поставить на место ${p}`}
+                    className={`w-9 h-9 rounded-lg border text-sm font-semibold transition-colors ${
+                      mine
+                        ? 'bg-blue-600 border-blue-600 text-white'
+                        : taken
+                          ? 'bg-gray-100 border-gray-200 text-gray-400 hover:border-blue-300'
+                          : 'bg-white border-gray-300 text-gray-700 hover:border-blue-500 hover:bg-blue-50'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })}
     </div>
   );
 };
