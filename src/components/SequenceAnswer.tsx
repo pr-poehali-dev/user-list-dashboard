@@ -14,11 +14,11 @@ interface SequenceAnswerProps {
 type DragSource = 'bank' | 'answer';
 
 const OptionContent = ({ option, number }: { option: AnswerOption; number?: number }) => (
-  <span className={`flex flex-1 min-w-0 gap-3 ${option.image && option.text ? 'flex-col sm:flex-row sm:items-start' : ''}`}>
+  <span className={`flex flex-1 min-w-0 gap-3 ${option.image && option.text ? 'flex-wrap items-start' : ''}`}>
     {number !== undefined && <span className="text-xs font-semibold text-gray-400 mt-0.5 flex-shrink-0">№{number}</span>}
-    {option.image && <ZoomImage src={option.image} className="w-full max-w-[240px] sm:w-36 sm:max-w-none max-h-48 sm:max-h-36" />}
+    {option.image && <ZoomImage src={option.image} />}
     {option.text && (
-      <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 min-w-0 text-left whitespace-pre-line break-words">
+      <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 basis-60 min-w-0 text-left whitespace-pre-line break-words">
         {option.text}
       </span>
     )}

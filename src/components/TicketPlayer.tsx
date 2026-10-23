@@ -214,7 +214,7 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
           )}
           {question.image && (
             <div className="mb-4 flex justify-center rounded-lg bg-gray-50 p-2">
-              <ZoomImage src={question.image} className="max-w-full max-h-64 md:max-h-96" />
+              <ZoomImage src={question.image} />
             </div>
           )}
           {!isSequence && <p className="text-xs text-gray-500 mb-3">Выберите все правильные ответы</p>}
@@ -272,12 +272,12 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
                   >
                     {checked && <Icon name="Check" size={12} className="text-white" />}
                   </span>
-                  <span className={`flex flex-1 min-w-0 gap-3 ${opt.image && opt.text ? 'flex-col sm:flex-row sm:items-start' : ''}`}>
+                  <span className={`flex flex-1 min-w-0 gap-3 ${opt.image && opt.text ? 'flex-wrap items-start' : ''}`}>
                     {opt.image && (
-                      <ZoomImage src={opt.image} className="w-full max-w-[280px] sm:w-44 sm:max-w-none max-h-56 sm:max-h-44" />
+                      <ZoomImage src={opt.image} />
                     )}
                     {opt.text && (
-                      <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 min-w-0 whitespace-pre-line break-words">
+                      <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 basis-60 min-w-0 whitespace-pre-line break-words">
                         {opt.text}
                       </span>
                     )}
