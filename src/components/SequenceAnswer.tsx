@@ -1,5 +1,5 @@
 import Icon from '@/components/ui/icon';
-import ZoomImage from '@/components/ZoomImage';
+import ThumbImage from '@/components/ThumbImage';
 import { AnswerOption } from '@/data/questionsData';
 
 interface SequenceAnswerProps {
@@ -12,7 +12,7 @@ interface SequenceAnswerProps {
 
 const OptionContent = ({ option }: { option: AnswerOption }) => (
   <span className={`flex flex-1 min-w-0 gap-3 ${option.image && option.text ? 'flex-wrap items-start' : ''}`}>
-    {option.image && <ZoomImage src={option.image} />}
+    {option.image && <ThumbImage src={option.image} />}
     {option.text && (
       <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 basis-60 min-w-0 text-left whitespace-pre-line break-words">
         {option.text}

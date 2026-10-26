@@ -5,6 +5,7 @@ import { Ticket } from '@/data/ticketsData';
 import { sampleQuestions } from '@/data/questionsData';
 import SequenceAnswer from '@/components/SequenceAnswer';
 import ZoomImage from '@/components/ZoomImage';
+import ThumbImage from '@/components/ThumbImage';
 
 interface TicketPlayerProps {
   ticket: Ticket;
@@ -78,6 +79,9 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
   const togglePanel = (kind: string) =>
     setOpened(prev => ({ ...prev, [`${question.id}:${kind}`]: !prev[`${question.id}:${kind}`] }));
   const numberOf = (id: string) => question.options.findIndex(o => o.id === id) + 1;
+  const selectedNumbers = isSequence
+    ? currentOrder.map(numberOf)
+    : question.options.filter(o => currentSelection.includes(o.id)).map(o => numberOf(o.id));
   const answerCode = isSequence
     ? correctSequence.map(numberOf).join(' → ')
     : question.options.filter(o => o.correct).map(o => numberOf(o.id)).join(', ');
@@ -274,9 +278,7 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
                     {checked && <Icon name="Check" size={12} className="text-white" />}
                   </span>
                   <span className={`flex flex-1 min-w-0 gap-3 ${opt.image && opt.text ? 'flex-wrap items-start' : ''}`}>
-                    {opt.image && (
-                      <ZoomImage src={opt.image} />
-                    )}
+                    {opt.image && <ThumbImage src={opt.image} />}
                     {opt.text && (
                       <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 basis-60 min-w-0 whitespace-pre-line break-words">
                         {opt.text}
@@ -289,6 +291,12 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
               );
             })}
           </div>
+          )}
+
+          {!isAnswered && selectedNumbers.length > 0 && (
+            <div className="mt-3 rounded-lg bg-gray-50 border px-3 py-2 text-sm text-gray-700">
+              Выбрано: <span className="font-semibold text-gray-900">{selectedNumbers.join(' + ')}</span>
+            </div>
           )}
 
           <div className="mt-5 flex flex-wrap gap-2">
