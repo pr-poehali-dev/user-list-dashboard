@@ -73,7 +73,7 @@ const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: 
           </button>
         )}
       </div>
-      {options.map(opt => {
+      {options.map((opt, optIndex) => {
         const idx = chosen.indexOf(opt.id);
         const picked = idx !== -1;
         return (
@@ -92,6 +92,7 @@ const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: 
               {picked ? idx + 1 : '0'}
             </span>
             <OptionContent option={opt} />
+            <span className="text-xs font-semibold text-gray-400 mt-1 flex-shrink-0">Вариант {optIndex + 1}</span>
           </button>
         );
       })}

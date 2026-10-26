@@ -295,7 +295,8 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
 
           {!isAnswered && selectedNumbers.length > 0 && (
             <div className="mt-3 rounded-lg bg-gray-50 border px-3 py-2 text-sm text-gray-700">
-              Выбрано: <span className="font-semibold text-gray-900">{selectedNumbers.join(' + ')}</span>
+              {isSequence ? 'Порядок (номера вариантов): ' : 'Выбрано: '}
+              <span className="font-semibold text-gray-900">{selectedNumbers.join(isSequence ? ' → ' : ' + ')}</span>
             </div>
           )}
 
