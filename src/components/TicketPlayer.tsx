@@ -157,8 +157,12 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
       <div className="bg-white border-b shadow-sm sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between p-3 md:p-4 gap-3">
           <div className="min-w-0">
-            <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Аттестация. Билет № {ticket.number}</p>
-            <h1 className="text-base font-semibold text-gray-900 truncate">{ticket.title}</h1>
+            <p className="text-xs text-gray-500 truncate">
+              <span className="font-semibold text-gray-800">{fullName}</span>
+              <span className="text-gray-400"> · </span>
+              {user.specialty}
+            </p>
+            <h1 className="text-sm font-semibold text-gray-900 truncate">Билет № {ticket.number}. {ticket.title}</h1>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
             <div
@@ -181,15 +185,6 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
 
       <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4">
         <div className="bg-white rounded-lg border shadow-sm p-4">
-          <div className="flex items-center gap-3 mb-3 pb-3 border-b">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Icon name="User" size={20} className="text-white" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{fullName}</p>
-              <p className="text-xs text-gray-500 truncate">{user.specialty}</p>
-            </div>
-          </div>
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-gray-500">
               Отвечено: {answeredCount} из {questions.length}
