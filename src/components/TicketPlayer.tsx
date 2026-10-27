@@ -19,6 +19,9 @@ const THEMES = [
   { id: 'white', name: 'Чистый белый', dot: 'bg-white border border-gray-300', page: 'bg-white', card: 'border-gray-300', plate: 'border-blue-600 bg-gray-50 text-slate-950', option: 'border-gray-300 hover:bg-gray-50', selected: 'border-blue-600 bg-blue-50' },
   { id: 'indigo', name: 'Индиго', dot: 'bg-indigo-300', page: 'bg-indigo-50', card: 'border-indigo-200', plate: 'border-indigo-600 bg-indigo-50 text-slate-950', option: 'border-indigo-200 hover:bg-indigo-50', selected: 'border-indigo-600 bg-indigo-50' },
   { id: 'cyan', name: 'Бирюзовый', dot: 'bg-cyan-300', page: 'bg-cyan-50', card: 'border-cyan-200', plate: 'border-cyan-600 bg-cyan-50 text-slate-950', option: 'border-cyan-200 hover:bg-cyan-50', selected: 'border-cyan-600 bg-cyan-50' },
+  { id: 'paper', name: 'Бумага', dot: 'bg-amber-200', page: 'bg-amber-50', card: 'border-amber-200', plate: 'border-amber-600 bg-amber-50 text-slate-950', option: 'border-amber-200 hover:bg-amber-50', selected: 'border-amber-600 bg-amber-100' },
+  { id: 'mint', name: 'Мятный', dot: 'bg-emerald-300', page: 'bg-emerald-50', card: 'border-emerald-200', plate: 'border-emerald-600 bg-emerald-50 text-slate-950', option: 'border-emerald-200 hover:bg-emerald-50', selected: 'border-emerald-600 bg-emerald-100' },
+  { id: 'contrast', name: 'Контрастный', dot: 'bg-black', page: 'bg-white', card: 'border-black', plate: 'border-black bg-gray-100 text-black', option: 'border-gray-900 hover:bg-gray-100', selected: 'border-black bg-yellow-100' },
   { id: 'night', name: 'Тёмно-синий', dot: 'bg-blue-900', page: 'bg-blue-100', card: 'border-blue-300', plate: 'border-blue-400 bg-blue-900 text-white', option: 'border-blue-300 hover:bg-blue-50', selected: 'border-blue-700 bg-blue-100' },
 ] as const;
 
