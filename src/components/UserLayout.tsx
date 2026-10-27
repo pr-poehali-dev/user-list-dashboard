@@ -28,7 +28,7 @@ const UserLayout = ({ user, onExit }: UserLayoutProps) => {
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
 
   if (activeTicket) {
-    return <TicketPlayer ticket={activeTicket} onExit={() => setActiveTicket(null)} />;
+    return <TicketPlayer ticket={activeTicket} user={user} onExit={() => setActiveTicket(null)} />;
   }
 
   return (

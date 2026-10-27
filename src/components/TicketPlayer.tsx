@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Ticket } from '@/data/ticketsData';
+import { User } from '@/data/mockData';
 import { sampleQuestions } from '@/data/questionsData';
 import SequenceAnswer from '@/components/SequenceAnswer';
 import ZoomImage from '@/components/ZoomImage';
@@ -9,6 +10,7 @@ import ThumbImage from '@/components/ThumbImage';
 
 interface TicketPlayerProps {
   ticket: Ticket;
+  user: User;
   onExit: () => void;
 }
 
@@ -22,8 +24,9 @@ const formatTime = (totalSeconds: number) => {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 };
 
-const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
+const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
   const questions = sampleQuestions;
+  const fullName = [user.surname, user.name, user.patronymic].filter(Boolean).join(' ');
   const [orders, setOrders] = useState<Record<string, string[]>>({});
   const [current, setCurrent] = useState(0);
   const [opened, setOpened] = useState<Record<string, boolean>>({});
@@ -125,7 +128,10 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
           <h2 className="text-2xl font-bold text-gray-900 mb-1">
             {timeIsOver && answeredCount < total ? 'Время вышло' : 'Аттестация завершена'}
           </h2>
-          <p className="text-gray-500 mb-6">Билет № {ticket.number}. {ticket.title}</p>
+          <p className="text-gray-500 mb-1">Билет № {ticket.number}. {ticket.title}</p>
+          <p className="text-sm text-gray-700 mb-6">
+            <span className="font-semibold">{fullName}</span>, {user.specialty}
+          </p>
           <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="bg-gray-50 rounded-lg p-3">
               <p className="text-xs text-gray-500">Верно</p>
@@ -175,6 +181,15 @@ const TicketPlayer = ({ ticket, onExit }: TicketPlayerProps) => {
 
       <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4">
         <div className="bg-white rounded-lg border shadow-sm p-4">
+          <div className="flex items-center gap-3 mb-3 pb-3 border-b">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Icon name="User" size={20} className="text-white" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">{fullName}</p>
+              <p className="text-xs text-gray-500 truncate">{user.specialty}</p>
+            </div>
+          </div>
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-gray-500">
               Отвечено: {answeredCount} из {questions.length}
