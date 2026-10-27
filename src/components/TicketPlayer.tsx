@@ -153,7 +153,7 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-200">
       <div className="bg-white border-b shadow-sm sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between p-3 md:p-4 gap-3">
           <div className="min-w-0">
@@ -216,13 +216,13 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border shadow-sm">
+        <div className="bg-white rounded-xl border border-slate-300 shadow-md overflow-hidden">
          <div className="p-4 md:p-6">
           <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">
             Вопрос {current + 1} из {questions.length}
           </p>
           {question.text && (
-            <p className="text-base md:text-lg font-medium text-gray-900 mb-4 leading-relaxed whitespace-pre-line break-words">
+            <p className="text-lg md:text-xl font-semibold text-slate-950 mb-5 leading-8 whitespace-pre-line break-words border-l-4 border-blue-600 bg-slate-100 rounded-r-lg py-3 px-4">
               {question.text}
             </p>
           )}
@@ -262,24 +262,24 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
               )}
             </>
           ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {question.options.map((opt, optIndex) => {
               const checked = currentSelection.includes(opt.id);
-              let cls = 'border-gray-200 hover:bg-gray-50';
-              if (checked && !isAnswered) cls = 'border-blue-500 bg-blue-50';
+              let cls = 'border-slate-300 bg-white hover:bg-slate-50';
+              if (checked && !isAnswered) cls = 'border-blue-600 bg-blue-50';
               if (isAnswered) {
                 if (opt.correct) cls = 'border-emerald-500 bg-emerald-50';
                 else if (checked) cls = 'border-red-500 bg-red-50';
-                else cls = 'border-gray-200 opacity-60';
+                else cls = 'border-slate-200 opacity-60';
               }
               return (
                 <button
                   key={opt.id}
                   onClick={() => toggleOption(opt.id)}
                   disabled={isAnswered}
-                  className={`w-full flex items-start gap-3 p-3 md:p-4 rounded-lg border-2 text-left transition-colors disabled:cursor-default ${cls}`}
+                  className={`w-full flex items-start gap-3 p-3.5 md:p-4 rounded-lg border-2 text-left transition-colors disabled:cursor-default ${cls}`}
                 >
-                  <span className="text-sm font-semibold text-gray-400 mt-0.5 w-5 flex-shrink-0">{optIndex + 1}.</span>
+                  <span className="text-base font-bold text-slate-500 w-6 flex-shrink-0">{optIndex + 1}.</span>
                   <span
                     className={`w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                       checked ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white'
@@ -290,7 +290,7 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
                   <span className={`flex flex-1 min-w-0 gap-3 ${opt.image && opt.text ? 'flex-wrap items-start' : ''}`}>
                     {opt.image && <ThumbImage src={opt.image} />}
                     {opt.text && (
-                      <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 basis-60 min-w-0 whitespace-pre-line break-words">
+                      <span className="text-base md:text-[17px] leading-7 text-slate-950 flex-1 basis-60 min-w-0 whitespace-pre-line break-words">
                         {opt.text}
                       </span>
                     )}

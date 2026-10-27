@@ -14,7 +14,7 @@ const OptionContent = ({ option }: { option: AnswerOption }) => (
   <span className={`flex flex-1 min-w-0 gap-3 ${option.image && option.text ? 'flex-wrap items-start' : ''}`}>
     {option.image && <ThumbImage src={option.image} />}
     {option.text && (
-      <span className="text-sm md:text-[15px] leading-relaxed text-gray-900 flex-1 basis-60 min-w-0 text-left whitespace-pre-line break-words">
+      <span className="text-base md:text-[17px] leading-7 text-slate-950 flex-1 basis-60 min-w-0 text-left whitespace-pre-line break-words">
         {option.text}
       </span>
     )}
