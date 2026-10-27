@@ -14,6 +14,14 @@ interface TicketPlayerProps {
   onExit: () => void;
 }
 
+const THEMES = [
+  { id: 'sky', name: 'Голубой', dot: 'bg-sky-300', page: 'bg-blue-50', card: 'border-blue-200', plate: 'border-blue-600 bg-blue-50 text-slate-950', option: 'border-blue-200 hover:bg-blue-50', selected: 'border-blue-600 bg-blue-50' },
+  { id: 'white', name: 'Чистый белый', dot: 'bg-white border border-gray-300', page: 'bg-white', card: 'border-gray-300', plate: 'border-blue-600 bg-gray-50 text-slate-950', option: 'border-gray-300 hover:bg-gray-50', selected: 'border-blue-600 bg-blue-50' },
+  { id: 'indigo', name: 'Индиго', dot: 'bg-indigo-300', page: 'bg-indigo-50', card: 'border-indigo-200', plate: 'border-indigo-600 bg-indigo-50 text-slate-950', option: 'border-indigo-200 hover:bg-indigo-50', selected: 'border-indigo-600 bg-indigo-50' },
+  { id: 'cyan', name: 'Бирюзовый', dot: 'bg-cyan-300', page: 'bg-cyan-50', card: 'border-cyan-200', plate: 'border-cyan-600 bg-cyan-50 text-slate-950', option: 'border-cyan-200 hover:bg-cyan-50', selected: 'border-cyan-600 bg-cyan-50' },
+  { id: 'night', name: 'Тёмно-синий', dot: 'bg-blue-900', page: 'bg-blue-100', card: 'border-blue-300', plate: 'border-blue-400 bg-blue-900 text-white', option: 'border-blue-300 hover:bg-blue-50', selected: 'border-blue-700 bg-blue-100' },
+] as const;
+
 const formatTime = (totalSeconds: number) => {
   const s = Math.max(0, totalSeconds);
   const h = Math.floor(s / 3600);
@@ -34,6 +42,12 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
   const [answered, setAnswered] = useState<Record<string, boolean>>({});
   const [elapsed, setElapsed] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [themeId, setThemeId] = useState(() => localStorage.getItem('player-theme') ?? 'sky');
+  const theme = THEMES.find(t => t.id === themeId) ?? THEMES[0];
+  const chooseTheme = (id: string) => {
+    setThemeId(id);
+    localStorage.setItem('player-theme', id);
+  };
 
   const limitSeconds = ticket.timeLimit ? ticket.timeLimit * 60 : null;
   const remaining = limitSeconds !== null ? limitSeconds - elapsed : null;
@@ -153,7 +167,7 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className={`min-h-screen ${theme.page}`}>
       <div className="bg-white border-b shadow-sm sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between p-3 md:p-4 gap-3">
           <div className="min-w-0">
@@ -174,6 +188,17 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
             >
               <Icon name="Timer" size={16} />
               {remaining !== null ? formatTime(remaining) : formatTime(elapsed)}
+            </div>
+            <div className="flex items-center gap-1.5" title="Цвет оформления">
+              {THEMES.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => chooseTheme(t.id)}
+                  title={t.name}
+                  aria-label={t.name}
+                  className={`w-5 h-5 rounded-full ${t.dot} ${t.id === theme.id ? 'ring-2 ring-offset-1 ring-blue-600' : ''}`}
+                />
+              ))}
             </div>
             <Button variant="outline" size="sm" onClick={onExit}>
               <Icon name="X" size={16} />
@@ -216,13 +241,13 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-blue-200 shadow-md overflow-hidden">
+        <div className={`bg-white rounded-xl border ${theme.card} shadow-md overflow-hidden`}>
          <div className="p-4 md:p-6">
           <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">
             Вопрос {current + 1} из {questions.length}
           </p>
           {question.text && (
-            <p className="text-lg md:text-xl font-semibold text-slate-950 mb-5 leading-8 whitespace-pre-line break-words border-l-4 border-blue-600 bg-blue-50 rounded-r-lg py-3 px-4">
+            <p className={`text-lg md:text-xl font-semibold mb-5 leading-8 whitespace-pre-line break-words border-l-4 rounded-r-lg py-3 px-4 ${theme.plate}`}>
               {question.text}
             </p>
           )}
@@ -265,8 +290,8 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
           <div className="space-y-3">
             {question.options.map((opt, optIndex) => {
               const checked = currentSelection.includes(opt.id);
-              let cls = 'border-blue-200 bg-white hover:bg-blue-50';
-              if (checked && !isAnswered) cls = 'border-blue-600 bg-blue-50';
+              let cls = `bg-white ${theme.option}`;
+              if (checked && !isAnswered) cls = theme.selected;
               if (isAnswered) {
                 if (opt.correct) cls = 'border-emerald-500 bg-emerald-50';
                 else if (checked) cls = 'border-red-500 bg-red-50';
