@@ -153,7 +153,7 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-200">
+    <div className="min-h-screen bg-blue-50">
       <div className="bg-white border-b shadow-sm sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between p-3 md:p-4 gap-3">
           <div className="min-w-0">
@@ -216,13 +216,13 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-300 shadow-md overflow-hidden">
+        <div className="bg-white rounded-xl border border-blue-200 shadow-md overflow-hidden">
          <div className="p-4 md:p-6">
           <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-2">
             Вопрос {current + 1} из {questions.length}
           </p>
           {question.text && (
-            <p className="text-lg md:text-xl font-semibold text-slate-950 mb-5 leading-8 whitespace-pre-line break-words border-l-4 border-blue-600 bg-slate-100 rounded-r-lg py-3 px-4">
+            <p className="text-lg md:text-xl font-semibold text-slate-950 mb-5 leading-8 whitespace-pre-line break-words border-l-4 border-blue-600 bg-blue-50 rounded-r-lg py-3 px-4">
               {question.text}
             </p>
           )}
@@ -265,7 +265,7 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
           <div className="space-y-3">
             {question.options.map((opt, optIndex) => {
               const checked = currentSelection.includes(opt.id);
-              let cls = 'border-slate-300 bg-white hover:bg-slate-50';
+              let cls = 'border-blue-200 bg-white hover:bg-blue-50';
               if (checked && !isAnswered) cls = 'border-blue-600 bg-blue-50';
               if (isAnswered) {
                 if (opt.correct) cls = 'border-emerald-500 bg-emerald-50';
