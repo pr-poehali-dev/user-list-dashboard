@@ -7,6 +7,7 @@ import { sampleQuestions } from '@/data/questionsData';
 import SequenceAnswer from '@/components/SequenceAnswer';
 import ZoomImage from '@/components/ZoomImage';
 import ThumbImage from '@/components/ThumbImage';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface TicketPlayerProps {
   ticket: Ticket;
@@ -45,6 +46,7 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
   const [answered, setAnswered] = useState<Record<string, boolean>>({});
   const [elapsed, setElapsed] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [resultPopup, setResultPopup] = useState<boolean | null>(null);
   const [themeId, setThemeId] = useState(() => localStorage.getItem('player-theme') ?? 'sky');
   const theme = THEMES.find(t => t.id === themeId) ?? THEMES[0];
   const chooseTheme = (id: string) => {
@@ -102,9 +104,6 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
   const selectedNumbers = isSequence
     ? currentOrder.map(numberOf)
     : question.options.filter(o => currentSelection.includes(o.id)).map(o => numberOf(o.id));
-  const answerCode = isSequence
-    ? correctSequence.map(numberOf).join(' → ')
-    : question.options.filter(o => o.correct).map(o => numberOf(o.id)).join(', ');
   const canAnswer = isSequence ? currentOrder.length > 0 : currentSelection.length > 0;
 
   const handleAnswer = () => {
@@ -121,9 +120,13 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
     }
     const nextAnswered = { ...answered, [question.id]: isCorrect };
     setAnswered(nextAnswered);
-    if (Object.keys(nextAnswered).length === questions.length) {
-      setFinished(true);
-    }
+    setResultPopup(isCorrect);
+  };
+
+  const closeResultPopup = () => {
+    setResultPopup(null);
+    if (Object.keys(answered).length === questions.length) setFinished(true);
+    else goNextAfterAnswer();
   };
 
   const goNextAfterAnswer = () => {
@@ -266,28 +269,10 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
               <SequenceAnswer
                 key={question.id}
                 options={question.options}
-                correctSequence={correctSequence}
                 chosen={currentOrder}
                 locked={isAnswered}
                 onChange={next => setOrders(prev => ({ ...prev, [question.id]: next }))}
               />
-              {isAnswered && !answered[question.id] && (
-                <div className="mt-3 rounded-lg border bg-gray-50 p-3">
-                  <p className="text-xs font-semibold text-gray-500 mb-2">Правильная последовательность:</p>
-                  <ol className="space-y-1 text-sm text-gray-800">
-                    {correctSequence.map((id, i) => {
-                      const o = question.options.find(x => x.id === id)!;
-                      return (
-                        <li key={id} className="flex items-center gap-2">
-                          <span className="font-semibold">{i + 1}.</span>
-                          {o.image && <img src={o.image} alt="" className="w-8 h-8 object-contain rounded border bg-white" />}
-                          {o.text}
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </div>
-              )}
             </>
           ) : (
           <div className="space-y-3">
@@ -296,9 +281,7 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
               let cls = `bg-white ${theme.option}`;
               if (checked && !isAnswered) cls = theme.selected;
               if (isAnswered) {
-                if (opt.correct) cls = 'border-emerald-500 bg-emerald-50';
-                else if (checked) cls = 'border-red-500 bg-red-50';
-                else cls = 'border-slate-200 opacity-60';
+                cls = checked ? theme.selected : 'border-slate-200 opacity-60';
               }
               return (
                 <button
@@ -323,8 +306,6 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
                       </span>
                     )}
                   </span>
-                  {isAnswered && opt.correct && <Icon name="CheckCircle2" size={18} className="text-emerald-600 flex-shrink-0 mt-0.5" />}
-                  {isAnswered && !opt.correct && checked && <Icon name="XCircle" size={18} className="text-red-600 flex-shrink-0 mt-0.5" />}
                 </button>
               );
             })}
@@ -343,14 +324,6 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
               <Icon name="Lightbulb" size={16} />
               Подсказка
             </Button>
-            <Button variant="outline" size="sm" onClick={() => togglePanel('code')}>
-              <Icon name="KeyRound" size={16} />
-              Код ответа
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => togglePanel('explanation')} disabled={!question.explanation}>
-              <Icon name="CircleCheck" size={16} />
-              Правильный ответ
-            </Button>
             <Button variant="outline" size="sm">
               <Icon name="BookOpen" size={16} />
               Учебник
@@ -364,37 +337,6 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
             </div>
           )}
 
-          {isOpen('code') && (
-            <div className="mt-3 flex gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
-              <Icon name="KeyRound" size={18} className="flex-shrink-0 mt-0.5" />
-              <p className="leading-relaxed min-w-0">
-                {isSequence ? 'Правильная последовательность (номера вариантов): ' : 'Номера правильных ответов: '}
-                <span className="font-semibold">{answerCode || '—'}</span>
-              </p>
-            </div>
-          )}
-
-          {isOpen('explanation') && question.explanation && (
-            <div className="mt-3 flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-              <Icon name="CircleCheck" size={18} className="flex-shrink-0 mt-0.5" />
-              <p className="leading-relaxed whitespace-pre-line break-words min-w-0">{question.explanation}</p>
-            </div>
-          )}
-
-          {isAnswered && (
-            <div
-              className={`mt-4 flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium ${
-                answered[question.id] ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-              }`}
-            >
-              <Icon name={answered[question.id] ? 'CheckCircle2' : 'XCircle'} size={18} />
-              {answered[question.id]
-                ? 'Ответ верный'
-                : isSequence
-                  ? 'Ответ неверный. Правильная последовательность показана ниже'
-                  : 'Ответ неверный. Правильные варианты отмечены зелёным'}
-            </div>
-          )}
 
          </div>
           <div className="sticky bottom-0 z-10 bg-white/95 backdrop-blur border-t rounded-b-lg px-4 md:px-6 py-3 flex items-center justify-between gap-2">
@@ -422,6 +364,24 @@ const TicketPlayer = ({ ticket, user, onExit }: TicketPlayerProps) => {
           </div>
         </div>
       </div>
+      <Dialog open={resultPopup !== null} onOpenChange={open => !open && closeResultPopup()}>
+        <DialogContent className="max-w-sm text-center">
+          <DialogHeader className="items-center sm:text-center">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-2 ${resultPopup ? 'bg-emerald-100' : 'bg-red-100'}`}>
+              <Icon
+                name={resultPopup ? 'CheckCircle2' : 'XCircle'}
+                size={36}
+                className={resultPopup ? 'text-emerald-600' : 'text-red-600'}
+              />
+            </div>
+            <DialogTitle className="text-xl">{resultPopup ? 'Ответ верный' : 'Ответ неверный'}</DialogTitle>
+            <DialogDescription className="sr-only">Результат ответа на вопрос</DialogDescription>
+          </DialogHeader>
+          <Button onClick={closeResultPopup} className="w-full">
+            Продолжить
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

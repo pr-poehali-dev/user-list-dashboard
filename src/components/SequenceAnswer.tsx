@@ -4,7 +4,6 @@ import { AnswerOption } from '@/data/questionsData';
 
 interface SequenceAnswerProps {
   options: AnswerOption[];
-  correctSequence: string[];
   chosen: string[];
   onChange: (next: string[]) => void;
   locked: boolean;
@@ -21,7 +20,7 @@ const OptionContent = ({ option }: { option: AnswerOption }) => (
   </span>
 );
 
-const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: SequenceAnswerProps) => {
+const SequenceAnswer = ({ options, chosen, onChange, locked }: SequenceAnswerProps) => {
   if (locked) {
     return (
       <div className="space-y-2">
@@ -29,23 +28,15 @@ const SequenceAnswer = ({ options, correctSequence, chosen, onChange, locked }: 
         {chosen.length === 0 && <p className="text-sm text-gray-400">Ответ не выбран</p>}
         {chosen.map((id, index) => {
           const opt = options.find(o => o.id === id)!;
-          const inPlace = correctSequence[index] === id;
           return (
             <div
               key={id}
-              className={`flex items-start gap-3 p-3 rounded-lg border-2 ${
-                inPlace ? 'border-emerald-500 bg-emerald-50' : 'border-red-500 bg-red-50'
-              }`}
+              className="flex items-start gap-3 p-3 rounded-lg border-2 border-blue-600 bg-blue-50"
             >
               <span className="w-7 h-7 mt-0.5 rounded-full bg-gray-800 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
                 {index + 1}
               </span>
               <OptionContent option={opt} />
-              <Icon
-                name={inPlace ? 'CheckCircle2' : 'XCircle'}
-                size={18}
-                className={`mt-1 flex-shrink-0 ${inPlace ? 'text-emerald-600' : 'text-red-600'}`}
-              />
             </div>
           );
         })}
