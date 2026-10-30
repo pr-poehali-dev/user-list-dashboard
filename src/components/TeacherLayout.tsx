@@ -10,6 +10,7 @@ import GroupsSection from '@/components/GroupsSection';
 import KnowledgeScopeSection from '@/components/KnowledgeScopeSection';
 import PositionsSection from '@/components/PositionsSection';
 import TrainingPlanSection from '@/components/TrainingPlanSection';
+import ReportsSection from '@/components/ReportsSection';
 
 const GROUP_ICON_OPTIONS = ['Users2', 'Layers', 'Grid2x2', 'BookCopy', 'Network', 'LayoutList', 'FolderOpen'];
 
@@ -20,6 +21,7 @@ const teacherSections = [
   { id: 'positions', name: 'Должности', icon: 'Briefcase' },
   { id: 'knowledge', name: 'Объем знаний', icon: 'Brain' },
   { id: 'plans', name: 'Планы обучения', icon: 'BookOpen' },
+  { id: 'reports', name: 'Отчёты', icon: 'ClipboardList' },
 ];
 
 interface TeacherLayoutProps {
@@ -117,6 +119,8 @@ const TeacherLayout = ({
         return <KnowledgeScopeSection treeData={treeData} onScopeChange={handleScopeChange} knowledgeScope={knowledgeScope} />;
       case 'plans':
         return <TrainingPlanSection treeData={treeData} knowledgeScope={knowledgeScope} />;
+      case 'reports':
+        return <ReportsSection />;
       case 'groups':
         return (
           <GroupsSection

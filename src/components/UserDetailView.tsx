@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import * as Dialog from '@radix-ui/react-dialog';
 import Icon from '@/components/ui/icon';
 import { User } from '@/data/mockData';
+import ReportsTable from '@/components/ReportsTable';
+import { getReportsByUser } from '@/data/reportsData';
 
 const directions = ['Западно-Сибирская', 'Восточно-Сибирская', 'Октябрьская', 'Свердловская', 'Камень-Устинская', 'Московская', 'Северная'];
 const specialties = ['Машинист электровоза', 'Помощник машиниста', 'Диспетчер', 'Проводник', 'Слесарь по ремонту', 'Электромонтер', 'Инженер-путеец', 'Составитель поездов'];
@@ -93,6 +95,13 @@ const UserDetailView = ({ selectedUser, onBack }: UserDetailViewProps) => {
                   ))}
                 </div>
             }
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-base font-semibold mb-2">Пройденные тесты</h3>
+          <div className="border rounded-lg">
+            <ReportsTable items={getReportsByUser(selectedUser.id)} />
           </div>
         </div>
 
